@@ -4,18 +4,6 @@ $InstallForm.Text               = "Install CAEP"
 $InstallForm.BackColor          = "#ffffff"
 $InstallForm.TopMost            = $false
 
-$DataGrid                       = New-Object System.Windows.Forms.DataGridView
-$DataGrid.Name                  = "Grid"
-$DataGrid.ColumnCount           = 2
-$DataGrid.Columns[0].Name       = "Requirement";
-$DataGrid.Columns[0].Width      = 160 # TODO Set auto resize width columns
-$DataGrid.Columns[1].Name       = "Status";
-$DataGrid.Size                  = New-Object System.Drawing.Size(265, 300)
-$DataGrid.Location              = New-Object System.Drawing.Point(10, 50)
-$DataGrid.MultiSelect           = $false
-$DataGrid.RowHeadersVisible     = $false
-$DataGrid.AllowUserToAddRows    = $false
-
 $Description                    = New-Object System.Windows.Forms.RichTextBox
 $Description.Text               = ""
 $Description.AutoSize           = $false
@@ -189,8 +177,7 @@ $DeclineButton,
 $RestartButton,
 $LogoutButton,
 $YesButton,
-$NoButton
-$DataGrid))
+$NoButton))
 
 $ExitButton.Add_Click({ ExitButton_Click })
 $MessageLabel.Add_SizeChanged({ SetSizeMessageLabel })

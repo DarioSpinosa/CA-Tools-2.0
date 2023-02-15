@@ -134,7 +134,7 @@ function Invoke-CheckRequirements($Requirements) {
   # List of Requirements that have to be executed, no matter what
   foreach ($Name in $Requirements.Keys) {
     if (!($Requirements[$Name]["CheckRequirement"])) { break }
-    $ResultCheckRequirement = Invoke-Expression (New-CommandString $Requirements[$Name]["CheckRequirement"])
+    $ResultCheckRequirement = (Invoke-Expression (New-CommandString ($Requirements[$Name]["CheckRequirement"])))
     if (!($ResultCheckRequirement[0]) -or ($ResultCheckRequirement[1] -eq 'KO') -or ("Execute ca scar" -eq $Name)) {
       $ResultCheckRequirementList.Add($Name, $Requirements[$Name])
     }
@@ -158,6 +158,8 @@ function Invoke-LoadRequirementsResultsGrid($RequirementsList, $RequirementsNotM
     $Row.DefaultCellStyle.BackColor = $(If ($RequirementsNotMetList.Contains($Item)) { $Red } else { $Green })
     $DataGrid.Rows.Add($Row);
   }
+
+  $InstallForm.Controls.Add($DataGrid)
 }
 
 function New-StartupCmd {
@@ -178,8 +180,6 @@ function New-StartupCmd {
     Add-Content -Path $StartupPath -Value "start powershell -Command `"Start-Process powershell -verb runas -ArgumentList '-NoExit -file " + $ScriptArgs + "'`""
   }
 }
-
-
 
 function ExitButton_Click() {
   $ModalForm.Close()
@@ -256,6 +256,7 @@ function NextButton_Click {
     Show-Buttons @('$AcceptButton', '$DeclineButton')
   }
 }
+
 function DeclineButton_Click {
   <#
   .SYNOPSIS
