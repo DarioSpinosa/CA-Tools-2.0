@@ -3,23 +3,21 @@ param(
 )
 
 $capturedPath = "~\.ca\$currentDate-npmErrCheck.txt"
- $Description.AppendText("Generate npm log for npm view commands in $capturedPath ...")
+$OutputLabel.Text = "Generate npm log for npm view commands in $capturedPath ..."
 npm view @ca/cli  2>&1 > $capturedPath
 npm view @ca-codegen/core 2>&1 >> $capturedPath
 
 $npmErrCheck = Get-Content $capturedPath
    
-$result = @($true, 'OK')
- $Description.AppendText("$capturedPath content: ")
- $Description.AppendText($npmErrCheck.ToString())
+$OutputLabel.Text = "$capturedPath content: "
+$OutputLabel.Text = $npmErrCheck.ToString()
 foreach ($item in $npmErrCheck) {
     if ( ($item -like '*ERR!*') -or ($item -like '*error*') ) {
-        $result = @($true, 'KO')
-        break
+        return @($true, 'KO')
     }
 }
 
-return $result
+return @($true, 'OK')
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

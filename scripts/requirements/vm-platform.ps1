@@ -2,26 +2,18 @@ param(
     [string]$scarConfig
 )
 
-if ( !$scarConfig.Contains('terranova') ) {
+if ($scarConfig.Contains('terranova')) { return @($true, 'OK') }
     
-    $result = $true
-    $vmpFeature = dism /online /get-featureinfo /featurename:VirtualMachinePlatform
-    
-    foreach ( $item in $vmpFeature ) {
-        if ( ($item -like '*Disabled*') -or ($item -like '*Disattivata*') ) {
-            $result = $false
-        }
-    }
-    if ( $result ) {
-        return @($true, 'OK')
-    }
-    else {
-        return @($true, 'KO')
+
+foreach ( $item in (dism /online /get-featureinfo /featurename:VirtualMachinePlatform)) {
+    if (($item -like '*Disabled*') -or ($item -like '*Disattivata*') ) {
+        $result = $false
+        break
     }
 }
-else {
-    return @($true, 'OK')
-}
+
+return @($true, $(if ($result) { 'OK' } else { "KO" }))
+
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

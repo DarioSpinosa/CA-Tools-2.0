@@ -1,8 +1,5 @@
-if (Test-Path "$env:PROGRAMFILES\Ca-Tools") {
-    return @($true, 'OK')
-} else {
-    return @($true, 'KO')
-}
+return @($true, $(if (Test-Path "$env:PROGRAMFILES\Ca-Tools") {"OK"} else {"KO"}))
+
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

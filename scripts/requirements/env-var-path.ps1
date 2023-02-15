@@ -3,17 +3,10 @@ param(
 )
 
 # Extecute function to get missing environment variable path
-. .\scripts\common.ps1
+# . .\scripts\utility.ps1 Should be work anyway
 $envNotFound = Get-MissingEnvironmentVariablePath -envToCheck $envToCheck
-
- $Description.AppendText("not found list: $envNotFound")
-
-if ($envNotFound.Count -gt 0) {
-  return @($true, 'KO')
-}
-else {
-  return @($true, 'OK')
-}
+$OutputLabel.Text = "not found list: $envNotFound"
+return @($true, $(if ($envNotFound.Count) {'KO'} else {"OK"}))
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

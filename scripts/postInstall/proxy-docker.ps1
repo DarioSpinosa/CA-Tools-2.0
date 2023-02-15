@@ -3,7 +3,6 @@ param(
 )
 
 $InternetSettings = (Get-ItemProperty -Path "Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings")
-$ProxyServer = ($InternetSettings.ProxyServer)
 $DockerConfigPath = "~\.docker\config.json"
 if (Test-Path $DockerConfigPath) {
 

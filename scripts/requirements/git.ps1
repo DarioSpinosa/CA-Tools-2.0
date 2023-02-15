@@ -3,13 +3,8 @@ param(
 )
 
 try {
-    $gitVersion = (git --version).replace('git version ', '').replace('.windows.1', '').split('.')[0]
-    if ($gitVersion -eq $maxVersion) {
-        return @($true, 'OK')
-    }
-    else {
-        return @($true, 'VER')
-    }
+    $Result = $(if (((git --version).replace('git version ', '').replace('.windows.1', '').split('.')[0]) -eq $maxVersion) {"OK"} else {"VER"})
+    return @($true,  $Result)
 }
 catch {
     return @($true, 'KO')

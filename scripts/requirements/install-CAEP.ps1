@@ -1,24 +1,25 @@
- $Description.AppendText('Searching for npm-login.ps1...'
+$OutputLabel.Text = 'Searching for npm-login.ps1...'
 $caPath = "C:\Program Files\Ca-Tools\npm-login.ps1"
-if ( !(Get-Content -Path $caPath) ) {
-	 $Description.AppendText("npm-login.ps1 not found!"
-    return @($true, 'KO')
+if (!(Get-Content -Path $caPath) ) {
+	 $OutputLabel.Text = "npm-login.ps1 not found!"
+  return @($true, 'KO')
 }
 
- $Description.AppendText('Searching for @ca npm packages...'
+$OutputLabel.Text = 'Searching for @ca npm packages...'
 $npmList = npm list -g --depth=0
-if ( ($npmList -like '*@ca/cli*') -and ($npmList -like '*@ca/generator-scarface*') ) {
-  $Description.AppendText('@ca/cli and @ca/generator-scarface are installed npm packages.')
-} else {
-	 $Description.AppendText('npm packages @ca/cli and @ca/generator-scarface not found!')
-    return @($true, 'KO')
+if (($npmList -like '*@ca/cli*') -and ($npmList -like '*@ca/generator-scarface*')) {
+  $OutputLabel.Text = '@ca/cli and @ca/generator-scarface are installed npm packages.'
+}
+else {
+	 $OutputLabel.Text = 'npm packages @ca/cli and @ca/generator-scarface not found!'
+  return @($true, 'KO')
 }
 
- $Description.AppendText('Searching for ca plugins...')
+$OutputLabel.Text = 'Searching for ca plugins...'
 $npmPlugin = ca plugins
-if ( $npmPlugin -like '*@ca/cli-plugin-scarface*' ) {
-	 $Description.AppendText('ca plugins: @ca/cli-plugin-scarface found!')
-    return @($true, 'OK')
+if ($npmPlugin -like '*@ca/cli-plugin-scarface*' ) {
+	 $OutputLabel.Text = 'ca plugins: @ca/cli-plugin-scarface found!'
+  return @($true, 'OK')
 }
 
 return @($true, 'KO')

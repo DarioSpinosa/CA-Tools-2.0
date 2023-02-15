@@ -4,23 +4,17 @@ param(
     [string]$minVersion
 )
 
-if (!$scarConfig.Contains('terranova')) {
-    try {
-        $dockerVersion = (docker --version).replace(',', '').replace('Docker version', '').replace('build', '').Trim().Split(' ')[0]
-        if ( ($dockerVersion -ge $minVersion) -and ($dockerVersion -le $maxVersion) ) {
-            return @($true, 'OK')
-        }
-        else {
-            return @($true, 'VER')
-        }
-    }
-    catch {
-        return @($true, 'KO')
-    }
+if ($scarConfig.Contains('terranova')) { return @($true, 'OK') }
+
+try {
+    $dockerVersion = (docker --version).replace(',', '').replace('Docker version', '').replace('build', '').Trim().Split(' ')[0]
+    $result = $(if (($dockerVersion -ge $minVersion) -and ($dockerVersion -le $maxVersion)) {"OK"} else {"VER"})
+    return @($true, $result)
 }
-else {
-    return @($true, 'OK')
+catch {
+    return @($true, 'KO')
 }
+
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

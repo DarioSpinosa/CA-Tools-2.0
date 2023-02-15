@@ -5,11 +5,10 @@ param(
 $notInstalled = $false
 
 try {
-    $InstalledVSCodeExtensions = (code --list-extensions)
-
     foreach ( $Extension in "$attributes".Split(' ') ) {
-        if ( ($InstalledVSCodeExtensions -like ("*$Extension*").ToLower()).Count -eq 0 ) {
+        if (!(((code --list-extensions) -like ("*$Extension*").ToLower()).Count)) {
             $notInstalled = $true
+            break
         }
     }
 }
@@ -17,12 +16,8 @@ catch {
     return @($true, 'KO')
 }
 
-if ($notInstalled) {
-    return @($true, 'KO')
-}
-else {
-    return @($true, 'OK')
-}
+return @($true, $(if ($notInstalled) {'KO'} else {"OK"}))
+
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

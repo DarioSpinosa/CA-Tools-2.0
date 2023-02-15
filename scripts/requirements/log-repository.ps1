@@ -1,6 +1,4 @@
-$logRepoAvailable = (Test-NetConnection casftp.blob.core.windows.net -port 22).TcpTestSucceeded
-
-if ($logRepoAvailable -eq $True) {
+if (((Test-NetConnection casftp.blob.core.windows.net -port 22).TcpTestSucceeded) -eq $True) {
     return @($true, 'OK')
 }
 else {

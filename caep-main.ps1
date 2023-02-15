@@ -1,32 +1,22 @@
-param(
-  [string]$ScarVersion = "",
-  [string]$ScarConfig = "https://castorybookbloblwebsite.blob.core.windows.net/scar-configs/scarface.config.json",
-  [string]$currentDate,
-  [bool]$addNodeBuildTools
-)
-
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
 function InstallButton_Click() {
 
   # Main checks
-  Check if the user opened PowerShell as Admin, if not then stop the installation, otherwise check the requirements
-  if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    CallError "PLEASE OPEN POWERSHELL AS ADMINISTRATOR!!!"
-    return
-  }
+  # Check if the user opened PowerShell as Admin, if not then stop the installation, otherwise check the requirements
+  # if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+  #   CallError "PLEASE OPEN POWERSHELL AS ADMINISTRATOR!!!"
+  #   return
+  # }
   
-  if (-not (Get-NetAdapter | Where-Object { ($_.Name -like "*Ethernet*" -or $_.Name -like "*Wi-Fi*") -and ($_.Status -eq "Up") })) {
-    CallError "PLEASE CONNECT TO INTERNET!!!"
-    return
-  }
+  # if (-not (Get-NetAdapter | Where-Object { ($_.Name -like "*Ethernet*" -or $_.Name -like "*Wi-Fi*") -and ($_.Status -eq "Up") })) {
+  #   CallError "PLEASE CONNECT TO INTERNET!!!"
+  #   return
+  # }
 
   $WelcomeForm.Hide()
   $InstallForm.Show()
-
-  $currentDate = (Get-Date -Format yyyyMMdd-HHmm).ToString()
-  $logFilePath = "~\.ca\$currentDate-caep.log"
   
   $DebugPreference = 'Continue'
   $VerbosePreference = 'Continue'
@@ -37,8 +27,6 @@ function InstallButton_Click() {
   foreach ($ps1File in Get-ChildItem *.ps1 -Recurse) {
     Unblock-File -Path $ps1File
   }
-  
-  . .\scripts\common.ps1
 
   # Create scar folder beforehand with download directory
   $downloadExeFolder = "C:\dev\scarface\download\"
@@ -47,37 +35,49 @@ function InstallButton_Click() {
     New-Item -Path $downloadExeFolder -ItemType Directory
   }
 
-  # Import scripts
-  . .\requirement-actions.ps1 -RandomCode (New-Guid) -currentDate $currentDate -ScarVersion $ScarVersion -ScarConfig $ScarConfig
-  . .\send-logs.ps1 -currentDate $currentDate
-
   #Resolve the Requirement's dependencies
-  $RequirementsJsonPath = ".\requirements.json"
+  $RequirementsList = Get-Content ".\requirements.json" | ConvertFrom-Json | ConvertPSObjectToHashtable
+  $RequirementsList = Resolve-Dependencies $RequirementsList
 
-  $RequirementsList = Get-Content $RequirementsJsonPath | ConvertFrom-Json
+  #No effect????
+  # $RequirementsList = @($RequirementsList | Sort-Object -Property { $_.Dependencies.Count })
 
-  for ($i = 0; $i -lt $RequirementsList.Count; $i++) {
-    $RequirementsList[$i].Dependencies = (Resolve-Dependencies $RequirementsList[$i].Dependencies) | Select-Object -Unique
-  }
-
-  $RequirementsList = @($RequirementsList | Sort-Object -Property { $_.Dependencies.Count })
-
-  $RequirementsList = OverrideRequirement -Requirements $RequirementsList
+  $RequirementsList = OverrideRequirement $RequirementsList
 
   $RequirementsNotMetList = Invoke-CheckRequirements $RequirementsList
 
-  Invoke-AppendRequirementDescription
+  Invoke-LoadRequirementsResultsGrid $RequirementsList $RequirementsNotMetList
 
+  #Should be global TODO
   $RequirementsList = $RequirementsNotMetList
 
-  Remove-BackofficeProject
+  $BackofficeProjectPath = "C:\dev\scarface\back-office"
+  if (Test-Path $BackofficeProjectPath) { Remove-Item -Path $BackofficeProjectPath -Force -Recurse }
   New-StartupCmd
-
 }
 
-function CallError($Message){
-  $MessageLabel.Text = $Message
-  $ModalForm.ShowDialog()
+function Resolve-Dependencies($Requirements) {
+  foreach ($Name in $Requirements.Keys) {
+    $Dependencies = $Requirements[$Name]["Dependencies"]
+    if ($Dependencies.Count -eq 0) { break }
+    $Requirements[$Name]["Dependencies"] = Resolve-SingleDependency $Dependencies $Requirements
+  } 
+  return $Requirements
+}
+
+function Resolve-SingleDependency($Dependencies, $Requirements) {
+  <#
+  .SYNOPSIS
+  Resolve the dependencies of all the Requirements
+  .DESCRIPTION
+  Creates a new list of Requirements with their dependencies resolved
+  #>
+  $TempDependencies = $Dependencies
+  foreach ($Dependency in $Dependencies) {
+    $TempDependencies += Resolve-SingleDependency $Requirements[$Dependency]["Dependencies"] $Requirements
+  }
+
+  return $TempDependencies
 }
 
 function OverrideRequirement($Requirements) {
@@ -90,24 +90,16 @@ function OverrideRequirement($Requirements) {
 
   $overrideJson = DownloadScarConfigJson
   if (!($overrideJson)) {
-    $Description.AppendText("No override found")
+    $OutputLabel.AppendText("No override found")
     return $Requirements
   }
-  
-  foreach ($Requirement in $Requirements) {
-    foreach ($overrideRequirement in $overrideJson) {
-      if ($Requirement.Name -eq $overrideRequirement.Name) {
-        $hashtableReq = ConvertPSObjectToHashtable $overrideRequirement
-        foreach ($element in $hashtableReq.GetEnumerator()) {
-          if ($element.Key -in $Requirement.PSobject.Properties.Name) {
-            $Requirement.($element.Key) = $element.Value
-          }
-        }
-        break
-      }
+
+  foreach ($Name in $overrideJson.Keys) {
+    foreach ($Property in $overrideJson[$Name].Keys) {
+      $Requirements[$Name][$Property] = $overrideJson[$Name][$Property]
     }
   }
-  
+
   return $Requirements
 }
 
@@ -120,72 +112,14 @@ function DownloadScarConfigJson {
   #>
 
   $scarConfigPath = "C:\dev\scarface\scarface.config.json"
-  if ( Test-Path $scarConfigPath) {
-    Remove-Item -Path $scarConfigPath -Force
-  }
+  if ( Test-Path $scarConfigPath) { Remove-Item -Path $scarConfigPath -Force }
   New-Item -Path $scarConfigPath -Force | Out-Null
 
-  $Description.AppendText("downloading $ScarConfig")
-  $ScarConfigObj = (Invoke-WebRequest -Uri $ScarConfig -UseBasicParsing).Content | ConvertFrom-Json
-
-  if ($ScarConfigObj.overrideRequirement) {
-    $Description.AppendText("downloading " + $ScarConfigObj.overrideRequirement)
-    $retval = (Invoke-WebRequest -Uri $ScarConfigObj.overrideRequirement -UseBasicParsing).Content | ConvertFrom-Json
-    return $retval
-  }
-  return $false
-}
-
-function ConvertPSObjectToHashtable { 
-  param (
-    [Parameter(ValueFromPipeline)]
-    $InputObject
-  )
-
-  process {
-    if ($null -eq $InputObject) { return $null }
-
-    if ($InputObject -is [System.Collections.IEnumerable] -and $InputObject -isnot [string]) {
-      $collection = @(
-        foreach ($object in $InputObject) { ConvertPSObjectToHashtable $object }
-      )
-
-      Write-Output -NoEnumerate $collection
-    }
-    elseif ($InputObject -is [psobject]) {
-      $hash = @{}
-
-      foreach ($property in $InputObject.PSObject.Properties) {
-        $hash[$property.Name] = ConvertPSObjectToHashtable $property.Value
-      }
-
-      $hash
-    }
-    else {
-      $InputObject
-    }
-  }
-}
-
-function Resolve-Dependencies($Dependencies) {
-  <#
-  .SYNOPSIS
-  Resolve the dependencies of all the Requirements
-  .DESCRIPTION
-  Creates a new list of Requirements with their dependencies resolved
-  #>
-  $ResultRequirementDependencies = @()
-  if ($Dependencies.Count -ne 0) {
-    $ResultRequirementDependencies += $Dependencies
-    foreach ($Dependency in $Dependencies) {
-      foreach ($Requirement in $RequirementsList) {
-        if ($Requirement.Name -eq $Dependency) {
-          $ResultRequirementDependencies += Resolve-Dependencies $Requirement.Dependencies
-        }
-      }
-    }
-  }
-  return $ResultRequirementDependencies
+  $OutputLabel.Text = "downloading $ScarConfig"
+  $overrideRequirement = ((Invoke-WebRequest -Uri $ScarConfig -UseBasicParsing).Content | ConvertFrom-Json).overrideRequirement
+  if (!$overrideRequirement) { return $false }
+  $OutputLabel.Text = "downloading " + $overrideRequirement
+  return ((Invoke-WebRequest -Uri $overrideRequirement -UseBasicParsing).Content | ConvertFrom-Json | ConvertPSObjectToHashtable)
 }
 
 function Invoke-CheckRequirements($Requirements) {
@@ -196,21 +130,19 @@ function Invoke-CheckRequirements($Requirements) {
   For each Requirement it will check if it's satisfied or not,
   if the Requirement isn't satisfied then add it to the list of Requirements that have to be satisfied through the installer
   #>
-  $ResultCheckRequirementList = @()
+  $ResultCheckRequirementList = @{}
   # List of Requirements that have to be executed, no matter what
-  $MustCheckRequirementList = @("Execute ca scar")
-  foreach ($Requirement in $Requirements) {
-    if ($Requirement.CheckRequirement) {
-      $ResultCheckRequirement = Invoke-Expression (New-CommandString $Requirement.CheckRequirement)
-      if ( (!(($ResultCheckRequirement[0] -eq $true) -and ($ResultCheckRequirement[1] -eq 'OK'))) -or ( $MustCheckRequirementList -contains $Requirement.Name ) ) {
-        $ResultCheckRequirementList += $Requirement
-      }
+  foreach ($Name in $Requirements.Keys) {
+    if (!($Requirements[$Name]["CheckRequirement"])) { break }
+    $ResultCheckRequirement = Invoke-Expression (New-CommandString $Requirements[$Name]["CheckRequirement"])
+    if (!($ResultCheckRequirement[0]) -or ($ResultCheckRequirement[1] -eq 'KO') -or ("Execute ca scar" -eq $Name)) {
+      $ResultCheckRequirementList.Add($Name, $Requirements[$Name])
     }
   }
   return $ResultCheckRequirementList
 }
 
-function Invoke-AppendRequirementDescription {
+function Invoke-LoadRequirementsResultsGrid($RequirementsList, $RequirementsNotMetList) {
   <#
   .SYNOPSIS
   Show on the GUI, each Requirement and their status
@@ -228,19 +160,28 @@ function Invoke-AppendRequirementDescription {
   }
 }
 
-function Remove-BackofficeProject {
+function New-StartupCmd {
   <#
   .SYNOPSIS
-  Remove the back-office project
+  Create a .cmd that will execute the CAEP installer at startup
   .DESCRIPTION
-  If the project of test "back-office" was already create, delete it
+  Creates a .cmd that will execute the CAEP installer at startup until they won't complete it
   #>
-  if (Test-Path $BackofficeProjectPath) {
-    Remove-Item -Path $BackofficeProjectPath -Force -Recurse
+
+  $ScriptArgs = "\`"$(Join-Path $(Split-Path -Parent $MyInvocation.MyCommand.Path) "caep-main.ps1")\`""
+
+  if ($ScarConfig) { $ScriptArgs += " -ScarConfig " + $ScarConfig }
+  if ($ScarVersion) { $ScriptArgs += " -ScarVersion " + $ScarVersion }
+
+  if (!(Test-Path $StartupPath)) {
+    New-Item -Path $StartupPath | Out-Null
+    Add-Content -Path $StartupPath -Value "start powershell -Command `"Start-Process powershell -verb runas -ArgumentList '-NoExit -file " + $ScriptArgs + "'`""
   }
 }
 
-function ExitButton_Click(){
+
+
+function ExitButton_Click() {
   $ModalForm.Close()
   $WelcomeForm.Close()
 }
@@ -292,24 +233,15 @@ function AcceptButton_Click {
     }
   }
   # Updates the Environment Variables
-  Update-EnvPath
+  $env:PATH = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+  $OutputLabel.Text = "`r`nEnv var Path reloaded correctly"
+
   # Execute the post action for the current Requirement if present.
   if ($CurrentRequirement.PostAction) {
     Show-Buttons @("$($CurrentRequirement.PostAction)Button")
   }
   # Once everything has been done the index of the current requirement will be incremented
   $script:IndexRequirement++
-}
-
-function Update-EnvPath {
-  <#
-  .SYNOPSIS
-  Update the Environment Variables
-  .DESCRIPTION
-  Update the Environment Variables without closing PowerShell
-  #>
-  $env:PATH = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
-  $Description.AppendText("`r`nEnv var Path reloaded correctly")
 }
 
 function NextButton_Click {
@@ -458,33 +390,19 @@ function Update-ScarfaceConfigJson {
   $ScarfaceConfigJson | ConvertTo-Json -Depth 5 | Out-File -Encoding "ASCII" $ScarfaceConfigJsonPath -Force
 }
 
-function New-StartupCmd {
-  <#
-  .SYNOPSIS
-  Create a .cmd that will execute the CAEP installer at startup
-  .DESCRIPTION
-  Creates a .cmd that will execute the CAEP installer at startup until they won't complete it
-  #>
-
-  $ScriptArgs = "\`"$(Join-Path $(Split-Path -Parent $MyInvocation.MyCommand.Path) "caep-main.ps1")\`""
-
-  if ($ScarConfig) { $ScriptArgs += " -ScarConfig " + $ScarConfig }
-  if ($ScarVersion) { $ScriptArgs += " -ScarVersion " + $ScarVersion }
-
-  if (!(Test-Path $StartupPath)) {
-    New-Item -Path $StartupPath | Out-Null
-    Add-Content -Path $StartupPath -Value "start powershell -Command `"Start-Process powershell -verb runas -ArgumentList '-NoExit -file " + $ScriptArgs + "'`""
-  }
-}
-
 #---------------------------------------------------------------------------------------------- [Logic]---------------------------------------------------------------------------------------------------------
+#Old script parameters
+$ScarVersion = ""
+$ScarConfig = "https://castorybookbloblwebsite.blob.core.windows.net/scar-configs/scarface.config.json"
+$addNodeBuildTools
+
+$currentDate = (Get-Date -Format yyyyMMdd-HHmm).ToString()
+$logFilePath = "~\.ca\$currentDate-caep.log"
 $InstallRequirementsLogfile = "$($HOME)\.ca\install_requirements_$($currentDate).log"
 $IndexRequirement = 0
-$BackofficeProjectPath = "C:\dev\scarface\back-office"
 
-. .\forms\Welcome.ps1
-. .\forms\Modal.ps1
-. .\forms\Install.ps1
+. .\forms\InitializeForms.ps1
+. .\scripts\utility.ps1
 [void]$WelcomeForm.ShowDialog()
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

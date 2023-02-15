@@ -1,35 +1,29 @@
-[
-    {
-        "Name": "Proxy",
-        "Type": "PreInstallSoftware",
-        "Dependencies": [  ],
-        "QuestionMessage": "Press 'Accept' to check if you have a proxy active.",
-        "OkMessage": "(OK) The proxy isn't active on the Machine.",
-        "WarningMessage": "(WARNING) The proxy is active on the Machine. Connection OK.",
-        "WarningMessage2": "(WARNING) The proxy is active on the Machine. Connection KO.",
-        "DeclineMessage": "return 'You have declined Proxy'",
-        "CheckRequirement": "return ./scripts/requirements/proxy.ps1",
-        "PostAction": ""
-    },
-    {
-        "Name": "Virtual Machine",
-        "Type": "PreInstallSoftware",
-        "Dependencies": [ ],
-        "QuestionMessage": "Press 'Accept' to check if you are running the installer on a Virtual Machine or a Physical Machine.",
-        "OkMessage": "(OK) The machine you are running the installer is a Physical Machine.",
-        "WarningMessage": "'The machine you are running the installer is a Virtual Machine.`r`nPlease be sure to have executed the command:`r`n`\"Set-VMProcessor -VMName <VMName> -ExposeVirtualizationExtensions `$true`\"`r`non Powershell of your Host Machine as Administrator`r`nRemember to Turn Off your Virtual Machine and to replace the <VMName> with the name of the YOUR Virtual Machine.'",
-        "WarningMessage2": "",
-        "DeclineMessage": "return 'You have declined Virtual Machine'",
-        "CheckRequirement": "return ./scripts/requirements/virtual-machine.ps1",
-        "PostAction": ""
-    },
-    {
-        "Name": "Proxy npm",
+{
+    "Proxy": {
+            "Type": "PreInstallSoftware",
+            "Dependencies": [],
+            "QuestionMessage": "Press 'Accept' to check if you have a proxy active.",
+            "OkMessage": "(OK) The proxy isn't active on the Machine.",
+            "WarningMessage": "(WARNING) The proxy is active on the Machine. Connection OK.",
+            "WarningMessage2": "(WARNING) The proxy is active on the Machine. Connection KO.",
+            "DeclineMessage": "return 'You have declined Proxy'",
+            "CheckRequirement": "return ./scripts/requirements/proxy.ps1",
+            "PostAction": ""
+        },
+    "Virtual Machine": {
+            "Type": "PreInstallSoftware",
+            "Dependencies": [],
+            "QuestionMessage": "Press 'Accept' to check if you are running the installer on a Virtual Machine or a Physical Machine.",
+            "OkMessage": "(OK) The machine you are running the installer is a Physical Machine.",
+            "WarningMessage": "'The machine you are running the installer is a Virtual Machine.`r`nPlease be sure to have executed the command:`r`n`\"Set-VMProcessor -VMName <VMName> -ExposeVirtualizationExtensions `$true`\"`r`non Powershell of your Host Machine as Administrator`r`nRemember to Turn Off your Virtual Machine and to replace the <VMName> with the name of the YOUR Virtual Machine.'",
+            "WarningMessage2": "",
+            "DeclineMessage": "return 'You have declined Virtual Machine'",
+            "CheckRequirement": "return ./scripts/requirements/virtual-machine.ps1",
+            "PostAction": ""
+         },
+    "Proxy npm": {
         "Type": "PostInstallSoftware",
-        "Dependencies": [
-            "npm",
-            "Proxy"
-        ],
+        "Dependencies": ["npm", "Proxy"],
         "QuestionMessage": "Press 'Accept' to check if there is a need to configure npm for proxy.",
         "ExtraMessage": "",
         "PostInstallMessage": "return 'PostInstallMessage'",
@@ -38,17 +32,13 @@
         "PostInstallTrueOkCommand": "./scripts/postInstallTrueOk/proxy-npm.ps1 -currentDate `$CurrentDate",
         "DeclineMessage": "return `\"You have declined to automatically set your proxy for npm.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "PostInstallCommand": "./scripts/postInstall/proxy-npm.ps1",
-        "Attributes": [ ],
+        "Attributes": [],
         "CheckRequirement": "return ./scripts/requirements/proxy-npm.ps1",
         "PostAction": ""
-    },
-    {
-        "Name": "Proxy Docker",
+        },
+    "Proxy Docker": {
         "Type": "PostInstallSoftware",
-        "Dependencies": [
-            "Docker",
-            "Proxy"
-        ],
+        "Dependencies": ["Docker", "Proxy"],
         "QuestionMessage": "Press 'Accept' to check if there is a need to configure docker for proxy.",
         "ExtraMessage": "",
         "PostInstallMessage": "return 'PostInstallMessage'",
@@ -57,16 +47,13 @@
         "PostInstallTrueOkCommand": "./scripts/postInstallTrueOk/proxy-docker.ps1 -currentDate `$CurrentDate",
         "DeclineMessage": "return `\"You have declined to automatically set your proxy for Docker.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "PostInstallCommand": "./scripts/postInstall/proxy-docker.ps1 -currentDate `$CurrentDate",
-        "Attributes": [ ],
+        "Attributes": [],
         "CheckRequirement": "return ./scripts/requirements/proxy-docker.ps1 -scarConfig `$ScarConfig",
         "PostAction": ""
     },
-    {
-        "Name": "WSL Version",
+    "WSL Version":  {
         "Type": "PostInstallSoftware",
-        "Dependencies": [
-            "Wsl Update"
-        ],
+        "Dependencies": ["Wsl Update"],
         "QuestionMessage": "Press 'Accept' to set the default version of WSL to 2.",
         "ExtraMessage": "",
         "PostInstallMessage": "return 'Setting wsl version 2...'",
@@ -75,16 +62,13 @@
         "PostInstallTrueOkCommand": "",
         "DeclineMessage": "return `\"You have declined to automatically set your default WSL Version.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "PostInstallCommand": "wsl --set-default-version 2",
-        "Attributes": [ ],
+        "Attributes": [],
         "CheckRequirement": "return ./scripts/requirements/proxy-docker.ps1 -scarConfig `$ScarConfig",
         "PostAction": ""
     },
-    {
-        "Name": "WSL Distribution",
+    "WSL Distribution": {
         "Type": "PostInstallSoftware",
-        "Dependencies": [
-            "Docker"
-        ],
+        "Dependencies": ["Docker"],
         "QuestionMessage": "Press 'Accept' to change the default Linux Distribution of WSL.",
         "ExtraMessage": "",
         "PostInstallMessage": "return ./scripts/messages/wsl-distribution.ps1 -message 'Setting wsl distribution to'",
@@ -93,16 +77,13 @@
         "PostInstallTrueOkCommand": "",
         "DeclineMessage": "return `\"You have declined to automatically set your default WSL Distribution.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "PostInstallCommand": "./scripts/postInstall/wsl-distribution.ps1",
-        "Attributes": [ ],
+        "Attributes": [],
         "CheckRequirement": "return ./scripts/requirements/wsl-distribution.ps1 -scarConfig `$ScarConfig",
         "PostAction": ""
     },
-    {
-        "Name": "VS Code Settings",
+    "VS Code Settings": {
         "Type": "PostInstallSoftware",
-        "Dependencies": [
-            "Visual Studio Code"
-        ],
+        "Dependencies": ["Visual Studio Code"],
         "QuestionMessage": "Press 'Accept' to set the default integrated terminal to 'Command Prompt' and update mode to 'Manual' for Visual Studio Code.",
         "ExtraMessage": "",
         "PostInstallMessage": "return `\"Updating Visual Studio Code Settings:``r``n- Default Integrated Terminal: Command Prompt``r``n- Update Mode: Manual...`\"",
@@ -111,16 +92,13 @@
         "PostInstallTrueOkCommand": "",
         "DeclineMessage": "return `\"You have declined to automatically Update Visual Studio Code Settings.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "PostInstallCommand": "./scripts/postInstall/vscode-settings.ps1",
-        "Attributes": [ ],
+        "Attributes": [],
         "CheckRequirement": "return ./scripts/requirements/vscode-settings.ps1",
         "PostAction": ""
     },
-    {
-        "Name": "VS Code Extentions",
+    "VS Code Extentions": {
         "Type": "PostInstallSoftware",
-        "Dependencies": [
-            "Visual Studio Code"
-        ],
+        "Dependencies": ["Visual Studio Code"],
         "QuestionMessage": "Press 'Accept' to install the recommended extentions for Visual Studio Code",
         "ExtraMessage": "",
         "PostInstallMessage": "Installing Visual Studio Code Extentions...",
@@ -146,10 +124,9 @@
         "CheckRequirement": "return ./scripts/requirements/vscode-extensions.ps1 -attributes `\"$($Requirement.Attributes)`\"",
         "PostAction": ""
     },
-    {
-        "Name": "Administrator",
+    "Administrator": {
         "Type": "Permission",
-        "Dependencies": [  ],
+        "Dependencies": [],
         "QuestionMessage": "Press 'Accept' to check if you have Administrator permission.",
         "OkMessage": "You have the $($Requirement.Name) permission.",
         "KoMessage": "You don't have the $($Requirement.Name) permission.",
@@ -157,10 +134,9 @@
         "CheckRequirement": "return ./scripts/requirements/administrator.ps1",
         "PostAction": ""
     },
-    {
-        "Name": "Environment Variable Path",
+    "Environment Variable Path": {
         "Type": "Env Variable Path",
-        "Dependencies": [  ],
+        "Dependencies": [],
         "QuestionMessage": "Press 'Accept' to add the missing Environment Variable Path.",
         "Variable": "Path",
         "Values": "`\"C:\\windows\\system32;C:\\windows\\system32\\wbem;C:\\windows;C:\\windows\\system32\\windowspowershell\\v1.0;C:\\Program Files\\Git\\usr\\bin`\"",
@@ -170,10 +146,9 @@
         "CheckRequirement": "return ./scripts/requirements/env-var-path.ps1 -envToCheck `\"$($Requirement.Values)`\"",
         "PostAction": ""
     },
-    {
-        "Name": "Windows Subsystem Linux",
+    "Windows Subsystem Linux":  {
         "Type": "Feature",
-        "Dependencies": [ ],
+        "Dependencies": [],
         "QuestionMessage": "Press 'Accept' to enable the Windows feature 'Windows Subsystem for Linux'.",
         "ExtraMessage": "",
         "EnableCommand": "& dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart",
@@ -181,10 +156,9 @@
         "CheckRequirement": "return ./scripts/requirements/wsl.ps1 -scarConfig `$ScarConfig",
         "PostAction": "Restart"
     },
-    {
-        "Name": "Virtual Machine Platform",
+    "Virtual Machine Platform": {
         "Type": "Feature",
-        "Dependencies": [ ],
+        "Dependencies": [],
         "QuestionMessage": "Press 'Accept' to enable the Windows feature 'Virtual Machine Platform'",
         "ExtraMessage": "",
         "EnableCommand": "& dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart",
@@ -192,12 +166,9 @@
         "CheckRequirement": "return ./scripts/requirements/vm-platform.ps1 -scarConfig `$ScarConfig",
         "PostAction": "Restart"
     },
-    {
-        "Name": "Setup CaTools.msi",
+    "Setup CaTools.msi": {
         "Type": "Software",
-        "Dependencies": [
-            "WSL Distribution"
-        ],
+        "Dependencies": ["WSL Distribution"],
         "QuestionMessage": "Press 'Accept' to download and install the Ca-Tools.msi.",
         "MinVersion": "1.12.0",
         "MaxVersion": "latest",
@@ -213,10 +184,9 @@
         "CheckRequirement": "return ./scripts/requirements/setup-catools.ps1",
         "PostAction": "Reinstall"
     },
-    {
-        "Name": "Git",
+    "Git": {
         "Type": "Software",
-        "Dependencies": [ ],
+        "Dependencies": [],
         "QuestionMessage": "Press 'Accept' to download and install Git.",
         "MinVersion": "2.27.0",
         "MaxVersion": "2.34.0",
@@ -232,10 +202,9 @@
         "CheckRequirement": "return ./scripts/requirements/git.ps1 -maxVersion $($Requirement.MajorVersion)",
         "PostAction": ""
     },
-    {
-        "Name": "Node.js",
+    "Node.js": {
         "Type": "Software",
-        "Dependencies": [  ],
+        "Dependencies": [],
         "QuestionMessage": "Press 'Accept' to download and install Node.js.",
         "MinVersion": "14.0.0",
         "MaxVersion": "16.13.1",
@@ -251,10 +220,9 @@
         "CheckRequirement": "return ./scripts/requirements/nodejs.ps1 -majorVersion $($Requirement.MajorVersion) ",
         "PostAction": ""
     },
-    {
-        "Name": "Visual Studio",
+    "Visual Studio": {
         "Type": "Software",
-        "Dependencies": [ ],
+        "Dependencies": [],
         "QuestionMessage": "Press 'Accept' to download and install Visual Studio.",
         "MinVersion": "16",
         "MaxVersion": "17",
@@ -270,10 +238,9 @@
         "CheckRequirement": "return ./scripts/requirements/visual-studio.ps1 -minVersion $($Requirement.MinVersion) -maxVersion $($Requirement.MaxVersion)",
         "PostAction": ""
     },
-    {
-        "Name": "Visual Studio Code",
+    "Visual Studio Code": {
         "Type": "Software",
-        "Dependencies": [ ],
+        "Dependencies": [],
         "QuestionMessage": "Press 'Accept' to download and install Visual Studio Code.",
         "MinVersion": "1.60.0",
         "MaxVersion": "1.62.3",
@@ -289,10 +256,9 @@
         "CheckRequirement": "return ./scripts/requirements/vscode.ps1 -minVersion $($Requirement.MinVersion)",
         "PostAction": ""
     },
-    {
-        "Name": "DotNet Core",
+    "DotNet Core": {
         "Type": "Software",
-        "Dependencies": [ ],
+        "Dependencies": [],
         "QuestionMessage": "Press 'Accept' to download and install .NET Core.",
         "MinVersion": "5.0.0",
         "MaxVersion": "6.0.101",
@@ -308,14 +274,9 @@
         "CheckRequirement": "return ./scripts/requirements/dotnet-core.ps1 -maxVersion $($Requirement.MajorVersion)",
         "PostAction": ""
     },
-    {
-        "Name": "Docker",
+    "Docker": {
         "Type": "Software",
-        "Dependencies": [
-            "Virtual Machine Platform",
-            "Wsl Version",
-            "Linux Distribution"
-        ],
+        "Dependencies": ["Virtual Machine Platform", "Wsl Version", "Linux Distribution"],
         "QuestionMessage": "Press 'Accept' to download and install Docker Desktop.",
         "MinVersion": "20.0.0",
         "MaxVersion": "20.10.8",
@@ -331,12 +292,9 @@
         "CheckRequirement": "return ./scripts/requirements/docker.ps1 -scarConfig `$ScarConfig -minVersion $($Requirement.MinVersion) -maxVersion $($Requirement.MaxVersion)",
         "PostAction": "Logout"
     },
-    {
-        "Name": "npm",
+    "npm": {
         "Type": "Software",
-        "Dependencies": [
-            "Node.js"
-        ],
+        "Dependencies": ["Node.js"],
         "QuestionMessage": "Press 'Accept' to update the version of npm.",
         "MinVersion": "8.0.0",
         "MaxVersion": "8.1.2",
@@ -352,12 +310,9 @@
         "CheckRequirement": "return ./scripts/requirements/npm.ps1 -majorVersion $($Requirement.MajorVersion)",
         "PostAction": ""
     },
-    {
-        "Name": "Wsl Update",
+    "Wsl Update": {
         "Type": "Software",
-        "Dependencies": [
-            "Windows Subsystem Linux"
-        ],
+        "Dependencies": ["Windows Subsystem Linux"],
         "QuestionMessage": "Press 'Accept' to update the Linux kernel package.",
         "MinVersion": "",
         "MaxVersion": "",
@@ -373,12 +328,9 @@
         "CheckRequirement": "return ./scripts/requirements/wsl-update.ps1 -scarConfig `$ScarConfig",
         "PostAction": ""
     },
-    {
-        "Name": "Linux Distribution",
+    "Linux Distribution": {
         "Type": "Software",
-        "Dependencies": [
-            "Windows Subsystem Linux"
-        ],
+        "Dependencies": [ "Windows Subsystem Linux"],
         "QuestionMessage": "Press 'Accept' to download and install the Linux Distribution: 'Ubuntu'.",
         "MinVersion": "18.04",
         "MaxVersion": "20.04",
@@ -394,10 +346,9 @@
         "CheckRequirement": "return ./scripts/requirements/linux-distro.ps1 -scarConfig `$ScarConfig -maxVersion $($Requirement.MaxVersion) -minVersion $($Requirement.MinVersion)",
         "PostAction": ""
     },
-    {
-        "Name": "Registry npm",
+    "Registry npm": {
         "Type": "Connection",
-        "Dependencies": [  ],
+        "Dependencies": [],
         "QuestionMessage": "Press 'Accept' to check if the npm registry (https://registry.npmjs.org) is reachable.",
         "OkMessage": "$($Requirement.Name) is reachable.",
         "KoMessage": "$($Requirement.Name) is unreachable with HTTPS protocol.",
@@ -406,8 +357,7 @@
         "CheckRequirement": "return ./scripts/requirements/npm-registry.ps1",
         "PostAction": ""
     },
-    {
-        "Name": "Registry NuGet",
+    "Registry NuGet": {
         "Type": "Connection",
         "Dependencies": [  ],
         "QuestionMessage": "Press 'Accept' to check if the NuGet registry (https://api.nuget.org/v3/index.json) is reachable.",
@@ -418,10 +368,9 @@
         "CheckRequirement": "return ./scripts/requirements/nuget-registry.ps1",
         "PostAction": ""
     },
-    {
-        "Name": "Azure DevOps",
+    "Azure DevOps": {
         "Type": "Connection",
-        "Dependencies": [ ],
+        "Dependencies": [],
         "QuestionMessage": "Press 'Accept' to check if Azure DevOps Server (https://devops.codearchitects.com:444/) is reachable.",
         "OkMessage": "$($Requirement.Name) is reachable.",
         "KoMessage": "$($Requirement.Name) is unreachable with HTTPS protocol.",
@@ -430,10 +379,9 @@
         "CheckRequirement": "return ./scripts/requirements/azure-devops.ps1",
         "PostAction": ""
     },
-    {
-        "Name": "Log Repository",
+    "Log Repository": {
         "Type": "Connection",
-        "Dependencies": [ ],
+        "Dependencies": [],
         "QuestionMessage": "Press 'Accept' to check if the Log Repository (ftps://casftp.blob.core.windows.net:22) is reachable.",
         "OkMessage": "$($Requirement.Name) is reachable.",
         "KoMessage": "$($Requirement.Name) is unreachable with FTPS protocol.",
@@ -442,12 +390,9 @@
         "CheckRequirement": "return ./scripts/requirements/log-repository.ps1",
         "PostAction": ""
     },
-    {
-        "Name": "Npm Login",
+    "Npm Login": {
         "Type": "Activity",
-        "Dependencies": [
-            "Setup CaTools.msi"
-        ],
+        "Dependencies": ["Setup CaTools.msi"],
         "QuestionMessage": "Press 'Accept' to check if there is an npm account.",
         "PathFile": "",
         "ArgumentList": "",
@@ -457,12 +402,9 @@
         "CheckRequirement": "return ./scripts/requirements/npm-login.ps1 -currentDate `$currentDate",
         "PostAction": "Login"
     },
-    {
-        "Name": "Install CAEP",
+    "Install CAEP": {
         "Type": "Activity",
-        "Dependencies": [
-            "Npm Login"
-        ],
+        "Dependencies": [ "Npm Login"],
         "QuestionMessage": "Press 'Accept' to install the Code Architects Enterprise Platform (CAEP)",
         "PathFile": "C:\\Program Files\\Ca-Tools\\setup-ca-platform.exe",
         "ArgumentList": "-s",
@@ -472,12 +414,9 @@
         "CheckRequirement": "return ./scripts/requirements/install-CAEP.ps1",
         "PostAction": ""
     },
-    {
-        "Name": "Execute ca scar",
+    "Execute ca scar": {
         "Type": "Activity",
-        "Dependencies": [
-            "Install CAEP"
-        ],
+        "Dependencies": ["Install CAEP"],
         "QuestionMessage": "Press 'Accept' to run the command 'ca scar'",
         "PathFile": "~\\AppData\\Roaming\\npm\\ca.cmd",
         "ArgumentList": "scar -c C:\\dev\\scarface\\scarface.config.json",
@@ -487,4 +426,4 @@
         "CheckRequirement": "return ./scripts/requirements/ca-scar.ps1",
         "PostAction": "End"
     }
-]
+}

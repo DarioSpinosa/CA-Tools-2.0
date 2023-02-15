@@ -3,13 +3,8 @@ param(
 ) 
 
 try {
-    $npmVersion = (npm --version).split('.')[0]
-    if ( $npmVersion -eq $majorVersion) {
-        return @($true, 'OK')
-    }
-    else {
-        return @($true, 'VER')
-    }
+    $Result = $(if (((npm --version).split('.')[0]) -eq $majorVersion) {"OK"} else {"VER"})
+    return @($true, $Result)
 }
 catch {
     return @($true, 'KO')

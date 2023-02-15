@@ -4,30 +4,31 @@ $backOfficeDistPath = Join-Path $backOfficeClientPath "dist"
 $backOfficeNodeModulesPath = Join-Path $backOfficeClientPath "node_modules"
 $backOfficeBundlePath = Join-Path $backOfficeDistPath "back-office"
 
- $Description.AppendText('Checking if back-office sample project is generated...'
+$OutputLabel.Text = 'Checking if back-office sample project is generated...'
 
-if (Test-Path $backOfficeNodeModulesPath) {
-    if ( !( (Get-ChildItem $backOfficeNodeModulesPath -Recurse -Filter *.js).Count ) ) {
-         $Description.AppendText("node modules in $backOfficeNodeModulesPath not found!")
-        return @($true, 'KO')
-    }
-    else {
-         $Description.AppendText("*js files in $backOfficeBundlePath found!")
-        return @($true, 'OK')
-    }
-
-    if ( !( Test-Path -Path $backOfficeBundlePath*.js ) ) {
-         $Description.AppendText("*js files in $backOfficeBundlePath not found!")
-        return @($true, 'KO')
-    }
-    else {
-         $Description.AppendText("*js files in $backOfficeBundlePath found!")
-        return @($true, 'OK')
-    }
-} else {
-     $Description.AppendText('node_modules not found!')
+if (!Test-Path $backOfficeNodeModulesPath) {
+    $OutputLabel.Text = 'node_modules not found!'
     return @($true, 'KO')
 }
+
+if (!((Get-ChildItem $backOfficeNodeModulesPath -Recurse -Filter *.js).Count )) {
+    $OutputLabel.Text = "node modules in $backOfficeNodeModulesPath not found!"
+    return @($true, 'KO')
+}
+else {
+    $OutputLabel.Text = "*js files in $backOfficeBundlePath found!"
+    return @($true, 'OK')
+}
+
+if (!(Test-Path -Path $backOfficeBundlePath*.js)) {
+    $OutputLabel.Text = "*js files in $backOfficeBundlePath not found!"
+    return @($true, 'KO')
+}
+else {
+    $OutputLabel.Text = "*js files in $backOfficeBundlePath found!"
+    return @($true, 'OK')
+}
+
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

@@ -1,11 +1,6 @@
-$ComputerModel = (Get-CimInstance win32_computersystem).model
+$result = $(if (!((Get-CimInstance win32_computersystem).model) -in @('VMware Virtual Platform', 'Virtual Machine', 'Macchina Virtuale')) {"OK"} else {"KO"})
+return @($true, $result)
 
-if ( ($ComputerModel -ne 'VMware Virtual Platform') -and ($ComputerModel -ne 'Virtual Machine') -and ($ComputerModel -ne 'Macchina Virtuale') ) {
-    return @($true, 'OK')
-}
-else {
-    return @($true, 'KO')
-}
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

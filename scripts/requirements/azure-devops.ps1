@@ -1,22 +1,17 @@
-$azureDevOpsAvailable = (Test-NetConnection devops.codearchitects.com -port 444).TcpTestSucceeded
-
-if ($azureDevOpsAvailable) {
+if (!((Test-NetConnection devops.codearchitects.com -port 444).TcpTestSucceeded)) { return @($false, 'TCP') }
     
-    try {
-        Invoke-WebRequest -Uri https://devops.codearchitects.com:444/ -UseBasicParsing -DisableKeepAlive
-    }
-    catch {
-        $status = $_.Exception.Response.StatusCode.value__
-    }
-    if ($status -eq 401) {
-        return @($true, 'OK')
-    }
-    else {
-        return @($false, 'KO')
-    }
+try {
+    Invoke-WebRequest -Uri https://devops.codearchitects.com:444/ -UseBasicParsing -DisableKeepAlive
+}
+catch {
+    $status = $_.Exception.Response.StatusCode.value__
+}
+
+if ($status -eq 401) {
+    return @($true, 'OK')
 }
 else {
-    return @($false, 'TCP')
+    return @($false, 'KO')
 }
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

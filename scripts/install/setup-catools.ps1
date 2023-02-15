@@ -8,7 +8,7 @@ $argumentList = @(
     '/passive'
 )
 
-. .\scripts\common.ps1
+. .\scripts\utility.ps1
 Remove-StartupCmd
 
 Start-Process msiexec.exe -ArgumentList $argumentList -Wait

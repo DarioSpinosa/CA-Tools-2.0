@@ -1,11 +1,10 @@
-$getAdminList = Get-LocalGroupMember -Group Administrators
 $whoAmI = whoami
 
-if ( $getAdminList.Name -like "*$whoAmI*") {
-     $Description.AppendText("$whoAmI local account is admin!")
+if ((Get-LocalGroupMember -Group Administrators).Name -like "*$whoAmI*") {
+    $OutputLabel.Text = "$whoAmI local account is admin!"
     return @($true, 'OK')
 } else {
-    $Description.AppendText("$whoAmI local account is NOT admin!")
+   $OutputLabel.Text = "$whoAmI local account is NOT admin!"
    return @($true, 'KO')
 }
 # SIG # Begin signature block

@@ -6,13 +6,8 @@ param(
 try {
     [version[]]$vsVersions = &'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe' -property catalog_productDisplayVersion
     $vsVersion = ($vsVersions | Sort-Object -Descending)[0]
-    
-    if ( ($vsVersion.Major -ge $minVersion) -and ($vsVersion.Major -le $maxVersion) ) {
-        return @($true, 'OK')
-    }
-    else {
-        return @($true, 'VER')
-    }
+    $Result = $(if (($vsVersion.Major -ge $minVersion) -and ($vsVersion.Major -le $maxVersion)) {"OK"} else {"VER"})
+    return @($true, $Result)
 }
 catch {
     return @($true, 'KO')

@@ -2,26 +2,19 @@ param(
     [string]$scarConfig
 )
 
-if ( !$scarConfig.Contains('terranova') ) {
+if ($scarConfig.Contains('terranova')) { return @($true, 'OK') }
     
-    $result = $true
-    $wslFeature = dism /online /get-featureinfo /featurename:Microsoft-Windows-Subsystem-Linux
+$result = $true
     
-    foreach ($item in $WslFeature) {
-        if ( ($item -like '*Disabled*') -or ($item -like '*Disattivata*') ) {
-            $result = $false
-        }
-    }
-    if ( $result ) {
-        return @($true, 'OK')
-    }
-    else {
-        return @($true, 'KO')
+foreach ($item in (dism /online /get-featureinfo /featurename:Microsoft-Windows-Subsystem-Linux)) {
+    if (($item -like '*Disabled*') -or ($item -like '*Disattivata*')) {
+        $result = $false
+        break
     }
 }
-else {
-    return @($true, 'OK')
-}
+
+return @($true, $(if ($result) {'OK'} else {"KO"}))
+
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

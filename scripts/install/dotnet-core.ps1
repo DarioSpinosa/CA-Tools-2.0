@@ -2,12 +2,7 @@ param(
     [string]$downloadOutFile
 )
 
-$argumentList = @(
-    '/q',
-    '/norestart'
-)
-
-Start-Process $downloadOutFile -ArgumentList $argumentList -Wait
+Start-Process $downloadOutFile -ArgumentList @('/q', '/norestart') -Wait
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

@@ -1,7 +1,5 @@
 try {
-    $nugetRegistryAvailable = (Invoke-WebRequest -Uri https://api.nuget.org/v3/index.json -UseBasicParsing -DisableKeepAlive).StatusCode
-
-    if ($nugetRegistryAvailable -eq 200) {
+    if (((Invoke-WebRequest -Uri https://api.nuget.org/v3/index.json -UseBasicParsing -DisableKeepAlive).StatusCode) -eq 200) {
         return @($true, 'OK')
     }
     else {

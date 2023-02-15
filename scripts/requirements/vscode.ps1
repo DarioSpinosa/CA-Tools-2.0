@@ -3,14 +3,8 @@ param(
 )
 
 try {
-    $vsCodeVersion = (code --version)[0]
-    
-    if ( $vsCodeVersion -ge $minVersion ) {
-        return @($true, 'OK')
-    }
-    else {
-        return @($true, 'VER')
-    }
+    $result = $(if ((code --version)[0] -ge $minVersion ) {'OK'} else {'VER'})
+    return @($true, $result)
 }
 catch {
     return @($true, 'KO')
