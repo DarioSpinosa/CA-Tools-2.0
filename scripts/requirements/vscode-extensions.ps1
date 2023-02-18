@@ -1,11 +1,8 @@
-try {
-    $ListExtensions = code --list-extensions
-    foreach ($Extension in $Requirements["VS Code Extentions"]["Attributes"]) {
-        if (!$ListExtensions.Contains($Extension)) { return @($true, 'KO') }
-    }
-}
-catch {
-    return @($true, 'KO')
+$ListExtensions = invoke-executeCommand("code --list-extensions")
+if (!$ListExtensions) { return @($true, 'KO') }
+
+foreach ($Extension in $Requirements["VS Code Extentions"]["Attributes"]) {
+    if (!$ListExtensions.Contains($Extension)) { return @($true, 'KO') }
 }
 
 return @($true, "OK")

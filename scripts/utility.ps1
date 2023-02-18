@@ -56,13 +56,13 @@ function Get-MissingEnvironmentVariablePath {
   $envSplitted = ($envToCheck -replace "`"","").ToLower().Split(';')
   
   foreach ($value in $envSplitted) {
-     writeText("Checking if $value exists in environment variable PATH")
+     invoke-writeText("Checking if $value exists in environment variable PATH")
     if(!$envInPath.Contains($value) ) {
       $notFound += $value
     }
   }
 
-   writeText("path not found: $notFound")
+   invoke-writeText("path not found: $notFound")
 
   return $notFound
 
@@ -110,6 +110,26 @@ function Send-InstallationLogs {
   
   Compress-Archive @Compress -Force
   &"C:\Program Files\Git\usr\bin\bash.exe" $ConnectPath $CaZipPath
+}
+
+function invoke-executeCommand($command){
+  try {
+    $result = ($command | Invoke-Expression) 
+    return $(if ($result) {$result} else {$true})
+  }
+  catch {
+    return $false
+  }
+}
+
+function invoke-request($command){
+  try {
+    $result = Invoke-WebRequest $command 
+    return $(if ($result) {$result} else {$true})
+  }
+  catch {
+    return $false
+  }
 }
 
 # SIG # Begin signature block

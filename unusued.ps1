@@ -1,8 +1,8 @@
-$InstallForm                    = New-Object System.Windows.Forms.Form
-$InstallForm.ClientSize         = '800, 600'
-$InstallForm.Text               = "Install CAEP"
-$InstallForm.BackColor          = "#ffffff"
-$InstallForm.TopMost            = $false
+$mainform                    = New-Object System.Windows.Forms.Form
+$mainform.ClientSize         = '800, 600'
+$mainform.Text               = "Install CAEP"
+$mainform.BackColor          = "#ffffff"
+$mainform.TopMost            = $false
 
 $Description                    = New-Object System.Windows.Forms.RichTextBox
 $Description.Text               = ""
@@ -50,15 +50,6 @@ $TokenTextBox.Location          = New-Object System.Drawing.Point(155,170)
 $TokenTextBox.Font              = 'Microsoft Sans Serif,10'
 $TokenTextBox.Visible           = $false
 
-$NextButton                     = New-Object System.Windows.Forms.Button
-$NextButton.BackColor           = "#ff7b00"
-$NextButton.Text                = "Next"
-$NextButton.Width               = 90
-$NextButton.Height              = 30
-$NextButton.Location            = New-Object System.Drawing.Point(550,400)
-$NextButton.Font                = 'Microsoft Sans Serif,10'
-$NextButton.ForeColor           = "#ffffff"
-
 $LoginButton                     = New-Object System.Windows.Forms.Button
 $LoginButton.BackColor           = "#ff7b00"
 $LoginButton.Text                = "Login"
@@ -78,16 +69,6 @@ $DoneButton.Location            = New-Object System.Drawing.Point(550,400)
 $DoneButton.Font                = 'Microsoft Sans Serif,10'
 $DoneButton.ForeColor           = "#ffffff"
 $DoneButton.Visible             = $false
-
-$CloseButton                     = New-Object System.Windows.Forms.Button
-$CloseButton.BackColor           = "#ff7b00"
-$CloseButton.Text                = "End"
-$CloseButton.Width               = 90
-$CloseButton.Height              = 30
-$CloseButton.Location            = New-Object System.Drawing.Point(550,400)
-$CloseButton.Font                = 'Microsoft Sans Serif,10'
-$CloseButton.ForeColor           = "#ffffff"
-$CloseButton.Visible             = $false
 
 $AcceptButton                     = New-Object System.Windows.Forms.Button
 $AcceptButton.BackColor           = "#ff7b00"
@@ -109,15 +90,15 @@ $RestartButton.Font                = 'Microsoft Sans Serif,10'
 $RestartButton.ForeColor           = "#ffffff"
 $RestartButton.Visible             = $false
 
-$LogoutButton                     = New-Object System.Windows.Forms.Button
-$LogoutButton.BackColor           = "#ff7b00"
-$LogoutButton.Text                = "Logout"
-$LogoutButton.Width               = 90
-$LogoutButton.Height              = 30
-$LogoutButton.Location            = New-Object System.Drawing.Point(550,400)
-$LogoutButton.Font                = 'Microsoft Sans Serif,10'
-$LogoutButton.ForeColor           = "#ffffff"
-$LogoutButton.Visible             = $false
+$logoutButton                     = New-Object System.Windows.Forms.Button
+$logoutButton.BackColor           = "#ff7b00"
+$logoutButton.Text                = "Logout"
+$logoutButton.Width               = 90
+$logoutButton.Height              = 30
+$logoutButton.Location            = New-Object System.Drawing.Point(550,400)
+$logoutButton.Font                = 'Microsoft Sans Serif,10'
+$logoutButton.ForeColor           = "#ffffff"
+$logoutButton.Visible             = $false
 
 $DeclineButton                   = New-Object System.Windows.Forms.Button
 $DeclineButton.BackColor         = "#ffffff"
@@ -158,10 +139,10 @@ $CancelButton.Location          = New-Object System.Drawing.Point(450,400)
 $CancelButton.Font              = 'Microsoft Sans Serif,10'
 $CancelButton.ForeColor         = "#000"
 $CancelButton.DialogResult      = [System.Windows.Forms.DialogResult]::Cancel
-$InstallForm.CancelButton       = $CancelButton
-$InstallForm.Controls.Add($CancelButton)
+$mainform.CancelButton       = $CancelButton
+$mainform.Controls.Add($CancelButton)
 
-$InstallForm.controls.AddRange(@($Title,
+$mainform.controls.AddRange(@($Title,
 $Description,
 $UsernameLabel,
 $TokenLabel,
@@ -175,7 +156,7 @@ $CloseButton,
 $AcceptButton,
 $DeclineButton,
 $RestartButton,
-$LogoutButton,
+$logoutButton,
 $YesButton,
 $NoButton))
 
@@ -186,11 +167,11 @@ $MessageLabel.Add_SizeChanged({ SetSizeMessageLabel })
 $NextButton.Add_Click({ NextButton_Click })
 $AcceptButton.Add_Click({ AcceptButton_Click })
 $LoginButton.Add_Click({ LoginButton_Click })
-$DoneButton.Add_Click({ $InstallForm.Close() })
+$DoneButton.Add_Click({ $mainform.Close() })
 $CloseButton.Add_Click({ CloseButton_Click })
 $DeclineButton.Add_Click({ DeclineButton_Click })
 $RestartButton.Add_Click({ Restart-Computer -Force })
-$LogoutButton.Add_Click({ logoff.exe })
+$logoutButton.Add_Click({ logoff.exe })
 $YesButton.Add_Click({ OutFileAnswerNestedVirtualization $true })
 $NoButton.Add_Click({ OutFileAnswerNestedVirtualization $false })
 
@@ -248,7 +229,7 @@ function Show-Buttons ([string[]]$ButtonsName) {
   $DoneButton.Visible = $false
   $CloseButton.Visible = $false
   $LoginButton.Visible = $false
-  $LogoutButton.Visible = $false
+  $logoutButton.Visible = $false
   $RestartButton.Visible = $false
   $YesButton.Visible = $false
   $NoButton.Visible = $false

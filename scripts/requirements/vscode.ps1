@@ -1,14 +1,7 @@
-param(
-    [string]$minVersion
-)
-
-try {
-    $result = $(if ((code --version)[0] -ge $minVersion ) {'OK'} else {'VER'})
-    return @($true, $result)
-}
-catch {
-    return @($true, 'KO')
-}
+$codeVersion = invoke-executeCommand("code --version")
+if (!$codeVersion) { return @($true, 'KO') }
+$result = $(if ($codeVersion[0] -ge $Requirements["Visual Studio Code"]["Min Version"]) { 'OK' } else { 'VER' })
+return @($true, $result)
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

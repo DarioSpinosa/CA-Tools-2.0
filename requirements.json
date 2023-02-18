@@ -48,7 +48,7 @@
         "DeclineMessage": "return `\"You have declined to automatically set your proxy for Docker.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "PostInstallCommand": "./scripts/postInstall/proxy-docker.ps1 -currentDate `$CurrentDate",
         "Attributes": [],
-        "CheckRequirement": "return ./scripts/requirements/proxy-docker.ps1 -scarConfig `$ScarConfig",
+        "CheckRequirement": "return ./scripts/requirements/proxy-docker.ps1",
         "PostAction": ""
     },
     "WSL Version":  {
@@ -63,7 +63,7 @@
         "DeclineMessage": "return `\"You have declined to automatically set your default WSL Version.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "PostInstallCommand": "wsl --set-default-version 2",
         "Attributes": [],
-        "CheckRequirement": "return ./scripts/requirements/proxy-docker.ps1 -scarConfig `$ScarConfig",
+        "CheckRequirement": "return ./scripts/requirements/proxy-docker.ps1",
         "PostAction": ""
     },
     "WSL Distribution": {
@@ -78,7 +78,7 @@
         "DeclineMessage": "return `\"You have declined to automatically set your default WSL Distribution.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "PostInstallCommand": "./scripts/postInstall/wsl-distribution.ps1",
         "Attributes": [],
-        "CheckRequirement": "return ./scripts/requirements/wsl-distribution.ps1 -scarConfig `$ScarConfig",
+        "CheckRequirement": "return ./scripts/requirements/wsl-distribution.ps1",
         "PostAction": ""
     },
     "VS Code Settings": {
@@ -143,7 +143,7 @@
         "Scope": "Machine",
         "AddCommand": "[System.Environment]::SetEnvironmentVariable(`\"$($Requirement.Variable)`\", `\"$env:Path;`\"+`\"$item`\", `\"$($Requirement.Scope)`\")",
         "DeclineMessage": "return `\"You have declined to automatically set your Environment Variable Path.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "CheckRequirement": "return ./scripts/requirements/env-var-path.ps1 -envToCheck `\"$($Requirement.Values)`\"",
+        "CheckRequirement": "return ./scripts/requirements/env-var-path.ps1",
         "PostAction": ""
     },
     "Windows Subsystem Linux":  {
@@ -153,7 +153,7 @@
         "ExtraMessage": "",
         "EnableCommand": "& dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart",
         "DeclineMessage": "return `\"You have declined to automatically enable the Windows feature 'Windows Subsystem Linux'.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "CheckRequirement": "return ./scripts/requirements/wsl.ps1 -scarConfig `$ScarConfig",
+        "CheckRequirement": "return ./scripts/requirements/wsl.ps1",
         "PostAction": "Restart"
     },
     "Virtual Machine Platform": {
@@ -163,7 +163,7 @@
         "ExtraMessage": "",
         "EnableCommand": "& dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart",
         "DeclineMessage": "return `\"You have declined to automatically enable the Windows feature 'Virtual Machine Platform'.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "CheckRequirement": "return ./scripts/requirements/vm-platform.ps1 -scarConfig `$ScarConfig",
+        "CheckRequirement": "return ./scripts/requirements/vm-platform.ps1",
         "PostAction": "Restart"
     },
     "Setup CaTools.msi": {
@@ -199,7 +199,7 @@
         "InstallCommand": "./scripts/install/git.ps1 -downloadOutFile $($Requirement.DownloadOutFile)",
         "DeleteCommand": "./scripts/remove-binary.ps1 -downloadOutFile $($Requirement.DownloadOutfile)",
         "DeclineMessage": "return `\"You have declined to automatically download and install Git.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "CheckRequirement": "return ./scripts/requirements/git.ps1 -maxVersion $($Requirement.MajorVersion)",
+        "CheckRequirement": "return ./scripts/requirements/git.ps1",
         "PostAction": ""
     },
     "Node.js": {
@@ -217,7 +217,7 @@
         "InstallCommand": "./scripts/install/nodejs.ps1 -downloadOutFile $($Requirement.DownloadOutfile) -addNodeBuildTools `$addNodeBuildTools",
         "DeleteCommand": "./scripts/remove-binary.ps1 -downloadOutFile $($Requirement.DownloadOutfile)",
         "DeclineMessage": "return `\"You have declined to automatically download and install Node.js.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "CheckRequirement": "return ./scripts/requirements/nodejs.ps1 -majorVersion $($Requirement.MajorVersion) ",
+        "CheckRequirement": "return ./scripts/requirements/nodejs.ps1",
         "PostAction": ""
     },
     "Visual Studio": {
@@ -235,7 +235,7 @@
         "InstallCommand": "./scripts/install/visual-studio.ps1 -downloadOutFile $($Requirement.DownloadOutFile)",
         "DeleteCommand": "./scripts/remove-binary.ps1 -downloadOutFile $($Requirement.DownloadOutfile)",
         "DeclineMessage": "return `\"You have declined to automatically download and install Visual Studio.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "CheckRequirement": "return ./scripts/requirements/visual-studio.ps1 -minVersion $($Requirement.MinVersion) -maxVersion $($Requirement.MaxVersion)",
+        "CheckRequirement": "return ./scripts/requirements/visual-studio.ps1",
         "PostAction": ""
     },
     "Visual Studio Code": {
@@ -253,7 +253,7 @@
         "InstallCommand": "./scripts/install/vscode.ps1 -downloadOutFile $($Requirement.DownloadOutFile)",
         "DeleteCommand": "./scripts/remove-binary.ps1 -downloadOutFile $($Requirement.DownloadOutfile)",
         "DeclineMessage": "return `\"You have declined to automatically download and install Visual Studio Code.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "CheckRequirement": "return ./scripts/requirements/vscode.ps1 -minVersion $($Requirement.MinVersion)",
+        "CheckRequirement": "return ./scripts/requirements/vscode.ps1",
         "PostAction": ""
     },
     "DotNet Core": {
@@ -271,7 +271,7 @@
         "InstallCommand": "./scripts/install/dotnet-core.ps1 -downloadOutFile $($Requirement.DownloadOutFile)",
         "DeleteCommand": "./scripts/remove-binary.ps1 -downloadOutFile $($Requirement.DownloadOutfile)",
         "DeclineMessage": "return `\"You have declined to automatically download and install .NET Core.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "CheckRequirement": "return ./scripts/requirements/dotnet-core.ps1 -maxVersion $($Requirement.MajorVersion)",
+        "CheckRequirement": "return ./scripts/requirements/dotnet-core.ps1",
         "PostAction": ""
     },
     "Docker": {
@@ -289,7 +289,7 @@
         "InstallCommand": "./scripts/install/docker.ps1 -downloadOutFile $($Requirement.DownloadOutFile)",
         "DeleteCommand": "./scripts/remove-binary.ps1 -downloadOutFile $($Requirement.DownloadOutfile)",
         "DeclineMessage": "return `\"You have declined to automatically download and install Docker.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "CheckRequirement": "return ./scripts/requirements/docker.ps1 -scarConfig `$ScarConfig -minVersion $($Requirement.MinVersion) -maxVersion $($Requirement.MaxVersion)",
+        "CheckRequirement": "return ./scripts/requirements/docker.ps1",
         "PostAction": "Logout"
     },
     "npm": {
@@ -307,7 +307,7 @@
         "InstallCommand": "./scripts/install/npm.ps1 -reqMaxVersion $($Requirement.MaxVersion)",
         "DeleteCommand": "",
         "DeclineMessage": "return `\"You have declined to automatically update the version of npm.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "CheckRequirement": "return ./scripts/requirements/npm.ps1 -majorVersion $($Requirement.MajorVersion)",
+        "CheckRequirement": "return ./scripts/requirements/npm.ps1",
         "PostAction": ""
     },
     "Wsl Update": {
@@ -325,7 +325,7 @@
         "InstallCommand": "wsl --update",
         "DeleteCommand": "",
         "DeclineMessage": "return `\"You have declined to automatically download and install Wsl Update.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "CheckRequirement": "return ./scripts/requirements/wsl-update.ps1 -scarConfig `$ScarConfig",
+        "CheckRequirement": "return ./scripts/requirements/wsl-update.ps1",
         "PostAction": ""
     },
     "Linux Distribution": {
@@ -343,7 +343,7 @@
         "InstallCommand": "wsl --install -d Ubuntu-$($Requirement.MaxVersion)",
         "DeleteCommand": "",
         "DeclineMessage": "return `\"You have declined to automatically download and install Linux Distriution (Ubuntu 20.04 LTS).`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "CheckRequirement": "return ./scripts/requirements/linux-distro.ps1 -scarConfig `$ScarConfig -maxVersion $($Requirement.MaxVersion) -minVersion $($Requirement.MinVersion)",
+        "CheckRequirement": "return ./scripts/requirements/linux-distro.ps1",
         "PostAction": ""
     },
     "Registry npm": {

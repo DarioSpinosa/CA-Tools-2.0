@@ -1,26 +1,20 @@
 param(
-  [string]$scarConfig
+    [string]$scarConfig
 )
 
-if ( !$scarConfig.Contains('terranova') ) {
-    $wslStatus = (wsl --status)
-    $wslStatusSplit = ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes($wslStatus))).split(' ')
-    $wslVersionResult = $false
+if ($scarConfig.Contains('terranova') ) { return @($true, 'OK') }
+
+$wslStatus = invoke-executeCommand("wsl --status")
+if (!$wslStatus) { return @($true, "KO") }
+$wslStatusSplit = ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes($wslStatus))).split(' ')
     
 foreach ( $item in $wslStatusSplit ) {
-    if ( $item -eq '2' ) {
-        $wslVersionResult = $true
-    }
+    if ( $item -eq '2' ) { return @($true, 'OK') }
 }
-if ( $wslVersionResult ) {
-    return @($true, 'OK')
-} else {
-    return @($true, 'KO')
-}
-}
-else {
-    return @($true, 'OK')
-}
+
+return @($true, 'KO')
+
+
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

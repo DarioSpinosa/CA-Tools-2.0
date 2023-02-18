@@ -1,14 +1,7 @@
-param(
-    [string]$majorVersion
-)
-    
-try {
-    $Result = $(if (((node --version).replace('v','').split('.')[0]) -eq $majorVersion) {"OK"} else {"VER"})
-    return @($true,  $Result)
-}
-catch {
-    return @($true, 'KO')
-}
+$nodeVersion = invoke-executeCommand("node --version")
+if (!$nodeVersion) { return @($true, 'KO') }
+return @($true, $(if ($nodeVersion.SubString(1, 2) -eq $Requirements["Node.js"]["MajorVersion"]) { "OK" } else { "KO" }))
+
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

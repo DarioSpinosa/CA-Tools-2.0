@@ -1,13 +1,4 @@
-try {
-    if (((Invoke-WebRequest -Uri https://api.nuget.org/v3/index.json -UseBasicParsing -DisableKeepAlive).StatusCode) -eq 200) {
-        return @($true, 'OK')
-    }
-    else {
-        return @($false, 'KO')
-    }
-}
-catch {
-    return @($false, 'KO') }
+return $(if ((invoke-request("-Uri https://api.nuget.org/v3/index.json -UseBasicParsing -DisableKeepAlive").StatusCode) -eq 200) { @($true, 'OK') } else { @($false, 'KO') })
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

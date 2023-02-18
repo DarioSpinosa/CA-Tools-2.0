@@ -1,22 +1,14 @@
-param(
-    [string]$scarConfig,
-    [string]$maxVersion,
-    [string]$minVersion
-)
-
 if ($scarConfig.Contains('terranova') ) { return @($true, 'OK') }
     
 $wslLVSplit = ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes((wsl -l -v)))).split(' ')
-$result = $false
     
 foreach ($Element in $wslLVSplit) {
-    if (($Element -like "*Ubuntu-$maxVersion*") -or ($Element -like "*Ubuntu-$minVersion*")) {
-        $result = $true
-        break
-    }
+  if (($Element -like "*Ubuntu-$($Requirements["Linux Distribution"]["MaxVersion"])*") -or ($Element -like "*Ubuntu-$($Requirements["Linux Distribution"]["MinVersion"])*")) {
+    return @($true, "OK")
+  }
 }
 
-return @($true, $(if ($Result) { 'OK' } else { "KO" }))
+return @($true, "KO")
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

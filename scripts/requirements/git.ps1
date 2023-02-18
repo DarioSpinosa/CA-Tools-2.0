@@ -1,14 +1,7 @@
-param(
-    [string]$maxVersion
-)
+$gitVersion = invoke-executeCommand("git --version")
+if (!$gitVersion) { return @($true, 'KO') }
+return @($true, $(if ($gitVersion[12] -eq $Requirements["Git"]["MajorVersion"]) { "OK" } else { "KO" }))
 
-try {
-    $Result = $(if (((git --version).replace('git version ', '').replace('.windows.1', '').split('.')[0]) -eq $maxVersion) {"OK"} else {"VER"})
-    return @($true,  $Result)
-}
-catch {
-    return @($true, 'KO')
-}
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

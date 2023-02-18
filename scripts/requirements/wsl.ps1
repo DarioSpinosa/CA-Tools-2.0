@@ -1,19 +1,10 @@
-param(
-    [string]$scarConfig
-)
-
 if ($scarConfig.Contains('terranova')) { return @($true, 'OK') }
     
-$result = $true
-    
 foreach ($item in (dism /online /get-featureinfo /featurename:Microsoft-Windows-Subsystem-Linux)) {
-    if (($item -like '*Disabled*') -or ($item -like '*Disattivata*')) {
-        $result = $false
-        break
-    }
+  if (($item -like '*Disabled*') -or ($item -like '*Disattivata*')) { return @($true, "KO") }
 }
 
-return @($true, $(if ($result) {'OK'} else {"KO"}))
+return @($true, 'OK') 
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

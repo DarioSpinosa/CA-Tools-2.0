@@ -1,17 +1,9 @@
-param(
-    [string]$minVersion, # $($Requirement.MinVersion)
-    [string]$maxVersion  # $($Requirement.MaxVersion)
-)
+$result = invoke-executeCommand("&'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe' -property catalog_productDisplayVersion")
+if (!$result) { return @($true, 'KO') }
+[version[]]$vsVersions = $result
+$vsVersion = ($vsVersions | Sort-Object -Descending)[0]
+return @($true, $(if (($vsVersion.Major -ge $Requirements["Visual Studio"]["MinVersion"]) -and ($vsVersion.Major -le $Requirements["Visual Studio"]["MaxVersion"])) { "OK" } else { "KO" }))
 
-try {
-    [version[]]$vsVersions = &'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe' -property catalog_productDisplayVersion
-    $vsVersion = ($vsVersions | Sort-Object -Descending)[0]
-    $Result = $(if (($vsVersion.Major -ge $minVersion) -and ($vsVersion.Major -le $maxVersion)) {"OK"} else {"VER"})
-    return @($true, $Result)
-}
-catch {
-    return @($true, 'KO')
-}
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

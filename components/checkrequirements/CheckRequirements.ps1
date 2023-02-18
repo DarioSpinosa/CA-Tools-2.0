@@ -1,3 +1,7 @@
+param(
+    [Diagnostics.Stopwatch]$timer
+)
+
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
@@ -5,7 +9,7 @@ function Invoke-Main() {
   $DebugPreference = 'Continue'
   $VerbosePreference = 'Continue'
   $InformationPreference = 'Continue'
-  New-Item -Path $ "~\.ca\$currentDate" -ItemType Directory
+  New-Item -Path "~\.ca\$currentDate" -ItemType Directory
   Start-Transcript $logFilePath
 
   # Unlocks all the scripts needed for the installation
@@ -18,7 +22,7 @@ function Invoke-Main() {
   Remove-Item $downloadExeFolder* -Recurse -Force
   if (!(Test-Path -Path $downloadExeFolder)) {
     Remove-Item 
-    writeText("$downloadExeFolder not found. Creating it...")
+    invoke-writeText("$downloadExeFolder not found. Creating it...")
     New-Item -Path $downloadExeFolder -ItemType Directory
   }
 
@@ -29,8 +33,8 @@ function Invoke-Main() {
   $BackofficeProjectPath = "C:\dev\scarface\back-office"
   if (Test-Path $BackofficeProjectPath) { Remove-Item -Path $BackofficeProjectPath -Force -Recurse }
   New-StartupCmd
-  $InstallForm.Visible = $false
-  $InstallForm.ShowDialog()
+  $mainform.Visible = $false
+  $mainform.ShowDialog()
 }
 
 function Resolve-Dependencies() {
@@ -67,7 +71,7 @@ Override custom json to Requirements
 
   $overrideJson = DownloadScarConfigJson
   if (!($overrideJson)) {
-    writeText("No override found")
+    invoke-writeText("No override found")
     return
   }
 
@@ -90,10 +94,11 @@ Download scarface.config.json
   if ( Test-Path $scarConfigPath) { Remove-Item -Path $scarConfigPath -Force }
   New-Item -Path $scarConfigPath -Force | Out-Null
 
-  writeText("downloading $ScarConfig")
+  invoke-writeText("downloading $ScarConfig")
+  $a = Invoke-WebRequest -Uri $ScarConfig -UseBasicParsing
   $overrideRequirement = (((Invoke-WebRequest -Uri $ScarConfig -UseBasicParsing).Content) | ConvertFrom-Json).overrideRequirement
   if (!$overrideRequirement) { return $false }
-  writeText("downloading " + $overrideRequirement)
+  invoke-writeText("downloading " + $overrideRequirement)
   return ((Invoke-WebRequest -Uri $overrideRequirement -UseBasicParsing).Content | ConvertFrom-Json | ConvertPSObjectToHashtable)
 }
 
@@ -132,6 +137,7 @@ if the Requirement isn't satisfied then add it to the list of Requirements that 
     }
     else{
       $RequirementsMet += $Name
+      $Requirements.Remove($Name)
     }
   }
 
@@ -153,20 +159,21 @@ Shows each Requirement and their status that indicates if they were satisfied (O
   $Red = [System.Drawing.Color]::FromArgb(255, 236, 84, 84)
   $Green = [System.Drawing.Color]::FromArgb(255, 13, 173, 141)
 
-  foreach ($Name in $RequirementsNotMet) {
+  foreach ($Name in $RequirementsNotMet | Sort-Object) {
     Invoke-CreateRow  @($Name, "KO") $Red
   }
 
-  foreach ($Name in $RequirementsMet) {
+  foreach ($Name in $RequirementsMet | Sort-Object) {
     Invoke-CreateRow  @($Name, "OK") $Green
   }
+  
 }
 
 function Invoke-CreateRow($Value, $Color) {
   $Row = New-Object System.Windows.Forms.DataGridViewRow
-  $Row.CreateCells($DataGrid, $Value)
+  $Row.CreateCells($gridResults, $Value)
   $Row.DefaultCellStyle.BackColor = $Color
-  $DataGrid.Rows.Add($Row);
+  $gridResults.Rows.Add($Row);
 }
 function New-StartupCmd() {
   <#
@@ -187,21 +194,57 @@ Creates a .cmd that will execute the CAEP installer at startup until they won't 
   }
 }
 
-function writeText($Message){
-  $OutputLabel.AppendText("$Message`r`n")
+function NextButton_Click {
+  <#
+  .SYNOPSIS
+  Show the Accept/Decline question for the next Requirement
+  .DESCRIPTION
+  Shows the Accept/Decline question for the next Requirement
+  #>
+  if ($IndexRequirement -lt $Requirements.Count) {
+    $Description.Text = "$($Requirements[$IndexRequirement].QuestionMessage)`r`n"
+    Show-Buttons @('$AcceptButton', '$DeclineButton')
+  }
+}
+
+function invoke-writeText($Message){
+  $outputLabel.AppendText("$Message`r`n")
+  $outputLabel.AppendText([System.Environment]::NewLine)
 }
 
 function tabCheckRequirementsResultsButton_Click{
-  $InstallForm.Controls.Remove($OutputLabel)
-  $InstallForm.Controls.Add($DataGrid)
+  $mainform.Controls.Remove($outputLabel)
+  $mainform.Controls.AddRange(@($gridResults, $nextButton, $closeButton))
 }
 
 function tabOutputButton_Click{
-  $InstallForm.Controls.Remove($DataGrid)
-  $InstallForm.Controls.Add($OutputLabel)
+  $mainform.Controls.Remove($gridResults)
+  $mainform.Controls.Remove($nextButton)
+  $mainform.Controls.Remove($closeButton)
+  $mainform.Controls.Add($outputLabel)
+}
+
+function Button_MouseEnter($button){
+  $button.BackgroundImage = [System.Drawing.Image]::Fromfile(".\assets\background.jpg")
+  $button.ForeColor = "#000000"
+}
+
+function Button_MouseLeave ($button){
+  $button.BackgroundImage = $null
+  $button.ForeColor = "#ffffff"
+}
+
+function Button2_MouseEnter($button){
+  $button.BackgroundImage = [System.Drawing.Image]::Fromfile(".\assets\background2.png")
+  $button.ForeColor = "#ffffff"
+}
+
+function Button2_MouseLeave ($button){
+  $button.BackgroundImage = $null
+  $button.ForeColor = "#000000"
 }
 
 #---------------------------------------------------------------------------------------------------------[LOGIC]---------------------------------------------------------------------------------------------------------
 . .\components\checkrequirements\Form.ps1
-$InstallForm.Show()
+$mainform.Show()
 Invoke-Main

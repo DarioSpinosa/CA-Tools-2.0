@@ -1,7 +1,3 @@
-param(
-    [string]$currentDate
-)
-
 $InternetSettings = (Get-ItemProperty -Path "Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings")
 $DockerConfigPath = "~\.docker\config.json"
 if (Test-Path $DockerConfigPath) {

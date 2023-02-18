@@ -8,7 +8,11 @@ $LIBRARY = @"
 [System.Runtime.InteropServices.DllImport("gdi32.dll")] public static extern IntPtr CreateRoundRectRgn(int nLeftRect, int nTopRect, int nRightRect, int nBottomRect, int nWidthEllipse, int nHeightEllipse);
 "@
 $RoundObject = Add-Type -MemberDefinition $LIBRARY -Name "Win32Helpers" -PassThru
-$currentDate = (Get-Date -Format yyyyMMdd-HHmm).ToString()
+
+
+$currentDate = (Get-Date -Format yyyyMMdd-HHmmss).ToString()
 $logFilePath = "~\.ca\$currentDate\caep.log"
 $InstallRequirementsLogfile = "$($HOME)\.ca\$currentDate\install_requirements.log"
+$capturedPath = "~\.ca\$currentDate\npmErrCheck.txt"
+
 $IndexRequirement = 0

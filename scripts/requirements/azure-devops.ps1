@@ -1,18 +1,6 @@
-if (!((Test-NetConnection devops.codearchitects.com -port 444).TcpTestSucceeded)) { return @($false, 'TCP') }
-    
-try {
-    Invoke-WebRequest -Uri https://devops.codearchitects.com:444/ -UseBasicParsing -DisableKeepAlive
-}
-catch {
-    $status = $_.Exception.Response.StatusCode.value__
-}
-
-if ($status -eq 401) {
-    return @($true, 'OK')
-}
-else {
-    return @($false, 'KO')
-}
+if (!((Test-NetConnection devops.codearchitects.com -port 444).TcpTestSucceeded)) { return @($false, 'KO') }
+if (!(invoke-request("-Uri https://devops.codearchitects.com:444/ -UseBasicParsing -DisableKeepAlive"))) { $status = $_.Exception.Response.StatusCode.value__}
+return $(if ($status -eq 401) { @($true, 'OK')} else { @($false, 'OK') })
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

@@ -50,7 +50,7 @@ function AcceptButton_Click {
   }
   # Updates the Environment Variables
   $env:PATH = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
-  writeText("`r`nEnv var Path reloaded correctly")
+  invoke-writeText("Env var Path reloaded correctly")
 
   # Execute the post action for the current Requirement if present.
   if ($CurrentRequirement.PostAction) {
@@ -60,18 +60,6 @@ function AcceptButton_Click {
   $script:IndexRequirement++
 }
 
-function NextButton_Click {
-  <#
-  .SYNOPSIS
-  Show the Accept/Decline question for the next Requirement
-  .DESCRIPTION
-  Shows the Accept/Decline question for the next Requirement
-  #>
-  if ($IndexRequirement -lt $Requirements.Count) {
-    $Description.Text = "$($Requirements[$IndexRequirement].QuestionMessage)`r`n"
-    Show-Buttons @('$AcceptButton', '$DeclineButton')
-  }
-}
 
 function DeclineButton_Click {
   <#
@@ -186,7 +174,7 @@ function CloseButton_Click {
   Remove-StartupCmd
   Update-ScarfaceConfigJson
   Send-InstallationLogs
-  $InstallForm.Close()
+  $mainform.Close()
 }
 
 function Update-ScarfaceConfigJson {

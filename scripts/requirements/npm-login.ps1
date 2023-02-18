@@ -1,27 +1,21 @@
-$capturedPath = "~\.ca\$currentDate-npmErrCheck.txt"
-writeText("Generate npm log for npm view commands in $capturedPath ...")
-try {
-    npm view @ca/cli  2>&1 > $capturedPath
-    npm view @ca-codegen/core 2>&1 >> $capturedPath
+invoke-writeText("Generate npm log for npm view commands in $capturedPath ...")
 
-    $npmErrCheck = Get-Content $capturedPath
+if (!(invoke-executeCommand("npm view @ca/cli  2>&1 > $capturedPath")) -or !(invoke-executeCommand("npm view @ca-codegen/core 2>&1 >> $capturedPath"))) { return @($true, 'KO') }
 
-    writeText("$capturedPath content: ")
-    foreach ($Element in $npmErrCheck){
-        writeText("$Element")
-        
-    }
+$npmErrCheck = Get-Content $capturedPath
 
-    foreach ($item in $npmErrCheck) {
-        if ( ($item -like '*ERR!*') -or ($item -like '*error*') ) {
-            return @($true, 'KO')
-        }
-    }
-    return @($true, 'OK')
+invoke-writeText("$capturedPath content: ")
+foreach ($Element in $npmErrCheck) {
+    invoke-writeText("$Element")
 }
-catch {
-    return @($true, 'KO')
+
+foreach ($item in $npmErrCheck) {
+    if ( ($item -like '*ERR!*') -or ($item -like '*error*') ) {
+        return @($true, 'KO')
+    }
 }
+return @($true, 'OK')
+
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

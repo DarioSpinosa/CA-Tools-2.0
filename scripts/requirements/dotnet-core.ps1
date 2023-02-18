@@ -1,14 +1,14 @@
-param(
-    [string]$maxVersion
-)  
 
-$dotNetVersion = dotnet --list-sdks
-if ( $dotNetVersion -match $maxVersion ) {
-     writeText("$maxVersion match with $dotnetVersion")
+$dotNetVersion = invoke-executeCommand("dotnet --list-sdks")
+if (!$dotNetVersion) { return @($true, 'KO') }
+if ( $dotNetVersion -match $Requirements["DotNet Core"]["MaxVersion"]) {
+    invoke-writeText("$maxVersion match with $dotnetVersion")
     return @($true, 'OK')
-} else {
+}
+else {
     return @($true, 'KO')
 }
+
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

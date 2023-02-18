@@ -1,29 +1,26 @@
-param(
-    [string]$scarConfig
-)
-
 if ($scarConfig.Contains('terranova')) { return @($true, 'OK') }
 
-$wslStatusSplit = ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes((wsl --status)))).split(' '); 
-$Result = $false
-    
+$wslStatus = invoke-executeCommand("wsl --status")
+if (!$wslStatus) { return @($true, "KO") }
+$wslStatusSplit = ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes($wslStatus))).split(' '); 
+      
 for ($i = 0; $i -lt $wslStatusSplit.Count; $i++) {
-        
-    if ($wslStatusSplit[$i] -like 'Kernel') {
-            
-        if ($wslStatusSplit[$i + 1] -like '*version*') {
-            $Result = $true
-        }
-    }
-    elseif ($wslStatusSplit[$i] -like 'Versione') {
-            
-        if (($wslStatusSplit[$i + 1] -like 'del') -and ($wslStatusSplit[$i + 2] -like '*kernel*') ) {
-            $Result = $true
-        }
-    }
-}
     
-return @($true, $(if ($Result) {'OK'} else {"KO"}))
+  if ($wslStatusSplit[$i] -like 'Kernel') {
+              
+    if ($wslStatusSplit[$i + 1] -like '*version*') {
+      return @($true, "OK")
+    }
+  }
+  elseif ($wslStatusSplit[$i] -like 'Versione') {
+              
+    if (($wslStatusSplit[$i + 1] -like 'del') -and ($wslStatusSplit[$i + 2] -like '*kernel*') ) {
+      return @($true, "OK")
+    }
+  }
+}
+      
+return @($true, "KO")
 
 
 # SIG # Begin signature block

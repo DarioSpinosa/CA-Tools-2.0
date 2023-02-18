@@ -14,7 +14,7 @@ function New-CommandString($String) {
   do {
     Invoke-Expression("Set-Variable -name StringWithValue -Value `"$StringWithValue`"")
 
-     $Description.AppendText("$StringWithValue")
+    $Description.AppendText("$StringWithValue")
 
   } while ($StringWithValue -like '*$(*)*')
   return $StringWithValue
@@ -29,6 +29,7 @@ function Invoke-ActivityAction {
 
   $cmdToRun = New-CommandString $Requirement.CheckRequirement
   $ResultActivity = Invoke-Expression ($cmdToRun)
+  #first return value ueseless, else dead code
   if ($ResultActivity[0]) {
     switch ($ResultActivity[1]) {
       'OK' {
@@ -40,12 +41,13 @@ function Invoke-ActivityAction {
         Invoke-Expression (New-CommandString $Requirement.ActivityKOCommand)
         break
       }
-      Default{
-         $Description.AppendText("There's an anomaly in Activity Invocation!")
+      Default {
+        $Description.AppendText("There's an anomaly in Activity Invocation!")
       }
     }
     Show-Buttons @('$NextButton', '$CancelButton')
-  } else {
+  }
+  else {
     Show-Buttons @('$DoneButton')
   }
 }
@@ -58,6 +60,7 @@ function Invoke-ConnectionAction {
 
   $ResultConnection = Invoke-Expression (New-CommandString $Requirement.CheckRequirement)
   $MessageConnection = ""
+  #unico caso in cui è utilizzato, da levare in ognic aso perche è solo M E R D A
   if ($ResultConnection[0]) {
     switch ($ResultConnection[1]) {
       "OK" {
@@ -70,25 +73,21 @@ function Invoke-ConnectionAction {
       }
     }
     Show-Buttons @('$NextButton', '$CancelButton')
-  } else {
+  }
+  else {
     switch ($ResultConnection[1]) {
-      "KO" {
+      "OK" {
         $MessageConnection = (New-CommandString $Requirement.KoMessage)
-        $Description.SelectionStart = $Description.TextLength
-        $Description.SelectionLength = 0
-        $Description.SelectionColor = "Red"
-        $Description.AppendText($MessageConnection)
-        $Description.AppendText([Environment]::NewLine)
       }
-      "TCP" {
+      "KO" {
         $MessageConnection = (New-CommandString $Requirement.TcpMessage)
-        $Description.SelectionStart = $Description.TextLength
-        $Description.SelectionLength = 0
-        $Description.SelectionColor = "Red"
-        $Description.AppendText($MessageConnection)
-        $Description.AppendText([Environment]::NewLine)
       }
     }
+    $Description.SelectionStart = $Description.TextLength
+    $Description.SelectionLength = 0
+    $Description.SelectionColor = "Red"
+    $Description.AppendText($MessageConnection)
+    $Description.AppendText([Environment]::NewLine)
     Show-Buttons @('$DoneButton')
   }
 }
@@ -113,7 +112,7 @@ function Invoke-DownloadInstallRequirementAction {
     $Description.AppendText("`r`n$CheckingMessage")
     $IsInstalled = Invoke-Expression (New-CommandString $Requirement.CheckRequirement)
   }
-
+  #PRIMO VALORE DI RITORNO INUITILIZZATO
   if (($IsInstalled[1] -ne 'OK') -or ($Requirement.PostAction -eq "Reinstall")) {
 
     #TODO if VER then Disinstall wrong version
@@ -154,6 +153,7 @@ function Invoke-EnableFeatureAction {
 
   if ($Requirement.CheckRequirement) {
     $EnabledResult = Invoke-Expression (New-CommandString $Requirement.CheckRequirement)
+    #PRIMO VALORTE DI RITORNO INUTILIZZATO
     if ($EnabledResult[1] -eq 'KO') {
       $Description.AppendText("`r`n$EnablingMessage")
       Invoke-Expression (New-CommandString $Requirement.EnableCommand)
@@ -172,7 +172,7 @@ function Invoke-EnvironmentVariableAction {
     [Parameter(Position = 0, Mandatory = $true)]$Requirement
   )
 
-  $envToCheck = $Requirement.Values -replace "``",""
+  $envToCheck = $Requirement.Values -replace "``", ""
   $envNotFound = Get-MissingEnvironmentVariablePath -envToCheck $envToCheck
 
   if ( $envNotFound.Count -gt 0) {
@@ -180,7 +180,7 @@ function Invoke-EnvironmentVariableAction {
       $Description.AppendText("Add $value in Environment Variable Path")
       $newEnvPath = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";$value"
       # Prevent ;; between paths replacing with just one ;
-      $newEnvPathWithReplace = $newEnvPath -replace ";;",";"
+      $newEnvPathWithReplace = $newEnvPath -replace ";;", ";"
       [System.Environment]::SetEnvironmentVariable("PATH", $newEnvPathWithReplace, "Machine")
     }
   }
@@ -195,7 +195,7 @@ function Invoke-PermissionAction {
   )
   $MessagePermission = ""
   $ResultPermission = Invoke-Expression (New-CommandString $Requirement.CheckRequirement)
-  if ($ResultPermission[0] -eq $true) {
+  if ($ResultPermission[0]) {
     if ($ResultPermission[1] -eq 'OK') {
       $MessagePermission = (New-CommandString $Requirement.OkMessage)
       $Description.SelectionStart = $Description.TextLength
@@ -203,21 +203,23 @@ function Invoke-PermissionAction {
       $Description.SelectionColor = "Green"
       $Description.AppendText($MessagePermission)
       $Description.AppendText([Environment]::NewLine)
-    } else {
+    }
+    else {
       $Description.AppendText("Administrator Permission Unknown...")
       $Description.AppendText([Environment]::NewLine)
     }
     Show-Buttons @('$NextButton', '$CancelButton')
   }
-  else {
-    $MessagePermission = (New-CommandString $Requirement.KoMessage)
-    $Description.SelectionStart = $Description.TextLength
-    $Description.SelectionLength = 0
-    $Description.SelectionColor = "Red"
-    $Description.AppendText($MessagePermission)
-    $Description.AppendText([Environment]::NewLine)
-    Show-Buttons @('$DoneButton')
-  }
+  #MAI ESEGUITO POICHE IL PRIMO VALORE DI RITORNO è SEMPRE TRUE, PER TUTTI I TIPI DI PERMISSION REQUIREMENT (CHE è SOLO ADMINISTRATOR)
+  # else {
+  #   $MessagePermission = (New-CommandString $Requirement.KoMessage)
+  #   $Description.SelectionStart = $Description.TextLength
+  #   $Description.SelectionLength = 0
+  #   $Description.SelectionColor = "Red"
+  #   $Description.AppendText($MessagePermission)
+  #   $Description.AppendText([Environment]::NewLine)
+  #   Show-Buttons @('$DoneButton')
+  # }
 }
 
 function Invoke-PostInstallAction {
@@ -266,7 +268,7 @@ function Invoke-PostInstallAction {
   else {
     if ($Requirement.CheckRequirement) {
       $PostInstallResultCheck = Invoke-Expression (New-CommandString $Requirement.CheckRequirement)
-      if ($PostInstallResultCheck[0] -eq $true) {
+      if ($PostInstallResultCheck[0]) {
         if ($PostInstallResultCheck[1] -eq 'OK') {
           $MessagePostInstall = Invoke-Expression (New-CommandString $Requirement.PostInstallTrueOkMessage)
           $Description.SelectionStart = $Description.TextLength
@@ -277,7 +279,8 @@ function Invoke-PostInstallAction {
           if ($Requirement.PostInstallTrueOkCommand) {
             Invoke-Expression (New-CommandString $Requirement.PostInstallTrueOkCommand)
           }
-        } else {
+        } 
+        else {
           $MessagePostInstall = Invoke-Expression (New-CommandString $Requirement.PostInstallMessage)
           $Description.AppendText($MessagePostInstall)
           $Description.AppendText([Environment]::NewLine)
@@ -315,11 +318,13 @@ function Invoke-PreInstallAction {
   if ($ResultPreInstall[0] -eq $true) {
     if ($ResultPreInstall[1] -eq 'OK') {
       $MessagePreInstall = Invoke-Expression (New-CommandString $Requirement.OkMessage)
-    } else {
+    }
+    else {
       $MessagePreInstall = Invoke-Expression (New-CommandString $Requirement.WarningMessage)
     }
     Show-Buttons @('$NextButton', '$CancelButton')
-  } else {
+  }
+  else {
     $MessagePreInstall = Invoke-Expression (New-CommandString $Requirement.WarningMessage2)
     Show-Buttons @('$DoneButton')
   }
