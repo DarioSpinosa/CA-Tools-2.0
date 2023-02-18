@@ -1,217 +1,271 @@
-. .\scripts\utility.ps1
-. .\scripts\global-variables.ps1
-. .\components\welcome\Welcome.ps1
+$InstallForm                    = New-Object System.Windows.Forms.Form
+$InstallForm.ClientSize         = '800, 600'
+$InstallForm.Text               = "Install CAEP"
+$InstallForm.BackColor          = "#ffffff"
+$InstallForm.TopMost            = $false
 
-function AcceptButton_Click {
+$Description                    = New-Object System.Windows.Forms.RichTextBox
+$Description.Text               = ""
+$Description.AutoSize           = $false
+$Description.Multiline          = $true
+$Description.ReadOnly           = $true
+$Description.Visible            = $true
+$Description.Scrollbars         = "Vertical"
+$Description.Width              = 300
+$Description.Height             = 300
+$Description.Location           = New-Object System.Drawing.Point(350, 50)
+$Description.Font               = 'Consolas,10' 
+
+$UsernameLabel                  = New-Object System.Windows.Forms.Label
+$UsernameLabel.Text             = "Username:"
+$UsernameLabel.AutoSize         = $true
+$UsernameLabel.Width            = 25
+$UsernameLabel.Height           = 20
+$UsernameLabel.Location         = New-Object System.Drawing.Point(70,143)
+$UsernameLabel.Font             = 'Microsoft Sans Serif,10,style=Bold'
+$UsernameLabel.Visible          = $false
+
+$UsernameTextBox                = New-Object System.Windows.Forms.TextBox
+$UsernameTextBox.Multiline      = $false
+$UsernameTextBox.Width          = 200
+$UsernameTextBox.Height         = 20
+$UsernameTextBox.Location       = New-Object System.Drawing.Point(155,140)
+$UsernameTextBox.Font           = 'Microsoft Sans Serif,10'
+$UsernameTextBox.Visible        = $false
+
+$TokenLabel                     = New-Object System.Windows.Forms.Label
+$TokenLabel.Text                = "Token:"
+$TokenLabel.AutoSize            = $true
+$TokenLabel.Width               = 25
+$TokenLabel.Height              = 20
+$TokenLabel.Location            = New-Object System.Drawing.Point(70,173)
+$TokenLabel.Font                = 'Microsoft Sans Serif,10,style=Bold'
+$TokenLabel.Visible             = $false
+
+$TokenTextBox                   = New-Object System.Windows.Forms.TextBox
+$TokenTextBox.Multiline         = $false
+$TokenTextBox.Width             = 200
+$TokenTextBox.Height            = 20
+$TokenTextBox.Location          = New-Object System.Drawing.Point(155,170)
+$TokenTextBox.Font              = 'Microsoft Sans Serif,10'
+$TokenTextBox.Visible           = $false
+
+$NextButton                     = New-Object System.Windows.Forms.Button
+$NextButton.BackColor           = "#ff7b00"
+$NextButton.Text                = "Next"
+$NextButton.Width               = 90
+$NextButton.Height              = 30
+$NextButton.Location            = New-Object System.Drawing.Point(550,400)
+$NextButton.Font                = 'Microsoft Sans Serif,10'
+$NextButton.ForeColor           = "#ffffff"
+
+$LoginButton                     = New-Object System.Windows.Forms.Button
+$LoginButton.BackColor           = "#ff7b00"
+$LoginButton.Text                = "Login"
+$LoginButton.Width               = 90
+$LoginButton.Height              = 30
+$LoginButton.Location            = New-Object System.Drawing.Point(550,400)
+$LoginButton.Font                = 'Microsoft Sans Serif,10'
+$LoginButton.ForeColor           = "#ffffff"
+$LoginButton.Visible             = $false
+
+$DoneButton                     = New-Object System.Windows.Forms.Button
+$DoneButton.BackColor           = "#ff7b00"
+$DoneButton.Text                = "Done"
+$DoneButton.Width               = 90
+$DoneButton.Height              = 30
+$DoneButton.Location            = New-Object System.Drawing.Point(550,400)
+$DoneButton.Font                = 'Microsoft Sans Serif,10'
+$DoneButton.ForeColor           = "#ffffff"
+$DoneButton.Visible             = $false
+
+$CloseButton                     = New-Object System.Windows.Forms.Button
+$CloseButton.BackColor           = "#ff7b00"
+$CloseButton.Text                = "End"
+$CloseButton.Width               = 90
+$CloseButton.Height              = 30
+$CloseButton.Location            = New-Object System.Drawing.Point(550,400)
+$CloseButton.Font                = 'Microsoft Sans Serif,10'
+$CloseButton.ForeColor           = "#ffffff"
+$CloseButton.Visible             = $false
+
+$AcceptButton                     = New-Object System.Windows.Forms.Button
+$AcceptButton.BackColor           = "#ff7b00"
+$AcceptButton.Text                = "Accept"
+$AcceptButton.Width               = 90
+$AcceptButton.Height              = 30
+$AcceptButton.Location            = New-Object System.Drawing.Point(550,400)
+$AcceptButton.Font                = 'Microsoft Sans Serif,10'
+$AcceptButton.ForeColor           = "#ffffff"
+$AcceptButton.Visible             = $false
+
+$RestartButton                     = New-Object System.Windows.Forms.Button
+$RestartButton.BackColor           = "#ff7b00"
+$RestartButton.Text                = "Restart"
+$RestartButton.Width               = 90
+$RestartButton.Height              = 30
+$RestartButton.Location            = New-Object System.Drawing.Point(550,400)
+$RestartButton.Font                = 'Microsoft Sans Serif,10'
+$RestartButton.ForeColor           = "#ffffff"
+$RestartButton.Visible             = $false
+
+$LogoutButton                     = New-Object System.Windows.Forms.Button
+$LogoutButton.BackColor           = "#ff7b00"
+$LogoutButton.Text                = "Logout"
+$LogoutButton.Width               = 90
+$LogoutButton.Height              = 30
+$LogoutButton.Location            = New-Object System.Drawing.Point(550,400)
+$LogoutButton.Font                = 'Microsoft Sans Serif,10'
+$LogoutButton.ForeColor           = "#ffffff"
+$LogoutButton.Visible             = $false
+
+$DeclineButton                   = New-Object System.Windows.Forms.Button
+$DeclineButton.BackColor         = "#ffffff"
+$DeclineButton.Text              = "Decline"
+$DeclineButton.Width             = 90
+$DeclineButton.Height            = 30
+$DeclineButton.Location          = New-Object System.Drawing.Point(450,400)
+$DeclineButton.Font              = 'Microsoft Sans Serif,10'
+$DeclineButton.ForeColor         = "#000"
+$DeclineButton.Visible           = $false
+
+$YesButton                     = New-Object System.Windows.Forms.Button
+$YesButton.BackColor           = "#ff7b00"
+$YesButton.Text                = "Yes"
+$YesButton.Width               = 90
+$YesButton.Height              = 30
+$YesButton.Location            = New-Object System.Drawing.Point(550,400)
+$YesButton.Font                = 'Microsoft Sans Serif,10'
+$YesButton.ForeColor           = "#ffffff"
+$YesButton.Visible             = $false
+
+$NoButton                   = New-Object System.Windows.Forms.Button
+$NoButton.BackColor         = "#ffffff"
+$NoButton.Text              = "No"
+$NoButton.Width             = 90
+$NoButton.Height            = 30
+$NoButton.Location          = New-Object System.Drawing.Point(450,400)
+$NoButton.Font              = 'Microsoft Sans Serif,10'
+$NoButton.ForeColor         = "#000"
+$NoButton.Visible           = $false
+
+$CancelButton                   = New-Object System.Windows.Forms.Button
+$CancelButton.BackColor         = "#ffffff"
+$CancelButton.Text              = "Cancel"
+$CancelButton.Width             = 90
+$CancelButton.Height            = 30
+$CancelButton.Location          = New-Object System.Drawing.Point(450,400)
+$CancelButton.Font              = 'Microsoft Sans Serif,10'
+$CancelButton.ForeColor         = "#000"
+$CancelButton.DialogResult      = [System.Windows.Forms.DialogResult]::Cancel
+$InstallForm.CancelButton       = $CancelButton
+$InstallForm.Controls.Add($CancelButton)
+
+$InstallForm.controls.AddRange(@($Title,
+$Description,
+$UsernameLabel,
+$TokenLabel,
+$UsernameTextBox,
+$TokenTextBox,
+$LoginButton,
+$NextButton,
+$CancelButton,
+$DoneButton,
+$CloseButton,
+$AcceptButton,
+$DeclineButton,
+$RestartButton,
+$LogoutButton,
+$YesButton,
+$NoButton))
+
+$ExitButton.Add_Click({ ExitButton_Click })
+$MessageLabel.Add_SizeChanged({ SetSizeMessageLabel })
+
+
+$NextButton.Add_Click({ NextButton_Click })
+$AcceptButton.Add_Click({ AcceptButton_Click })
+$LoginButton.Add_Click({ LoginButton_Click })
+$DoneButton.Add_Click({ $InstallForm.Close() })
+$CloseButton.Add_Click({ CloseButton_Click })
+$DeclineButton.Add_Click({ DeclineButton_Click })
+$RestartButton.Add_Click({ Restart-Computer -Force })
+$LogoutButton.Add_Click({ logoff.exe })
+$YesButton.Add_Click({ OutFileAnswerNestedVirtualization $true })
+$NoButton.Add_Click({ OutFileAnswerNestedVirtualization $false })
+
+#---------------------------------------------------------[Functions]--------------------------------------------------------
+
+function Show-LoginNpmScreen {
   <#
   .SYNOPSIS
-  Execute a specific Action based on the type of Requirement
+  Show the Npm Login Screen
+
   .DESCRIPTION
-  Once the user press the Accept button it will execute the Action specific to that Requirement
+  Shows the Npm Login Screen
   #>
-  # Get the current Requirement
-  $CurrentRequirement = $Requirements[$IndexRequirement]
-  # Save a message that will take track of the Requirements accepted by the user
-  $Version = If ($CurrentRequirement.MaxVersion) { ", Version = $($CurrentRequirement.MaxVersion)" } else { "" }
-  $Message = "ACCEPTED, Name = $($CurrentRequirement.Name)$($Version)`r`n$('-'*70)"
-  Add-Content -Path $InstallRequirementsLogfile -Value $Message -Force
-
-  # Calling only Show-Buttons will hide all the buttons
-  Show-Buttons
-  # It will execute a determinatedd function based on the type of the current requirement
-  switch ($CurrentRequirement.Type) {
-    "Software" {
-      Invoke-DownloadInstallRequirementAction -Requirement $CurrentRequirement
-    }
-    "Feature" {
-      Invoke-EnableFeatureAction -Requirement $CurrentRequirement
-    }
-    "Env Variable Path" {
-      Invoke-EnvironmentVariableAction -Requirement $CurrentRequirement
-    }
-    "PostInstallSoftware" {
-      Invoke-PostInstallAction -Requirement $CurrentRequirement
-    }
-    "Permission" {
-      Invoke-PermissionAction -Requirement $CurrentRequirement
-    }
-    "Connection" {
-      Invoke-ConnectionAction -Requirement $CurrentRequirement
-    }
-    "PreInstallSoftware" {
-      Invoke-PreInstallAction -Requirement $CurrentRequirement
-    }
-    "Activity" {
-      Invoke-ActivityAction -Requirement $CurrentRequirement
-    }
-    Default {
-      Write-Error "$($CurrentRequirement.Type) not defined!!!"
-    }
-  }
-  # Updates the Environment Variables
-  $env:PATH = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
-  writeText("`r`nEnv var Path reloaded correctly")
-
-  # Execute the post action for the current Requirement if present.
-  if ($CurrentRequirement.PostAction) {
-    Show-Buttons @("$($CurrentRequirement.PostAction)Button")
-  }
-  # Once everything has been done the index of the current requirement will be incremented
-  $script:IndexRequirement++
+  $Description.Height = 70
+  $UsernameLabel.Visible = $true
+  $UsernameTextBox.Visible = $true
+  $TokenLabel.Visible = $true
+  $TokenTextBox.Visible = $true
+  $LoginButton.Visible = $true
+  $NextButton.Visible = $false
+  $CancelButton.Visible = $false
 }
 
-function NextButton_Click {
+function Hide-LoginNpmScreen {
   <#
   .SYNOPSIS
-  Show the Accept/Decline question for the next Requirement
+  Hide the Npm Login Screen
+
   .DESCRIPTION
-  Shows the Accept/Decline question for the next Requirement
-  #>
-  if ($IndexRequirement -lt $Requirements.Count) {
-    $Description.Text = "$($Requirements[$IndexRequirement].QuestionMessage)`r`n"
-    Show-Buttons @('$AcceptButton', '$DeclineButton')
-  }
-}
-
-function DeclineButton_Click {
-  <#
-  .SYNOPSIS
-  Append the declined message to the GUI
-  .DESCRIPTION
-  Shows on the GUI the decline message of the current Requirement
-  #>
-  $Requirement = $Requirements[$IndexRequirement]
-  $MessageDeclined = Invoke-Expression (New-CommandString $Requirement.DeclineMessage)
-  $Description.AppendText($MessageDeclined)
-  # Save a message that will take track of the Requirements declined by the user
-  $Version = If ($Requirement.MaxVersion) { ", Version = $($Requirement.MaxVersion)" } else { "" }
-  $Message = "DECLINED, Name = $($Requirement.Name)$($Version)`r`n$('-'*70)"
-  Add-Content -Path $InstallRequirementsLogfile -Value $Message -Force
-  # Shows the Done button to close the installer
-  Show-Buttons @('$DoneButton')
-}
-
-function LoginButton_Click {
-  <#
-  .SYNOPSIS
-  Login to npm
-  .DESCRIPTION
-  Takes the input inserted by the user and will try to login to npm
-  #>
-  # Variables Login npm
-  $NpmRegistry = "https://devops.codearchitects.com:444/Code%20Architects/_packaging/ca-npm/npm/registry/"
-  $NpmScope = "@ca"
-  # Check if the fields are empty it won't login
-  if (!($UsernameTextBox.Text -ne "") -or !($TokenTextBox.Text -ne "")) {
-    Show-NpmLoginError("Username and Token can't be NULL! Please enter the Username and Password.")
-    return
-  }
-
-  # Correct the Username inserted by the User
-  $UsernameSplitEmail = ($UsernameTextBox.Text).split("@")
-  $UsernameWithoutEmail = $UsernameSplitEmail[0]
-  $UsernameSplitBS = $UsernameWithoutEmail.split("\")
-  $UsernameWithoutBS = $UsernameSplitBS[$UsernameSplitBS.Length - 1]
-  $UsernameSplitS = $UsernameWithoutBS.split("/")
-  $UsernameFinal = $UsernameSplitS[$UsernameSplitS.Length - 1]
-
-  # Execute the login
-  Start-Process powershell.exe -ArgumentList "npm-login.ps1 -user $UsernameFinal -token $($TokenTextBox.Text) -registry $NpmRegistry -scope $NpmScope" -NoNewWindow -Wait
-  npm config set '@ca:registry' $NpmRegistry
-  npm config set '@ca-codegen:registry' $NpmRegistry
-  $NpmViewCli = (npm view @ca/cli 2>&1) -join " "
-  $DoubleCheck = ($NpmViewCli -like "*ERR!*")
-  
-  # Double check if the credentials inserted are correct or not, if they are then go to the next step of the installation, otherwise ask for the correct credentials.
-  if ($DoubleCheck) {
-    Show-NpmLoginError("Npm Login Error!`r`nThe Token or the Username are wrong. Check again your Username and Token.`r`nPS: Be sure that the token is setted as 'All Accessible Organization'.")
-    return
-  }
-
-  Hide-LoginNpmScreen
-  $Description.Lines = $NpmViewCli
-  Remove-WrongToken($TokenTextBox.Text)
-  Show-Buttons @('$NextButton', '$CancelButton')
-
-}
-
-function Remove-WrongToken($CorrectToken) {
-  <#
-  .SYNOPSIS
-  Remove the wrong tokens from the .tokens.json
-  .DESCRIPTION
-  If the login to npm was successful it will remove all the wrong tokens in the .tokens.json file
-  #>
-  $TokenPath = "~\.token.json"
-  $TokenList = Get-Content $TokenPath | ConvertFrom-Json
-  $NewTokenList = @()
-  foreach ($t in $TokenList) {
-    if ($t.token -eq $CorrectToken) {
-      $NewTokenList += $t
-    }
-  }
-  $NewTokenList | ConvertTo-Json | Set-Content -Path $TokenPath -Force
-}
-
-function Show-NpmLoginError($Msg) {
-  <#
-  .SYNOPSIS
-  Show a message of error for the login to npm
-  .DESCRIPTION
-  Append to the Textbox the message of error for the npm login
+  hides the Npm Login Screen
   #>
   $Description.Text = ""
-  $Description.SelectionStart = $Description.TextLength
-  $Description.SelectionLength = 0
-  $Description.SelectionColor = "Red"
-  $Description.AppendText($Msg)
+  $Description.Height = 150
+  $UsernameLabel.Visible = $false
+  $UsernameTextBox.Visible = $false
+  $TokenLabel.Visible = $false
+  $TokenTextBox.Visible = $false
+  $LoginButton.Visible = $false
+  $NextButton.Visible = $false
+  $CancelButton.Visible = $false
 }
 
-function CloseButton_Click {
+function Show-Buttons ([string[]]$ButtonsName) {  
   <#
   .SYNOPSIS
-  Actions to clean the computer before closing the installer
+  Show the Buttons requested on the GUI
+
   .DESCRIPTION
-  Actions needed to be run before cloging the installer, such as:
-  kill the client's side process, removing the startup command, update the scarface.config.json and send the installation's results
+  Turns Invisible every Button present on the GUI and then turns Visible only the requested Buttons
   #>
-  try {
-    $NetStat4200 = (netstat -ano | findstr :4200).split(" ") | Select-Object -Unique
-    $ClientPID = $NetStat4200[5]
-    taskkill /PID $ClientPID /F
+  $CancelButton.Visible = $false
+  $NextButton.Visible = $false
+  $DeclineButton.Visible = $false
+  $AcceptButton.Visible = $false
+  $DoneButton.Visible = $false
+  $CloseButton.Visible = $false
+  $LoginButton.Visible = $false
+  $LogoutButton.Visible = $false
+  $RestartButton.Visible = $false
+  $YesButton.Visible = $false
+  $NoButton.Visible = $false
+  
+  foreach ($ButtonName in $ButtonsName) {
+    Invoke-Expression "$ButtonName.Visible = `$true"
   }
-  catch {
-    $Description.AppendText("No process running on port 4200")
-  }
-  Remove-StartupCmd
-  Update-ScarfaceConfigJson
-  Send-InstallationLogs
-  $InstallForm.Close()
 }
 
-function Update-ScarfaceConfigJson {
-  <#
-  .SYNOPSIS
-  Update the scarface.config.json
-  .DESCRIPTION
-  Removes some of the elements inside the file, such as:
-  application, domain, scenario, author and prefix
-  So that the next time the user execute the command "ca scar" those fields will be asked to them
-  #>
-  $ScarfaceConfigJsonPath = "C:\dev\scarface\scarface.config.json"
-  $ScarfaceConfigJson = Get-Content -Path $ScarfaceConfigJsonPath -Raw | ConvertFrom-Json
-  $ElementsToRemove = @("application", "domain", "scenario", "author", "prefix")
-  foreach ($Element in $ElementsToRemove) {
-    $ScarfaceConfigJson.PSObject.Properties.Remove($Element)
-  }
-  $ScarfaceConfigJson | ConvertTo-Json -Depth 5 | Out-File -Encoding "ASCII" $ScarfaceConfigJsonPath -Force
-}
+# $ErrorActionPreference = "SilentlyContinue"
+# Stop-Transcript
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUxg2mq5oq5zVoFwLI6bItIWbX
-# PIqggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU1RLdVxC8clyreA7gnz/e0ucd
+# VSqggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -379,30 +433,30 @@ function Update-ScarfaceConfigJson {
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUO8t+4gDFPr7Ogo1X9/JO
-# ocQe2jQwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQAyrPdw3jhPb6E3OzV1qQA4pNWd0Z4jhiRzVg9GMoQ20Dp4
-# Fol8ns2K7MXBlpP695q05tf2ufj2U9OQysT3YmlM7fHuMbMIp+dVapdtlfGzhYCF
-# MLX/wBX3TKIK6Ll0Vy/SjcAN8tUtwsZjr5oN2E+UC0YNdhfwacKrSMRJnSGs3naf
-# vlLhhlCT2V/NhZWcLceKVVMQuamMQoYA9O5rTj/sQrGwXpKwiH8AqM8bM4YSpL5J
-# XhhQEEWfOgPeRxeNwFZIMtmUZPOvdCF6iUIOVpZnepo05OB4nyYDj4W5wuTls+zy
-# jZ1RtLSc6LT484VwC96QP0V8sQlvv73ZkP1efutuoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQULWKl+4GXrmXTGm5WjA3a
+# PRxzmPMwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQApzwv7nOyKNUTG4joeQiAkyv1p3uY6d3wrUd8/21Re4jfi
+# 5aC72d45zFWBaErH8XdjEdHQtc1VbWlBp/u/bc1m6BZIq7+7aIfd7r9YP8VL/ODP
+# IO14iW4DfqJBrSh/Bv/mEs+BUF16JynmNgUs+FlTXt8uPur5kols9AigpwtUm6mo
+# cbK8n/Y1kLADgs55gj+LV0H27ph65mOSumC8aIMUyb4s/YBadyXs9BC+a0d+eNc6
+# gAfR6za5RLg7IliOdueUPEsWMGhpnNVj/cnd4ZQ/utKQ+PcKa2QSwpDcWQP0gfzV
+# LkRjgzEHGb8exnyaQUk36bLtZlGFuuPyJBrA52XGoYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMzAyMDgwOTM4NTdaMD8GCSqG
-# SIb3DQEJBDEyBDA8+VLOaYL0l8998ketYLBfEYvDEQG7IBCq8yrS2yH5gE0OODss
-# aqWBqJhqz6HIpMswDQYJKoZIhvcNAQEBBQAEggIAGID7RQCJ/OlUYrnyseiVy54n
-# +OhpPwMNPRU85wsJ8hODX8oPsSZQSixpln7Ld8Hs2cVuKyLD2K0+gkkEWMXQUPWa
-# 0G1ToYOqcRG6enUGoCKfOUI3R+ezVe/J9aVK3NT9nAJ9RzPVqmIUketWDEB6yOAD
-# Ddfat14IpdtdhEc8jwapV/wV+kYhWkniX0Eb1a1mVFp+eMmK7tfIfp1uxFJpMrVK
-# DIDtCkmXMrKCWJgLTW4icUfS5VWS/j7R43EwWrQrWxT+/F3HAey6u4XBYFLEHQxi
-# 7GZtw2wB79JA26EVtX/z+g4uiwL2YKp09VBR3pOKwU0F0dTaM0qepGh5HMPCsWL/
-# cDvsiPqAuxUV3p1pNrch1TfupYxpz0F8wMH0/kRNokGLs90LgXzYtWg6aZ/AP0Ks
-# ePrRaZ5JyoF6K2x0rf30oXCZGer3Eoa8XvQlEZAeVB75xGSv+j01+07m+vuxlcQl
-# mI/A5Fq59JY+qo/0yKWOKxbUD4RdRu9Hr3IrbY4YwAMJ8WqKNLoXoIkm0kDti9AE
-# s3otusQj14nGJs+mgAHWF+T3Xb8AZM1XI7JuVX2CjbWe3Tp7eyWMbrPoTsUYcfux
-# Fz3EU68Xf70F0gaaNvQeIL9NxmDydtK5O3CvXX42KaKMDKtOZrJowonSkSWoPKu0
-# V7N5WUjJUzxjJVCtPjs=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMjkxMzQyMTBaMD8GCSqG
+# SIb3DQEJBDEyBDACyuQmvFussH2wGnfOu4iJ9x2Kn2WrO+gl9betVPlu+x00xDHj
+# +1ik0SfnjbkhXNkwDQYJKoZIhvcNAQEBBQAEggIAM92smj/Cfb2Ex1a+NtikhAFp
+# 11NOyu0bzw9xlyINErz1T908oWE/EScp6eilUG9SsvPf1Ua2xmtBF0xfjYf7JDyQ
+# 9dMT/0U1brxD6NNpZ0nmc2KcQ55tozp06+tb9xg6ZD4692a2JgomMKjahUcQpVJe
+# 3xPWWE9MYjVyONxUdVJP2tft3eX0PHtGGQKFN5VmWusj3g4/kFm+8wqRcZkzBkDC
+# DKQXrK2I0kRBCabz9X6pBix4AFDcSeb0JYU/nDa6+EZDnuheteUd0jKCd4ATEo1H
+# ROuBFLQclKGJo49jN+a9kf5xJAvoMyrmhC+x/JF4SvjL+wjgDBQRF1TmTlSuoHMQ
+# cZOZxYdXp2FWMzjNkbK0vYKafV9TVcy30+ezrz+fxEHdopf7MhZJ8iu9vwWn2rB5
+# RzvskVutM4euIEZsE/+GuCrJv8N9GXTPfk7ZGucvP/VNZMkEkKmX1U3R44soRKZ0
+# 7zYdqGluGEihJWrcMuKhJKztM5kvhteQf0Me0kM0kXn+xL9aktqNj4ID9jO7kRJV
+# xa2fyDbPcOsddDHR8UfJxuPJ0kHHfcIK83E6ffYatAiPXTRI3qAddAemkHnFPsN1
+# KMwS0mDvBm/upyctaz8yXIueC1wMXPpHGq/HH5dto46eR1GvEOSwfDUqcFW3j0cZ
+# AIrcZ/qlhpmhixZkfVk=
 # SIG # End signature block

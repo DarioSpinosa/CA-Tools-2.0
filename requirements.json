@@ -121,7 +121,7 @@
             "Gruntfuggly.triggertaskonsave",
             "Angular.ng-template"
         ],
-        "CheckRequirement": "return ./scripts/requirements/vscode-extensions.ps1 -attributes `\"$($Requirement.Attributes)`\"",
+        "CheckRequirement": "return ./scripts/requirements/vscode-extensions.ps1",
         "PostAction": ""
     },
     "Administrator": {
@@ -399,7 +399,7 @@
         "ActivityOKCommand": "./scripts/activityOkCommand/npm-login.ps1",
         "ActivityKOCommand": "./scripts/activityKoCommand/npm-login.ps1",
         "DeclineMessage": "return `\"You have declined to automatically login to npm.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "CheckRequirement": "return ./scripts/requirements/npm-login.ps1 -currentDate `$currentDate",
+        "CheckRequirement": "return ./scripts/requirements/npm-login.ps1",
         "PostAction": "Login"
     },
     "Install CAEP": {

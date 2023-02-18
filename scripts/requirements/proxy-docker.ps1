@@ -2,9 +2,15 @@ param(
   [string]$scarConfig
 )
 
-if ( !$scarConfig.Contains('terranova') ) {
-  $InternetSettings = (Get-ItemProperty -Path 'Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings')
+if ($scarConfig.Contains('terranova') ) { return @($true, 'OK') }
+$InternetSettings = (Get-ItemProperty -Path 'Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings')
+
+if ($InternetSettings.ProxyEnable -eq 0) {
+  return @($true, 'OK')
+}
+else {
   $ProxyDataSplit = $InternetSettings.ProxyServer -split ':'
+
   if ($ProxyDataSplit.Count -eq 2) {
     $ProxyAddress = $ProxyDataSplit[0]
     $ProxyPort = $ProxyDataSplit[1]
@@ -13,20 +19,10 @@ if ( !$scarConfig.Contains('terranova') ) {
     $ProxyAddress = $ProxyDataSplit[1].replace('/', '')
     $ProxyPort = $ProxyDataSplit[2]
   }
-  if ($InternetSettings.ProxyEnable -eq 0) {
-    return @($true, 'OK')
-  }
-  elseif ( (Test-NetConnection -ComputerName $ProxyAddress -Port $ProxyPort).TcpTestSucceeded ) {
-    return @($true, 'KO')
-  }
-  else {
-    return @($false, 'KO')
-  }
+  return @(((Test-NetConnection -ComputerName $ProxyAddress -Port $ProxyPort).TcpTestSucceeded), 'KO')
 }
-else {
-  return @($true, 'OK')
-}
-# SIG # Begin signature block
+
+G # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
 # AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU6qrSrRA738LexDcTxzmgE/CF

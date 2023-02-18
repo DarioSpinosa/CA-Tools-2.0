@@ -4,7 +4,7 @@ param(
 
 $dotNetVersion = dotnet --list-sdks
 if ( $dotNetVersion -match $maxVersion ) {
-     $Description.AppendText("$maxVersion match with $dotnetVersion")
+     writeText("$maxVersion match with $dotnetVersion")
     return @($true, 'OK')
 } else {
     return @($true, 'KO')

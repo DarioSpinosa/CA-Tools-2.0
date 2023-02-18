@@ -1,22 +1,14 @@
-param(
-    $attributes
-)   
-
-$notInstalled = $false
-
 try {
-    foreach ( $Extension in "$attributes".Split(' ') ) {
-        if (!(((code --list-extensions) -like ("*$Extension*").ToLower()).Count)) {
-            $notInstalled = $true
-            break
-        }
+    $ListExtensions = code --list-extensions
+    foreach ($Extension in $Requirements["VS Code Extentions"]["Attributes"]) {
+        if (!$ListExtensions.Contains($Extension)) { return @($true, 'KO') }
     }
 }
 catch {
     return @($true, 'KO')
 }
 
-return @($true, $(if ($notInstalled) {'KO'} else {"OK"}))
+return @($true, "OK")
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

@@ -1,5 +1,3 @@
-$StartupPath = "~\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\caep-startup.cmd"
-
 function ConvertPSObjectToHashtable { 
   param (
     [Parameter(ValueFromPipeline)]
@@ -58,13 +56,13 @@ function Get-MissingEnvironmentVariablePath {
   $envSplitted = ($envToCheck -replace "`"","").ToLower().Split(';')
   
   foreach ($value in $envSplitted) {
-     $OutputLabel.Text = "Checking if $value exists in environment variable PATH"
+     writeText("Checking if $value exists in environment variable PATH")
     if(!$envInPath.Contains($value) ) {
       $notFound += $value
     }
   }
 
-   $OutputLabel.Text = "path not found: $notFound"
+   writeText("path not found: $notFound")
 
   return $notFound
 
@@ -114,10 +112,6 @@ function Send-InstallationLogs {
   &"C:\Program Files\Git\usr\bin\bash.exe" $ConnectPath $CaZipPath
 }
 
-function CallError($Message) {
-  $MessageLabel.Text = $Message
-  $ModalForm.ShowDialog()
-}
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

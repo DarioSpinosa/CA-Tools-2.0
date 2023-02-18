@@ -1,4 +1,4 @@
-$result = $(if (!((Get-CimInstance win32_computersystem).model) -in @('VMware Virtual Platform', 'Virtual Machine', 'Macchina Virtuale')) {"OK"} else {"KO"})
+$result = $(if (!@('VMware Virtual Platform', 'Virtual Machine', 'Macchina Virtuale').Contains((Get-CimInstance win32_computersystem).model)) {"OK"} else {"KO"})
 return @($true, $result)
 
 # SIG # Begin signature block

@@ -1,24 +1,24 @@
-$OutputLabel.Text = 'Searching for npm-login.ps1...'
+writeText('Searching for npm-login.ps1...')
 $caPath = "C:\Program Files\Ca-Tools\npm-login.ps1"
 if (!(Get-Content -Path $caPath) ) {
-	 $OutputLabel.Text = "npm-login.ps1 not found!"
+	 writeText("npm-login.ps1 not found!")
   return @($true, 'KO')
 }
 
-$OutputLabel.Text = 'Searching for @ca npm packages...'
+writeText('Searching for @ca npm packages...')
 $npmList = npm list -g --depth=0
 if (($npmList -like '*@ca/cli*') -and ($npmList -like '*@ca/generator-scarface*')) {
-  $OutputLabel.Text = '@ca/cli and @ca/generator-scarface are installed npm packages.'
+  writeText('@ca/cli and @ca/generator-scarface are installed npm packages.')
 }
 else {
-	 $OutputLabel.Text = 'npm packages @ca/cli and @ca/generator-scarface not found!'
+	 writeText('npm packages @ca/cli and @ca/generator-scarface not found!')
   return @($true, 'KO')
 }
 
-$OutputLabel.Text = 'Searching for ca plugins...'
+writeText('Searching for ca plugins...')
 $npmPlugin = ca plugins
 if ($npmPlugin -like '*@ca/cli-plugin-scarface*' ) {
-	 $OutputLabel.Text = 'ca plugins: @ca/cli-plugin-scarface found!'
+	 writeText('ca plugins: @ca/cli-plugin-scarface found!')
   return @($true, 'OK')
 }
 
