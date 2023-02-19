@@ -27,94 +27,123 @@ $logo.Size = "120, 45"
 $logo.Location = '15, 20'
 $logo.BackColor = "Transparent"
 
-$tabOutputButton = New-Object System.Windows.Forms.Button
-$tabOutputButton.BackColor = "#00ffffff"
-$tabOutputButton.Text = "Output"
-$tabOutputButton.Size = "150, 75"
-$tabOutputButton.Location = "0, 100"
-$tabOutputButton.Font = 'Roboto,10'
-$tabOutputButton.ForeColor = "#ffffff"
-$tabOutputButton.FlatStyle = "Flat"
-$tabOutputButton.FlatAppearance.BorderSize = 0 
-# $tabOutputButton.FlatAppearance.MouseOverBackColor = "#cccccc"
+$tabOutputRequirementsButton = New-Object System.Windows.Forms.Button
+$tabOutputRequirementsButton.BackColor = "#00ffffff"
+$tabOutputRequirementsButton.Text = "Output Requirements"
+$tabOutputRequirementsButton.Size = "150, 75"
+$tabOutputRequirementsButton.Location = "0, 100"
+$tabOutputRequirementsButton.Font = 'Roboto,10'
+$tabOutputRequirementsButton.ForeColor = "#ffffff"
+$tabOutputRequirementsButton.FlatStyle = "Flat"
+$tabOutputRequirementsButton.FlatAppearance.BorderSize = 0 
 
-$tabCheckRequirementsResultsButton = New-Object System.Windows.Forms.Button
-$tabCheckRequirementsResultsButton.BackColor = "#00ffffff"
-$tabCheckRequirementsResultsButton.Text = "Requirements Results"
-$tabCheckRequirementsResultsButton.Size = "150, 75"
-$tabCheckRequirementsResultsButton.Location = "0, 175"
-$tabCheckRequirementsResultsButton.Font = 'Roboto,10'
-$tabCheckRequirementsResultsButton.ForeColor = "#ffffff"
-$tabCheckRequirementsResultsButton.FlatStyle = "Flat"
-$tabCheckRequirementsResultsButton.FlatAppearance.BorderSize = 0;
-# $tabCheckRequirementsResultsButton.FlatAppearance.MouseOverBackColor = "#cccccc"
+$tabRequirementsResultsButton = New-Object System.Windows.Forms.Button
+$tabRequirementsResultsButton.BackColor = "#00ffffff"
+$tabRequirementsResultsButton.Text = "Results Requirements"
+$tabRequirementsResultsButton.Size = "150, 75"
+$tabRequirementsResultsButton.Location = "0, 175"
+$tabRequirementsResultsButton.Font = 'Roboto,10'
+$tabRequirementsResultsButton.ForeColor = "#ffffff"
+$tabRequirementsResultsButton.FlatStyle = "Flat"
+$tabRequirementsResultsButton.FlatAppearance.BorderSize = 0;
 
-$outputLabel = New-Object System.Windows.Forms.TextBox
-$outputLabel.Text = ""
-$outputLabel.Size = "750, 500"
-$outputLabel.Multiline = $true
-$outputLabel.Location = "200, 25"
-$outputLabel.Font = 'Roboto,12'
-$outputLabel.ScrollBars = "Vertical"
-$outputLabel.ReadOnly = $true
+$tabOutputInstallationsButton = New-Object System.Windows.Forms.Button
+$tabOutputInstallationsButton.BackColor = "#00ffffff"
+$tabOutputInstallationsButton.Text = "Installation Output"
+$tabOutputInstallationsButton.Size = "150, 75"
+$tabOutputInstallationsButton.Location = "0, 250"
+$tabOutputInstallationsButton.Font = 'Roboto,10'
+$tabOutputInstallationsButton.ForeColor = "#ffffff"
+$tabOutputInstallationsButton.FlatStyle = "Flat"
+$tabOutputInstallationsButton.FlatAppearance.BorderSize = 0 
 
-$gridResults = New-Object System.Windows.Forms.DataGridView
-$gridResults.Name = "Grid"
-$gridResults.BorderStyle = 0
-$gridResults.RowHeadersVisible = $false
-$gridResults.EnableHeadersVisualStyles = $false
-$gridResults.BackgroundColor = "#ffffff"
-$gridResults.DefaultCellStyle.Font = "Century Gothic, 13"
-$gridResults.DefaultCellStyle.BackColor = "#ffffff"
-$gridResults.AdvancedCellBorderStyle.All = "None"
-$gridResults.ColumnCount = 2
-$gridResults.Columns[0].Name = "Requirement";
-$gridResults.Columns[1].Name = "Status";
-$gridResults.ColumnHeadersBorderStyle = 4
-$gridResults.ColumnHeadersDefaultCellStyle.Font = "Century Gothic, 15"
-$gridResults.ColumnHeadersDefaultCellStyle.ForeColor = "#ffffff"
-$gridResults.ColumnHeadersDefaultCellStyle.BackColor = "#2f5a84"
-$gridResults.AutoSizeColumnsMode = "Fill"
-$gridResults.Size = "750, 450"
-$gridResults.Location = "200, 25"
-$gridResults.MultiSelect = $false
-$gridResults.AllowUserToAddRows = $false
+$tabInstallationsResultsButton = New-Object System.Windows.Forms.Button
+$tabInstallationsResultsButton.BackColor = "#00ffffff"
+$tabInstallationsResultsButton.Text = "Installations Results"
+$tabInstallationsResultsButton.Size = "150, 75"
+$tabInstallationsResultsButton.Location = "0, 325"
+$tabInstallationsResultsButton.Font = 'Roboto,10'
+$tabInstallationsResultsButton.ForeColor = "#ffffff"
+$tabInstallationsResultsButton.FlatStyle = "Flat"
+$tabInstallationsResultsButton.FlatAppearance.BorderSize = 0;
 
-$closeButton = New-Object System.Windows.Forms.Button
-$closeButton.BackColor = "#ffffff"
-$closeButton.Text = "End"
-$closeButton.Size = "125, 40"
-$closeButton.Location = "650, 485"
-$closeButton.Font = 'Roboto, 14'
-$closeButton.ForeColor = "#000000"
-$closeButton.FlatStyle = "Flat"
-$closeButton.FlatAppearance.BorderSize = 0 
-$closeButton.DialogResult = [System.Windows.Forms.DialogResult]::Cancel
+$outputRequirementsLabel = New-Object System.Windows.Forms.TextBox
+$outputRequirementsLabel.Text = ""
+$outputRequirementsLabel.Size = "750, 500"
+$outputRequirementsLabel.Multiline = $true
+$outputRequirementsLabel.Location = "200, 25"
+$outputRequirementsLabel.Font = 'Roboto,12'
+$outputRequirementsLabel.ScrollBars = "Vertical"
+$outputRequirementsLabel.ReadOnly = $true
 
-$nextButton = New-Object System.Windows.Forms.Button
-$nextButton.BackColor = "#ffffff"
-$nextButton.Text = "Next"
-$nextButton.Size = "125, 40"
-$nextButton.Location = "800, 485"
-$nextButton.Font = 'Roboto,14'
-$nextButton.ForeColor = "#000000"
-$nextButton.FlatStyle = "Flat"
-$nextButton.FlatAppearance.BorderSize = 0 
+$gridRequirements = New-Object System.Windows.Forms.DataGridView
+$gridRequirements.Name = "Grid"
+$gridRequirements.BorderStyle = 0
+$gridRequirements.RowHeadersVisible = $false
+$gridRequirements.EnableHeadersVisualStyles = $false
+$gridRequirements.BackgroundColor = "#ffffff"
+$gridRequirements.DefaultCellStyle.Font = "Century Gothic, 13"
+$gridRequirements.DefaultCellStyle.BackColor = "#ffffff"
+$gridRequirements.AdvancedCellBorderStyle.All = "None"
+$gridRequirements.ColumnCount = 2
+$gridRequirements.Columns[0].Name = "Requirement";
+$gridRequirements.Columns[1].Name = "Status";
+$gridRequirements.ColumnHeadersBorderStyle = 4
+$gridRequirements.ColumnHeadersDefaultCellStyle.Font = "Century Gothic, 15"
+$gridRequirements.ColumnHeadersDefaultCellStyle.ForeColor = "#ffffff"
+$gridRequirements.ColumnHeadersDefaultCellStyle.BackColor = "#2f5a84"
+$gridRequirements.AutoSizeColumnsMode = "Fill"
+$gridRequirements.Size = "750, 450"
+$gridRequirements.Location = "200, 25"
+$gridRequirements.MultiSelect = $false
+$gridRequirements.AllowUserToAddRows = $false
 
-$sidebar.Controls.AddRange(@($logo, $tabOutputButton, $tabCheckRequirementsResultsButton, $closeButton, $nextButton))
-$mainform.Controls.AddRange(@($sidebar, $outputLabel))
+$outputInstallationLabel = New-Object System.Windows.Forms.TextBox
+$outputInstallationLabel.Text = ""
+$outputInstallationLabel.Size = "750, 500"
+$outputInstallationLabel.Multiline = $true
+$outputInstallationLabel.Location = "200, 25"
+$outputInstallationLabel.Font = 'Roboto,12'
+$outputInstallationLabel.ScrollBars = "Vertical"
+$outputInstallationLabel.ReadOnly = $true
 
-$tabCheckRequirementsResultsButton.Add_Click({ tabCheckRequirementsResultsButton_Click })
-$tabCheckRequirementsResultsButton.Add_MouseEnter({ Button_MouseEnter($tabCheckRequirementsResultsButton) })
-$tabCheckRequirementsResultsButton.Add_MouseLeave({ Button_MouseLeave($tabCheckRequirementsResultsButton) })
+$gridInstallation = New-Object System.Windows.Forms.DataGridView
+$gridInstallation.Name = "Grid"
+$gridInstallation.BorderStyle = 0
+$gridInstallation.RowHeadersVisible = $false
+$gridInstallation.EnableHeadersVisualStyles = $false
+$gridInstallation.BackgroundColor = "#ffffff"
+$gridInstallation.DefaultCellStyle.Font = "Century Gothic, 13"
+$gridInstallation.DefaultCellStyle.BackColor = "#ffffff"
+$gridInstallation.AdvancedCellBorderStyle.All = "None"
+$gridInstallation.ColumnCount = 2
+$gridInstallation.Columns[0].Name = "Requirement";
+$gridInstallation.Columns[1].Name = "Status";
+$gridInstallation.ColumnHeadersBorderStyle = 4
+$gridInstallation.ColumnHeadersDefaultCellStyle.Font = "Century Gothic, 15"
+$gridInstallation.ColumnHeadersDefaultCellStyle.ForeColor = "#ffffff"
+$gridInstallation.ColumnHeadersDefaultCellStyle.BackColor = "#2f5a84"
+$gridInstallation.AutoSizeColumnsMode = "Fill"
+$gridInstallation.Size = "750, 450"
+$gridInstallation.Location = "200, 25"
+$gridInstallation.MultiSelect = $false
+$gridInstallation.AllowUserToAddRows = $false
 
-$tabOutputButton.Add_Click({ tabOutputButton_Click })
-$tabOutputButton.Add_MouseEnter({ Button_MouseEnter($tabOutputButton) })
-$tabOutputButton.Add_MouseLeave({ Button_MouseLeave($tabOutputButton) })
+$sidebar.Controls.AddRange(@($logo, $tabOutputRequirementsButton, $tabRequirementsResultsButton, $tabOutputInstallationsButton, $tabInstallationsResultsButton))
+$mainform.Controls.AddRange(@($sidebar, $outputRequirementsLabel))
 
-$closeButton.Add_MouseEnter({ Button2_MouseEnter($closeButton) })
-$closeButton.Add_MouseLeave({ Button2_MouseLeave($closeButton) })
+$tabRequirementsResultsButton.Add_Click({ tabRequirementsResultsButton_Click })
+$tabRequirementsResultsButton.Add_MouseEnter({ Button_MouseEnter($tabRequirementsResultsButton) })
+$tabRequirementsResultsButton.Add_MouseLeave({ Button_MouseLeave($tabRequirementsResultsButton) })
 
-$nextButton.Add_Click({ nextButton_Click })
-$nextButton.Add_MouseEnter({ Button2_MouseEnter($nextButton) })
-$nextButton.Add_MouseLeave({ Button2_MouseLeave($nextButton) })
+$tabOutputRequirementsButton.Add_Click({ tabOutputRequirementsButton_Click })
+$tabOutputRequirementsButton.Add_MouseEnter({ Button_MouseEnter($tabOutputRequirementsButton) })
+$tabOutputRequirementsButton.Add_MouseLeave({ Button_MouseLeave($tabOutputRequirementsButton) })
+
+$tabOutputInstallationsButton.Add_Click({ tabOutputInstallationsButton_Click })
+$tabOutputInstallationsButton.Add_MouseEnter({ Button_MouseEnter($tabOutputInstallationsButton) })
+$tabOutputInstallationsButton.Add_MouseLeave({ Button_MouseLeave($tabOutputInstallationsButton) })
+
+$tabInstallationsResultsButton.Add_Click({ tabInstallationsResultsButton_Click })
+$tabInstallationsResultsButton.Add_MouseEnter({ Button_MouseEnter($tabInstallationsResultsButton) })
+$tabInstallationsResultsButton.Add_MouseLeave({ Button_MouseLeave($tabInstallationsResultsButton) })

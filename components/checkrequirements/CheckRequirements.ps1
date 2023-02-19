@@ -22,7 +22,7 @@ function Invoke-Main() {
   Remove-Item $downloadExeFolder* -Recurse -Force
   if (!(Test-Path -Path $downloadExeFolder)) {
     Remove-Item 
-    invoke-writeText("$downloadExeFolder not found. Creating it...")
+    invoke-writeOutputRequirements("$downloadExeFolder not found. Creating it...")
     New-Item -Path $downloadExeFolder -ItemType Directory
   }
 
@@ -71,7 +71,7 @@ Override custom json to Requirements
 
   $overrideJson = DownloadScarConfigJson
   if (!($overrideJson)) {
-    invoke-writeText("No override found")
+    invoke-writeOutputRequirements("No override found")
     return
   }
 
@@ -94,11 +94,11 @@ Download scarface.config.json
   if ( Test-Path $scarConfigPath) { Remove-Item -Path $scarConfigPath -Force }
   New-Item -Path $scarConfigPath -Force | Out-Null
 
-  invoke-writeText("downloading $ScarConfig")
+  invoke-writeOutputRequirements("downloading $ScarConfig")
   $a = Invoke-WebRequest -Uri $ScarConfig -UseBasicParsing
   $overrideRequirement = (((Invoke-WebRequest -Uri $ScarConfig -UseBasicParsing).Content) | ConvertFrom-Json).overrideRequirement
   if (!$overrideRequirement) { return $false }
-  invoke-writeText("downloading " + $overrideRequirement)
+  invoke-writeOutputRequirements("downloading " + $overrideRequirement)
   return ((Invoke-WebRequest -Uri $overrideRequirement -UseBasicParsing).Content | ConvertFrom-Json | ConvertPSObjectToHashtable)
 }
 
@@ -167,13 +167,21 @@ Shows each Requirement and their status that indicates if they were satisfied (O
     Invoke-CreateRow  @($Name, "OK") $Green
   }
   
+  Button_MouseLeave($tabOutputRequirementsButton)
+  Button_MouseEnter($tabRequirementsResultsButton)
+  tabRequirementsResultsButton_Click
+  Start-Sleep 5
+  Button_MouseLeave($tabRequirementsResultsButton)
+  Button_MouseEnter($tabOutputInstallationsButton)
+  tabOutputInstallationsButton_Click
+  . .\installation.ps1
 }
 
 function Invoke-CreateRow($Value, $Color) {
   $Row = New-Object System.Windows.Forms.DataGridViewRow
-  $Row.CreateCells($gridResults, $Value)
+  $Row.CreateCells($gridRequirements, $Value)
   $Row.DefaultCellStyle.BackColor = $Color
-  $gridResults.Rows.Add($Row);
+  $gridRequirements.Rows.Add($Row);
 }
 function New-StartupCmd() {
   <#
@@ -194,34 +202,45 @@ Creates a .cmd that will execute the CAEP installer at startup until they won't 
   }
 }
 
-function NextButton_Click {
-  <#
-  .SYNOPSIS
-  Show the Accept/Decline question for the next Requirement
-  .DESCRIPTION
-  Shows the Accept/Decline question for the next Requirement
-  #>
-  if ($IndexRequirement -lt $Requirements.Count) {
-    $Description.Text = "$($Requirements[$IndexRequirement].QuestionMessage)`r`n"
-    Show-Buttons @('$AcceptButton', '$DeclineButton')
-  }
+function invoke-writeOutputRequirements($message){
+  writeOutput $outputRequirementsLabel $message
 }
 
-function invoke-writeText($Message){
-  $outputLabel.AppendText("$Message`r`n")
-  $outputLabel.AppendText([System.Environment]::NewLine)
+function invoke-writeOutputInstallations($message){
+  writeOutput $outputInstallationLabel $message
 }
 
-function tabCheckRequirementsResultsButton_Click{
-  $mainform.Controls.Remove($outputLabel)
-  $mainform.Controls.AddRange(@($gridResults, $nextButton, $closeButton))
+function writeOutput($label, $message){
+  $label.AppendText("$message`r`n")
+  $label.AppendText([System.Environment]::NewLine)
 }
 
-function tabOutputButton_Click{
-  $mainform.Controls.Remove($gridResults)
-  $mainform.Controls.Remove($nextButton)
-  $mainform.Controls.Remove($closeButton)
-  $mainform.Controls.Add($outputLabel)
+function tabRequirementsResultsButton_Click{
+  $mainform.Controls.Remove($outputRequirementsLabel)
+  $mainform.Controls.Remove($outputInstallationLabel)
+  $mainform.Controls.Remove($gridInstallation)
+  $mainform.Controls.AddRange($gridRequirements)
+}
+
+function tabOutputRequirementsButton_Click{
+  $mainform.Controls.Remove($gridRequirements)
+  $mainform.Controls.Remove($outputInstallationLabel)
+  $mainform.Controls.Remove($gridInstallation)
+  $mainform.Controls.Add($outputRequirementsLabel)
+}
+
+function tabOutputInstallationsButton_Click{
+  $mainform.Controls.Remove($gridRequirements)
+  $mainform.Controls.Remove($outputRequirementsLabel)
+  $mainform.Controls.Remove($gridInstallation)
+  $mainform.Controls.Add($outputInstallationLabel)
+}
+
+function tabInstallationsResultsButton_Click{
+  $mainform.Controls.Remove($gridRequirements)
+  $mainform.Controls.Remove($outputInstallationLabel)
+  $mainform.Controls.Remove($outputRequirementsLabel)
+  $mainform.Controls.Add($gridInstallation)
 }
 
 function Button_MouseEnter($button){
@@ -234,17 +253,8 @@ function Button_MouseLeave ($button){
   $button.ForeColor = "#ffffff"
 }
 
-function Button2_MouseEnter($button){
-  $button.BackgroundImage = [System.Drawing.Image]::Fromfile(".\assets\background2.png")
-  $button.ForeColor = "#ffffff"
-}
-
-function Button2_MouseLeave ($button){
-  $button.BackgroundImage = $null
-  $button.ForeColor = "#000000"
-}
-
 #---------------------------------------------------------------------------------------------------------[LOGIC]---------------------------------------------------------------------------------------------------------
 . .\components\checkrequirements\Form.ps1
 $mainform.Show()
+Button_MouseEnter($tabOutputRequirementsButton)
 Invoke-Main

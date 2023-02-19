@@ -14,5 +14,3 @@ $currentDate = (Get-Date -Format yyyyMMdd-HHmmss).ToString()
 $logFilePath = "~\.ca\$currentDate\caep.log"
 $InstallRequirementsLogfile = "$($HOME)\.ca\$currentDate\install_requirements.log"
 $capturedPath = "~\.ca\$currentDate\npmErrCheck.txt"
-
-$IndexRequirement = 0

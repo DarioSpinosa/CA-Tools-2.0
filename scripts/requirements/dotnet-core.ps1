@@ -2,7 +2,7 @@
 $dotNetVersion = invoke-executeCommand("dotnet --list-sdks")
 if (!$dotNetVersion) { return @($true, 'KO') }
 if ( $dotNetVersion -match $Requirements["DotNet Core"]["MaxVersion"]) {
-    invoke-writeText("$maxVersion match with $dotnetVersion")
+    invoke-writeOutputRequirements("$maxVersion match with $dotnetVersion")
     return @($true, 'OK')
 }
 else {

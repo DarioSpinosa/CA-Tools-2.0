@@ -2,65 +2,6 @@
 . .\scripts\global-variables.ps1
 . .\components\welcome\Welcome.ps1
 
-function AcceptButton_Click {
-  <#
-  .SYNOPSIS
-  Execute a specific Action based on the type of Requirement
-  .DESCRIPTION
-  Once the user press the Accept button it will execute the Action specific to that Requirement
-  #>
-  # Get the current Requirement
-  $CurrentRequirement = $Requirements[$IndexRequirement]
-  # Save a message that will take track of the Requirements accepted by the user
-  $Version = If ($CurrentRequirement.MaxVersion) { ", Version = $($CurrentRequirement.MaxVersion)" } else { "" }
-  $Message = "ACCEPTED, Name = $($CurrentRequirement.Name)$($Version)`r`n$('-'*70)"
-  Add-Content -Path $InstallRequirementsLogfile -Value $Message -Force
-
-  # Calling only Show-Buttons will hide all the buttons
-  Show-Buttons
-  # It will execute a determinatedd function based on the type of the current requirement
-  switch ($CurrentRequirement.Type) {
-    "Software" {
-      Invoke-DownloadInstallRequirementAction -Requirement $CurrentRequirement
-    }
-    "Feature" {
-      Invoke-EnableFeatureAction -Requirement $CurrentRequirement
-    }
-    "Env Variable Path" {
-      Invoke-EnvironmentVariableAction -Requirement $CurrentRequirement
-    }
-    "PostInstallSoftware" {
-      Invoke-PostInstallAction -Requirement $CurrentRequirement
-    }
-    "Permission" {
-      Invoke-PermissionAction -Requirement $CurrentRequirement
-    }
-    "Connection" {
-      Invoke-ConnectionAction -Requirement $CurrentRequirement
-    }
-    "PreInstallSoftware" {
-      Invoke-PreInstallAction -Requirement $CurrentRequirement
-    }
-    "Activity" {
-      Invoke-ActivityAction -Requirement $CurrentRequirement
-    }
-    Default {
-      Write-Error "$($CurrentRequirement.Type) not defined!!!"
-    }
-  }
-  # Updates the Environment Variables
-  $env:PATH = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
-  invoke-writeText("Env var Path reloaded correctly")
-
-  # Execute the post action for the current Requirement if present.
-  if ($CurrentRequirement.PostAction) {
-    Show-Buttons @("$($CurrentRequirement.PostAction)Button")
-  }
-  # Once everything has been done the index of the current requirement will be incremented
-  $script:IndexRequirement++
-}
-
-
 function DeclineButton_Click {
   <#
   .SYNOPSIS

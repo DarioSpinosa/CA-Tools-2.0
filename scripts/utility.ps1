@@ -56,13 +56,13 @@ function Get-MissingEnvironmentVariablePath {
   $envSplitted = ($envToCheck -replace "`"","").ToLower().Split(';')
   
   foreach ($value in $envSplitted) {
-     invoke-writeText("Checking if $value exists in environment variable PATH")
+     invoke-writeOutputRequirements("Checking if $value exists in environment variable PATH")
     if(!$envInPath.Contains($value) ) {
       $notFound += $value
     }
   }
 
-   invoke-writeText("path not found: $notFound")
+   invoke-writeOutputRequirements("path not found: $notFound")
 
   return $notFound
 
