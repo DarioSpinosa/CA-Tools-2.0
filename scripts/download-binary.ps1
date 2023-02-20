@@ -1,9 +1,4 @@
-param(
-    [string]$link,
-    [string]$outPath
-)
-
-Invoke-RestMethod $link -OutFile $outPath
+Invoke-RestMethod $requirement["DownloadLink"] -OutFile $requirement["DownloadOutfile"]
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

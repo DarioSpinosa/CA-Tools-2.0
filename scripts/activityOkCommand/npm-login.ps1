@@ -1,4 +1,4 @@
-$Description.Text = 'I have found an Azure DevOps account, do you want to login with it?'
+$outputInstallationLabel.Text = 'I have found an Azure DevOps account, do you want to login with it?'
 $TokenPath = "~/.token.json"
 $TokenParsed = Get-Content $TokenPath | ConvertFrom-Json
 $Index = $TokenParsed.Count - 1

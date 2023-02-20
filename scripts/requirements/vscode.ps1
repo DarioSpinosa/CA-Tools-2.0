@@ -1,7 +1,6 @@
 $codeVersion = invoke-executeCommand("code --version")
-if (!$codeVersion) { return @($true, 'KO') }
-$result = $(if ($codeVersion[0] -ge $Requirements["Visual Studio Code"]["Min Version"]) { 'OK' } else { 'VER' })
-return @($true, $result)
+if (!$codeVersion) { return 'KO'}
+return $(if ($codeVersion[0] -ge $requirements["Visual Studio Code"]["Min Version"]) { 'OK' } else { 'VER' })
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

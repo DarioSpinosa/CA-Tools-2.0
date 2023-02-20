@@ -1,4 +1,4 @@
-return @($true, $(if (Test-Path "$env:PROGRAMFILES\Ca-Tools") {"OK"} else {"KO"}))
+return $(if (Test-Path "$env:PROGRAMFILES\Ca-Tools") {"OK"} else {"KO"})
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

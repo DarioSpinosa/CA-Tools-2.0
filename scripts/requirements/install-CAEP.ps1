@@ -2,7 +2,7 @@ invoke-writeOutputRequirements('Searching for npm-login.ps1...')
 $caPath = "C:\Program Files\Ca-Tools\npm-login.ps1"
 if (!(Test-Path $caPath) -or !(Get-Content -Path $caPath) ) {
 	 invoke-writeOutputRequirements("npm-login.ps1 not found!")
-  return @($true, 'KO')
+  return 'KO'
 }
 
 invoke-writeOutputRequirements('Searching for @ca npm packages...')
@@ -12,17 +12,17 @@ if (($npmList -like '*@ca/cli*') -and ($npmList -like '*@ca/generator-scarface*'
 }
 else {
 	 invoke-writeOutputRequirements('npm packages @ca/cli and @ca/generator-scarface not found!')
-  return @($true, 'KO')
+  return 'KO'
 }
 
 invoke-writeOutputRequirements('Searching for ca plugins...')
 $npmPlugin = ca plugins
 if ($npmPlugin -like '*@ca/cli-plugin-scarface*' ) {
 	 invoke-writeOutputRequirements('ca plugins: @ca/cli-plugin-scarface found!')
-  return @($true, 'OK')
+  return 'OK'
 }
 
-return @($true, 'KO')
+return 'KO'
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

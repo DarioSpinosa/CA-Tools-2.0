@@ -1,9 +1,4 @@
-param(
-    [string]$link,
-    [string]$outPath
-)
-
-Invoke-RestMethod (((Invoke-RestMethod $link).assets[0]).browser_download_url) -OutFile $outPath
+Invoke-RestMethod (((Invoke-RestMethod $requirements["Setup CaTools.msi"]["DownloadLink"]).assets[0]).browser_download_url) -OutFile $requirements["Setup CaTools.msi"]["DownloadOutfile"]
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

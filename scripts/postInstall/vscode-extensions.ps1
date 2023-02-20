@@ -1,8 +1,9 @@
 try {
     Start-Process code -ArgumentList "--install-extension $item --force" -NoNewWindow -Wait
+    return $true
 }
 catch {
-    return @($false, 'KO')
+    return $false
 }
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

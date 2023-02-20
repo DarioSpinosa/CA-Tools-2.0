@@ -1,19 +1,12 @@
-param(
-    [string]$downloadOutfile,
-    [bool]$addNodeBuildTools
-)
+invoke-writeOutputInstallations($addNodeBuildTools)
 
- $Description.AppendText($addNodeBuildTools)
+$argumentList = @('/I', $requirement["DownloadOutFile"])
 
-$argumentList = @(
-    '/I',
-    $downloadOutfile
-)
-
-if ( -not $addNodeBuildTools) {
-    $argumentList += '/passive'
-} else {
-     $Description.AppendText("Starting manual Node install...")
+if (-not $addNodeBuildTools) {
+	$argumentList += '/passive'
+}
+else {
+	invoke-writeOutputInstallations("Starting manual Node install...")
 }
 Start-Process msiexec.exe -ArgumentList $argumentList -Wait
 

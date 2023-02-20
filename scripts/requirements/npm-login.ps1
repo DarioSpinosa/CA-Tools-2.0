@@ -1,20 +1,20 @@
 invoke-writeOutputRequirements("Generate npm log for npm view commands in $capturedPath ...")
 
-if (!(invoke-executeCommand("npm view @ca/cli  2>&1 > $capturedPath")) -or !(invoke-executeCommand("npm view @ca-codegen/core 2>&1 >> $capturedPath"))) { return @($true, 'KO') }
+if (!(invoke-executeCommand("npm view @ca/cli  2>&1 > $capturedPath")) -or !(invoke-executeCommand("npm view @ca-codegen/core 2>&1 >> $capturedPath"))) {return 'KO'}
 
 $npmErrCheck = Get-Content $capturedPath
 
 invoke-writeOutputRequirements("$capturedPath content: ")
-foreach ($Element in $npmErrCheck) {
-    invoke-writeOutputRequirements("$Element")
+foreach ($element in $npmErrCheck) {
+    invoke-writeOutputRequirements("$element")
 }
 
 foreach ($item in $npmErrCheck) {
     if ( ($item -like '*ERR!*') -or ($item -like '*error*') ) {
-        return @($true, 'KO')
+        return 'KO'
     }
 }
-return @($true, 'OK')
+return 'OK'
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

@@ -1,6 +1,6 @@
 $ProxyData = Get-ItemProperty -Path 'Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings' | Select-Object 'Proxy*';
 
-if ($ProxyData.ProxyEnable -ne 1 ) { return @($true, 'OK') }
+if ($ProxyData.ProxyEnable -ne 1 ) { return 'OK'}
 
 $ProxyDataSplit = $ProxyData.ProxyServer -split ':'
 
@@ -13,7 +13,7 @@ else {
   $ProxyPort = $ProxyDataSplit[2]
 }
 
-return @((Test-NetConnection -ComputerName $ProxyAddress -Port $ProxyPort).TcpTestSucceeded, 'KO')
+return $(if ((Test-NetConnection -ComputerName $ProxyAddress -Port $ProxyPort).TcpTestSucceeded) { "TCP" } else { 'KO' })
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

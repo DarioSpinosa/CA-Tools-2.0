@@ -1,9 +1,4 @@
-if (((Test-NetConnection casftp.blob.core.windows.net -port 22).TcpTestSucceeded) -eq $True) {
-    return @($true, 'OK')
-}
-else {
-    return @($false, 'KO')
-}
+return $(if ((Test-NetConnection casftp.blob.core.windows.net -port 22).TcpTestSucceeded) { 'OK' } else { 'TCP' })
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

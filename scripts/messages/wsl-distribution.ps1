@@ -8,6 +8,7 @@ $WslLVSplit = ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]:
 foreach($item in $WslLVSplit) {
     if($item -like '*Ubuntu*') {
         $UbuntuDistro = $item
+        break
     }
 }
 return $message + " $UbuntuDistro..."

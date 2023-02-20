@@ -1,10 +1,10 @@
-if ($scarConfig.Contains('terranova')) { return @($true, 'OK') }
+if ($scarConfig.Contains('terranova')) { return 'OK' }
     
 foreach ( $item in (dism /online /get-featureinfo /featurename:VirtualMachinePlatform)) {
-  if (($item -like '*Disabled*') -or ($item -like '*Disattivata*') ) { return @($true, "KO") }
+  if (($item -like '*Disabled*') -or ($item -like '*Disattivata*') ) { return "KO" }
 }
 
-return @($true, "OK")
+return "OK"
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

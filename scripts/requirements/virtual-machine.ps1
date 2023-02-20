@@ -1,5 +1,4 @@
-$result = $(if (!@('VMware Virtual Platform', 'Virtual Machine', 'Macchina Virtuale').Contains((Get-CimInstance win32_computersystem).model)) {"OK"} else {"KO"})
-return @($true, $result)
+return $(if (!@('VMware Virtual Platform', 'Virtual Machine', 'Macchina Virtuale').Contains((Get-CimInstance win32_computersystem).model)) {"OK"} else {"KO"})
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

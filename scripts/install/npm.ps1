@@ -1,14 +1,4 @@
-param(
-    [string]$reqMaxVersion
-)
-
-$argumentList = @(
-    'i',
-    '-g',
-    "npm@$reqMaxVersion"
-)
-
-Start-Process npm -ArgumentList $argumentList -NoNewWindow -Wait
+Start-Process npm -ArgumentList @('i', '-g',"npm@$(requirement["DownloadOutFile"])") -NoNewWindow -Wait
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

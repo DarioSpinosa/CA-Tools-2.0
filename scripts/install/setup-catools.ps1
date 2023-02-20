@@ -1,17 +1,5 @@
-param(
-    [string]$downloadOutfile
-)
-
-$argumentList = @(
-    '/I',
-    $downloadOutfile,
-    '/passive'
-)
-
-. .\scripts\utility.ps1
 Remove-StartupCmd
-
-Start-Process msiexec.exe -ArgumentList $argumentList -Wait
+Start-Process msiexec.exe -ArgumentList @( '/I', $requirements["Setup CaTools.msi"]["DownloadOutfile"], '/passive') -Wait
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

@@ -15,7 +15,7 @@ else {
 
 $Result2 = Test-Path -Path $backOfficeBundlePath*.js
 invoke-writeOutputRequirements("js files in $backOfficeBundlePath" + $(if ($Result2) {" "} else {"not"}) + "found!")
-return @($true, "KO")
+return "KO"
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

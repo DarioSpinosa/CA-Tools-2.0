@@ -1,6 +1,6 @@
-return $(if ((invoke-request("-Uri https://registry.npmjs.org -UseBasicParsing -DisableKeepAlive").StatusCode) -eq 200) { @($true, 'OK') } else { @($false, 'KO') })
+return $(if ((invoke-request("-Uri https://registry.npmjs.org -UseBasicParsing -DisableKeepAlive").StatusCode) -eq 200) { 'OK' } else {'KO'})
 # SIG # Begin signature block
-# MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
+# MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB++
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
 # AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUr98IzQ4V+ksISMWZjlnctVKS
 # gEWggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B

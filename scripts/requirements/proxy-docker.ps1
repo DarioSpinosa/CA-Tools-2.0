@@ -1,8 +1,8 @@
-if ($scarConfig.Contains('terranova') ) { return @($true, 'OK') }
+if ($scarConfig.Contains('terranova') ) { return 'OK' }
 $InternetSettings = (Get-ItemProperty -Path 'Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings')
 
 if ($InternetSettings.ProxyEnable -eq 0) {
-  return @($true, 'OK')
+  return 'OK'
 }
 
 $ProxyDataSplit = $InternetSettings.ProxyServer -split ':'
@@ -15,7 +15,8 @@ elseif ($ProxyDataSplit.Count -eq 3) {
   $ProxyAddress = $ProxyDataSplit[1].replace('/', '')
   $ProxyPort = $ProxyDataSplit[2]
 }
-return @(((Test-NetConnection -ComputerName $ProxyAddress -Port $ProxyPort).TcpTestSucceeded), 'KO')
+
+return $(if ((Test-NetConnection -ComputerName $ProxyAddress -Port $ProxyPort).TcpTestSucceeded) { "TCP" } else { 'KO' })
 
 
 G # Begin signature block

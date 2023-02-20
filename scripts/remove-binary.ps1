@@ -1,8 +1,4 @@
-param(
-    [string]$downloadOutfile
-)
-
-Remove-Item ($downloadOutfile.replace('"',''))
+Remove-Item ($requirement["DownloadOutFile"].replace('"',''))
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

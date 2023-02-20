@@ -2,14 +2,14 @@ param(
     [string]$currentDate
 )
 
-$DockerConfigPath = "~\.docker\config.json"
+$dockerConfigPath = "~\.docker\config.json"
 
-if (Test-Path $DockerConfigPath) {
-    $DockerConfigJson = Get-Content $DockerConfigPath
-    $DockerConfigJson | Out-File "$DockerConfigPath.old.$currentDate"
-    $DockerConfigObj = $DockerConfigJson | ConvertFrom-Json
-    $DockerConfigObj.PSObject.Properties.Remove('proxies')
-    Set-Content -Path $DockerConfigPath -Value ($DockerConfigObj | ConvertTo-Json -Depth 5)
+if (Test-Path $dockerConfigPath) {
+    $dockerConfigJson = Get-Content $dockerConfigPath
+    $dockerConfigJson | Out-File "$dockerConfigPath.old.$currentDate"
+    $dockerConfigObj = $dockerConfigJson | ConvertFrom-Json
+    $dockerConfigObj.PSObject.Properties.Remove('proxies')
+    Set-Content -Path $dockerConfigPath -Value ($dockerConfigObj | ConvertTo-Json -Depth 5)
 }
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

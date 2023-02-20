@@ -1,11 +1,11 @@
-if ($scarConfig.Contains('terranova') ) { return @($true, 'OK') }
+if ($scarConfig.Contains('terranova') ) { return 'OK' }
     
 $wslLVSplit = ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes((wsl -l -v)))).split(' ')
 $defaultDistroIndex = $wslLVSplit.IndexOf('*') + 1
     
-if (!$defaultDistroIndex) { return @($true, 'KO') }
+if (!$defaultDistroIndex) { return 'KO' }
 
-return @($true,  $(if ($wslLVSplit[$defaultDistroIndex] -like '*Ubuntu*') {"OK"} else {"KO"}) )
+return $(if ($wslLVSplit[$defaultDistroIndex] -like '*Ubuntu*') {"OK"} else {"KO"})
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

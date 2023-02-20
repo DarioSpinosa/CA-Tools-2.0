@@ -1,16 +1,16 @@
-. .\components\modal\Form.ps1
-
-function Invoke-SetError($Message){
-    $MessageLabel.Text = $Message
-    $ModalForm.ShowDialog()
+function Invoke-SetError($message){
+    $messageLabel.Text = $message
+    $modalForm.ShowDialog()
 }
 
 function ExitButton_Click() {
-    $ModalForm.Close()
-    $WelcomeForm.Close()
+    $modalForm.Close()
+    $welcomeForm.Close()
 }
 
 function MessageLabel_SizeChanged(){
-    $MessageLabel.Left = ($ModalForm.Width - $MessageLabel.Width) / 2;
+    $messageLabel.Left = ($modalForm.Width - $messageLabel.Width) / 2;
 }
+
+. .\components\modal\Form.ps1
  

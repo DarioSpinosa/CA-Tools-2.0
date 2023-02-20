@@ -1,8 +1,4 @@
-param(
-    [string]$downloadOutFile
-)
-
-Start-Process $downloadOutFile -ArgumentList @('/q', '/norestart') -Wait
+Start-Process $requirement["DownloadOutFile"] -ArgumentList @('/q', '/norestart') -Wait
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

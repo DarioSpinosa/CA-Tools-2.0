@@ -1,6 +1,6 @@
 $npmVersion = invoke-executeCommand("npm --version")
-if ($npmVersion) { return @($true, 'KO') }
-return @($true, $(if ($npmVersion[0] -eq ($Requirements["npm"]["MajorVersion"])) { "OK" } else { "KO" }))
+if ($npmVersion) { return 'KO' }
+return $(if ($npmVersion[0] -eq ($requirements["npm"]["MajorVersion"])) { "OK" } else { "KO" })
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

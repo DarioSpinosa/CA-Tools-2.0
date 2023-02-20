@@ -1,6 +1,6 @@
 $gitVersion = invoke-executeCommand("git --version")
-if (!$gitVersion) { return @($true, 'KO') }
-return @($true, $(if ($gitVersion[12] -eq $Requirements["Git"]["MajorVersion"]) { "OK" } else { "KO" }))
+if (!$gitVersion) { return 'KO' }
+return $(if ($gitVersion[12] -eq $requirements["Git"]["MajorVersion"]) { "OK" } else { "KO" })
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

@@ -1,29 +1,27 @@
 $InternetSettings = (Get-ItemProperty -Path "Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings")
-$DockerConfigPath = "~\.docker\config.json"
-if (Test-Path $DockerConfigPath) {
+$dockerConfigPath = "~\.docker\config.json"
+if (Test-Path $dockerConfigPath) {
 
-    $DockerConfigJson = Get-Content $DockerConfigPath
+	$dockerConfigJson = Get-Content $dockerConfigPath
 
-    if (-not [String]::IsNullOrWhiteSpace($DockerConfigJson)) {
-        $DockerConfigJson | Out-File "$DockerConfigPath.old.$currentDate"
-
-    }
-    else {
-        New-Item -Path "$DockerConfigPath.old.$currentDate"
-    }
+	if (-not [String]::IsNullOrWhiteSpace($dockerConfigJson)) {
+		$dockerConfigJson | Out-File "$dockerConfigPath.old.$currentDate"
+	}
+	else {
+		New-Item -Path "$dockerConfigPath.old.$currentDate"
+	}
     
-    $DockerConfigObj = $DockerConfigJson | ConvertFrom-Json
-    $DockerConfigObj.PSObject.Properties.Remove('proxies')
-    $Proxies = @{
-        'default' = @{
-            'httpProxy'  = $InternetSettings.ProxyServer
-            'httpsProxy' = $InternetSettings.ProxyServer
-        }
-    }
+	$dockerConfigObj = $dockerConfigJson | ConvertFrom-Json
+	$dockerConfigObj.PSObject.Properties.Remove('proxies')
+	$Proxies = @{
+		'default' = @{
+			'httpProxy'  = $InternetSettings.ProxyServer
+			'httpsProxy' = $InternetSettings.ProxyServer
+		}
+	}
 
-    $DockerConfigObj | Add-Member -NotePropertyName proxies -NotePropertyValue $Proxies -Force
-    Set-Content -Path $DockerConfigPath -Value ($DockerConfigObj | ConvertTo-Json -Depth 5)
-
+	$dockerConfigObj | Add-Member -NotePropertyName proxies -NotePropertyValue $Proxies -Force
+	Set-Content -Path $dockerConfigPath -Value ($dockerConfigObj | ConvertTo-Json -Depth 5)
 }
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

@@ -2,10 +2,10 @@ $whoAmI = whoami
 
 if ((Get-LocalGroupMember -Group Administrators).Name -like "*$whoAmI*") {
     invoke-writeOutputRequirements("$whoAmI local account is admin!")
-    return @($true, 'OK')
+    return 'OK'
 } else {
    invoke-writeOutputRequirements("$whoAmI local account is NOT admin!")
-   return @($true, 'KO')
+   return 'KO'
 }
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

@@ -1,12 +1,4 @@
-param(
-    [string]$downloadOutFile
-)
-
-$argumentList = @(
-    '/VERYSILENT'
-)
-
-Start-Process $downloadOutFile -ArgumentList $argumentList -Wait
+Start-Process $requirements["Git"]["DownloadOutFile"] -ArgumentList @('/VERYSILENT') -Wait
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

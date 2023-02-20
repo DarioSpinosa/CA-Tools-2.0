@@ -9,9 +9,9 @@ $MaxDate = 0
 $TokenPath = "~/.token.json"
 $TokenList = Get-Content $TokenPath | ConvertFrom-Json
 foreach ($t in $TokenList) {
-    $CurrentDate = $t.date.Replace("-", "")
-    if ($MaxDate -lt $CurrentDate) { 
-        $MaxDate = $CurrentDate
+    $currentDate = $t.date.Replace("-", "")
+    if ($MaxDate -lt $currentDate) { 
+        $MaxDate = $currentDate
         $TokenObj = $t
     }
 }
@@ -21,8 +21,8 @@ if ($ScarVersion -ne '') {
     $ScarConfigObj.version = $ScarVersion
 }
 $ScarConfigObj | ConvertTo-Json | Set-Content -Path $scarConfigPath
-$Description.Text += 'Downloading the file scarface.config.json...'
-$Description.Text += 'Download complete.'
+$outputInstallationLabel.Text += 'Downloading the file scarface.config.json...'
+$outputInstallationLabel.Text += 'Download complete.'
 
 # Execute ca scar
 $killCheck = {
@@ -34,15 +34,15 @@ $killCheck = {
 
 Start-Job $killCheck -Name "killVScode"
 
-$Description.Text += '`nExecuting the command ca scar...'
+$outputInstallationLabel.Text += '`nExecuting the command ca scar...'
 
 Set-Location 'C:\dev\scarface'
 $env:NG_CLI_ANALYTICS = "ci"
 
- $Description.AppendText("Executing ca scar:setup...")
+ invoke-writeOutputInstallations("Executing ca scar:setup...")
 Start-Process "$reqPathFile" -ArgumentList 'scar:setup' -NoNewWindow -Wait
 Start-Process "$reqPathFile" -ArgumentList "$reqArgList" -NoNewWindow -Wait
-$Description.Text += 'The command ca scar was executed correctly.`r`nPress the End button to conclude the installation.'
+$outputInstallationLabel.Text += 'The command ca scar was executed correctly.`r`nPress the End button to conclude the installation.'
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

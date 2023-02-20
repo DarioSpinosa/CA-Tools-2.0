@@ -2,7 +2,7 @@ $StartupPath = "~\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\
 $ScarVersion = ""
 $ScarConfig = "https://castorybookbloblwebsite.blob.core.windows.net/scar-configs/scarface.config.json"
 $addNodeBuildTools = ""
-$Requirements = Get-Content ".\requirements.json" | ConvertFrom-Json | ConvertPSObjectToHashtable
+$requirements = Get-Content ".\requirements.json" | ConvertFrom-Json | ConvertPSObjectToHashtable
 #don't indent inline. It'll break 
 $LIBRARY = @"
 [System.Runtime.InteropServices.DllImport("gdi32.dll")] public static extern IntPtr CreateRoundRectRgn(int nLeftRect, int nTopRect, int nRightRect, int nBottomRect, int nWidthEllipse, int nHeightEllipse);

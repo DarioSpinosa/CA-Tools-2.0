@@ -1,8 +1,8 @@
 $result = invoke-executeCommand("&'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe' -property catalog_productDisplayVersion")
-if (!$result) { return @($true, 'KO') }
+if (!$result) { return 'KO' }
 [version[]]$vsVersions = $result
 $vsVersion = ($vsVersions | Sort-Object -Descending)[0]
-return @($true, $(if (($vsVersion.Major -ge $Requirements["Visual Studio"]["MinVersion"]) -and ($vsVersion.Major -le $Requirements["Visual Studio"]["MaxVersion"])) { "OK" } else { "KO" }))
+return $(if (($vsVersion.Major -ge $requirements["Visual Studio"]["MinVersion"]) -and ($vsVersion.Major -le $requirements["Visual Studio"]["MaxVersion"])) { "OK" } else { "KO" })
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

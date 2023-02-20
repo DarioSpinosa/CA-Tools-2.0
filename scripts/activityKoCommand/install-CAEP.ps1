@@ -1,4 +1,4 @@
-$Description.Text += 'Installing the CAEP... (It will take a few minutes)'
+$outputInstallationLabel.Text += 'Installing the CAEP... (It will take a few minutes)'
 npm install -g @ca/cli
 ca plugins:install @ca/cli-plugin-scarface
 # SIG # Begin signature block

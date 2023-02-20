@@ -7,16 +7,15 @@ Add-Type -AssemblyName System.Drawing
 
 [System.Windows.Forms.Application]::EnableVisualStyles()
 
-$WelcomeForm = New-Object System.Windows.Forms.Form
-$WelcomeForm.StartPosition = "Manual"
-$WelcomeForm.Location = '600, 200'
-$WelcomeForm.ClientSize = '325, 425'
-$WelcomeForm.Text = "Install CAEP"
-$WelcomeForm.Icon = New-Object System.Drawing.Icon(".\assets\icon.ico")              
-$WelcomeForm.BackColor = "#ffffff"
-$WelcomeForm.StartPosition = "CenterScreen"
-$WelcomeForm.FormBorderStyle = "None"
-$WelcomeForm.BackgroundImage = [System.Drawing.Image]::Fromfile(".\assets\background2.png")
+$welcomeForm = New-Object System.Windows.Forms.Form
+$welcomeForm.StartPosition = "Manual"
+$welcomeForm.Location = '600, 200'
+$welcomeForm.ClientSize = '325, 425'
+$welcomeForm.Text = "Install CAEP"        
+$welcomeForm.BackColor = "#ffffff"
+$welcomeForm.StartPosition = "CenterScreen"
+$welcomeForm.FormBorderStyle = "None"
+$welcomeForm.BackgroundImage = [System.Drawing.Image]::Fromfile(".\assets\background2.png")
 
 $logo = New-Object System.Windows.Forms.PictureBox
 $logo.Image = [System.Drawing.Image]::Fromfile(".\assets\logo.png")
@@ -28,7 +27,7 @@ $HorizontalLine = New-Object System.Windows.Forms.Label
 $HorizontalLine.Text = ""
 $HorizontalLine.BorderStyle = "Fixed3D"
 $HorizontalLine.AutoSize = $false
-$HorizontalLine.Width = $WelcomeForm.ClientSize.Width
+$HorizontalLine.Width = $welcomeForm.ClientSize.Width
 $HorizontalLine.Height = 2
 $HorizontalLine.Location = "0, 90"
 
@@ -38,28 +37,28 @@ $line.Size = "325, 336"
 $line.BackColor = "#eeeeee"
 $line.BackgroundImage = [System.Drawing.Image]::Fromfile(".\assets\background.jpg")
 
-$WelcomeLabel = New-Object System.Windows.Forms.Label
-$WelcomeLabel.Text = "Welcome to the Code Architects`n      Enterprise Platform Setup"
-$WelcomeLabel.AutoSize = $true
-$WelcomeLabel.Location = "20, 10"
-$WelcomeLabel.Font = 'Roboto,14'
-$WelcomeLabel.BackColor = "Transparent"
+$welcomeLabel = New-Object System.Windows.Forms.Label
+$welcomeLabel.Text = "Welcome to the Code Architects`n      Enterprise Platform Setup"
+$welcomeLabel.AutoSize = $true
+$welcomeLabel.Location = "20, 10"
+$welcomeLabel.Font = 'Roboto,14'
+$welcomeLabel.BackColor = "Transparent"
 
-$InstallButton = New-Object System.Windows.Forms.Button
-$InstallButton.BackColor = "#ffffff"
-$InstallButton.Text = "Install"
-$InstallButton.Size = "125, 40"
-$InstallButton.Location = "100, 143"
-$InstallButton.Font = 'Roboto,15'
-$InstallButton.ForeColor = "#0a0a0a"
-$InstallButton.FlatStyle = "Flat"
-$InstallButton.FlatAppearance.BorderSize = 0;
-$InstallButton.FlatAppearance.MouseOverBackColor = "#2daae1"
-$InstallButton.Region = [System.Drawing.Region]::FromHrgn($RoundObject::CreateRoundRectRgn(0, 0, $InstallButton.Width, $InstallButton.Height, 8, 8))
+$startButton = New-Object System.Windows.Forms.Button
+$startButton.BackColor = "#ffffff"
+$startButton.Text = "Start"
+$startButton.Size = "125, 40"
+$startButton.Location = "100, 143"
+$startButton.Font = 'Roboto,15'
+$startButton.ForeColor = "#0a0a0a"
+$startButton.FlatStyle = "Flat"
+$startButton.FlatAppearance.BorderSize = 0;
+$startButton.FlatAppearance.MouseOverBackColor = "#2daae1"
+$startButton.Region = [System.Drawing.Region]::FromHrgn($roundObject::CreateRoundRectRgn(0, 0, $startButton.Width, $startButton.Height, 8, 8))
 
-$line.controls.AddRange(@($WelcomeLabel, $InstallButton))
-$WelcomeForm.controls.AddRange(@($logo, $line, $HorizontalLine))
+$line.controls.AddRange(@($welcomeLabel, $startButton))
+$welcomeForm.controls.AddRange(@($logo, $line, $HorizontalLine))
 
 #---------------------------------------------------------[Events]--------------------------------------------------------
 
-$InstallButton.Add_Click({ InstallButton_Click })
+$startButton.Add_Click({ startButton_Click })

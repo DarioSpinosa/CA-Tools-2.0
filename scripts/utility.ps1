@@ -68,54 +68,26 @@ function Get-MissingEnvironmentVariablePath {
 
 }
 
-function Send-InstallationLogs {
+function New-CommandString($String) {
   <#
-  .SYNOPSIS
-  Send all the logfiles to the private blob
-  .DESCRIPTION
-  Archive the .ca folder and sends it to the private blob
-  #>
-  $MaxDate = 0
-  $UserLogin = ""
-
-  # Transcript started in caep-installer.ps1
-  Stop-Transcript
-
-  foreach($t in Get-Content "~\.token.json" | ConvertFrom-Json) {
-    $TokenDate = $t.date.Replace("-", "")
-    if ($MaxDate -lt $TokenDate) {
-      $MaxDate = $TokenDate;
-      $UserLogin = $t.user
-    }
-  } 
-
-  $HelperPath = Join-Path -Path (Get-Location) -ChildPath "helper\"
-  $HelperZipPath = Join-Path -Path (Get-Location) -ChildPath "helper.zip"
-  $ConnectPath = Join-Path -Path (Get-Location) -ChildPath "connect.sh"
-  $CaZipPath = Join-Path -Path (Get-Location) -ChildPath "$UserLogin-$CurrentDate.zip"
-  $Destination = "$HOME\.ssh\"
-
-  if (!(Test-Path $Destination)) {
-    New-Item -Path $Destination -ItemType Directory -Force 
-  }
-
-  Expand-Archive -Path $HelperZipPath -DestinationPath (Get-Location) -Force
-
-  Get-ChildItem -Path $HelperPath -File | Move-Item -Destination $Destination -Force
-  $Compress = @{
-    Path = "$HOME\.ca\"
-    CompressionLevel = "Fastest"
-    DestinationPath = $CaZipPath
-  }
+    .SYNOPSIS
+    Resolve the Requirement's command, subsituting the variables inside the string with his concrete value
+    .DESCRIPTION
+    Resolves the Requirement's command, subsituting the variables inside the string with his concrete value
+    #>
+  $StringWithValue = $String
+  do {
+    Invoke-Expression("Set-Variable -name StringWithValue -Value `"$StringWithValue`"")
   
-  Compress-Archive @Compress -Force
-  &"C:\Program Files\Git\usr\bin\bash.exe" $ConnectPath $CaZipPath
+    invoke-writeOutputInstallations("$StringWithValue")
+  
+  } while ($StringWithValue -like '*$(*)*')
+  return $StringWithValue
 }
 
 function invoke-executeCommand($command){
   try {
-    $result = ($command | Invoke-Expression) 
-    return $(if ($result) {$result} else {$true})
+    return = ($command | Invoke-Expression) 
   }
   catch {
     return $false

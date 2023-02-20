@@ -1,12 +1,12 @@
 
 $dotNetVersion = invoke-executeCommand("dotnet --list-sdks")
-if (!$dotNetVersion) { return @($true, 'KO') }
-if ( $dotNetVersion -match $Requirements["DotNet Core"]["MaxVersion"]) {
+if (!$dotNetVersion) { return 'KO' }
+if ( $dotNetVersion -match $requirements["DotNet Core"]["MaxVersion"]) {
     invoke-writeOutputRequirements("$maxVersion match with $dotnetVersion")
-    return @($true, 'OK')
+    return 'OK'
 }
 else {
-    return @($true, 'KO')
+    return 'KO'
 }
 
 # SIG # Begin signature block

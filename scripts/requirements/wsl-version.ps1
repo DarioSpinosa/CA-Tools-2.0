@@ -2,17 +2,17 @@ param(
     [string]$scarConfig
 )
 
-if ($scarConfig.Contains('terranova') ) { return @($true, 'OK') }
+if ($scarConfig.Contains('terranova') ) { return 'OK'}
 
 $wslStatus = invoke-executeCommand("wsl --status")
-if (!$wslStatus) { return @($true, "KO") }
+if (!$wslStatus) { return "KO" }
 $wslStatusSplit = ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes($wslStatus))).split(' ')
     
 foreach ( $item in $wslStatusSplit ) {
-    if ( $item -eq '2' ) { return @($true, 'OK') }
+    if ( $item -eq '2' ) { return 'OK'}
 }
 
-return @($true, 'KO')
+return 'KO'
 
 
 # SIG # Begin signature block

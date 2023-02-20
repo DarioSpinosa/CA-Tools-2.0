@@ -1,6 +1,6 @@
 $nodeVersion = invoke-executeCommand("node --version")
-if (!$nodeVersion) { return @($true, 'KO') }
-return @($true, $(if ($nodeVersion.SubString(1, 2) -eq $Requirements["Node.js"]["MajorVersion"]) { "OK" } else { "KO" }))
+if (!$nodeVersion) { return 'KO'}
+return $(if ($nodeVersion.SubString(1, 2) -eq $requirements["Node.js"]["MajorVersion"]) { "OK" } else { "KO" })
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

@@ -1,7 +1,7 @@
-if ($scarConfig.Contains('terranova')) { return @($true, 'OK') }
+if ($scarConfig.Contains('terranova')) { return 'OK' }
 
 $wslStatus = invoke-executeCommand("wsl --status")
-if (!$wslStatus) { return @($true, "KO") }
+if (!$wslStatus) { return "KO" }
 $wslStatusSplit = ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes($wslStatus))).split(' '); 
       
 for ($i = 0; $i -lt $wslStatusSplit.Count; $i++) {
@@ -9,18 +9,18 @@ for ($i = 0; $i -lt $wslStatusSplit.Count; $i++) {
   if ($wslStatusSplit[$i] -like 'Kernel') {
               
     if ($wslStatusSplit[$i + 1] -like '*version*') {
-      return @($true, "OK")
+      return "OK"
     }
   }
   elseif ($wslStatusSplit[$i] -like 'Versione') {
               
     if (($wslStatusSplit[$i + 1] -like 'del') -and ($wslStatusSplit[$i + 2] -like '*kernel*') ) {
-      return @($true, "OK")
+      return "OK"
     }
   }
 }
       
-return @($true, "KO")
+return "KO"
 
 
 # SIG # Begin signature block

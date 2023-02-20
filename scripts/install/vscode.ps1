@@ -1,23 +1,12 @@
-param(
-    [string]$downloadOutFile
-)
+Start-Process $requirement["DownloadOutFile"] -ArgumentList @( '/VERYSILENT', '/NORESTART', '/mergetasks=!runcode' )
+-Wait
 
-$argumentList = @(
-    '/VERYSILENT',
-    '/NORESTART',
-    '/mergetasks=!runcode'
-)
-
-Start-Process $downloadOutFile -ArgumentList $argumentList -Wait
-
-$env:Path = [System.Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path','User')
+$env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path', 'User')
 code
-$CodeProcesses = (Get-Process Code -ErrorAction SilentlyContinue)
 
-if ($CodeProcesses) {
-    foreach ($CodeProcess in $CodeProcesses) {
-        $CodeProcess.CloseMainWindow()
-    }
+foreach ($codeProcess in (Get-Process Code -ErrorAction SilentlyContinue)) {
+    $codeProcess.CloseMainWindow()
+
 }
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

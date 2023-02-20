@@ -1,10 +1,9 @@
-if ($scarConfig.Contains('terranova')) { return @($true, 'OK') }
+if ($scarConfig.Contains('terranova')) { return 'OK' }
 
 $dockerVersion = (invoke-executeCommand("docker --version"))
-if (!$dockerVersion) { return @($true, 'KO') }
+if (!$dockerVersion) { return 'KO'}
 $dockerVersion = $dockerVersion.SubString(15, 4)
-$result = $(if (($dockerVersion -ge $Requirements["Docker"]["MinVersion"]) -and ($dockerVersion -le $Requirements["Docker"]["MaxVersion"])) { "OK" } else { "KO" })
-return @($true, $result)
+return $(if (($dockerVersion -ge $requirements["Docker"]["MinVersion"]) -and ($dockerVersion -le $requirements["Docker"]["MaxVersion"])) { "OK" } else { "KO" })
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
