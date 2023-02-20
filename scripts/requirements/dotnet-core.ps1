@@ -1,8 +1,3 @@
-
-function getSmallestArraySize($array1, $array2){
-    return $(if ($array1.Count -le $array2.Count) {$array1.Count} else {$array2.Count})
-}
-
 $dotNetVersions = invoke-executeCommand ("dotnet --list-sdks")
 if (-not $dotNetVersion) { return "KO" }
 $dotNetVersions.replace("[C:\Program Files\dotnet\sdk]", "").split("")
@@ -40,7 +35,7 @@ for ($i = 0; $i -lt $dotNetVersions.Count; $i += 2) {
     if ($minCheck -and $maxCheck) { return "OK" }
 
 }
-invoke-writeOutputRequirements "Le installazioni trovate non soddisfano le versioni minime e massime" $true
+invoke-WriteRequirementsLogs "Le installazioni trovate non soddisfano le versioni minime e massime"
 return ("VER")
 
 # SIG # Begin signature block

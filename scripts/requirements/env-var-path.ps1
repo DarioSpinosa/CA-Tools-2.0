@@ -2,12 +2,12 @@
 # . .\scripts\utility.ps1 Should be work anyway
 $envNotFound = (Get-MissingEnvironmentVariablePath -envToCheck $requirements[$name]["Values"])
 if ($envNotFound.Count){
-    invoke-writeOutputRequirements("not found list: $envNotFound", $true)
+    invoke-WriteRequirementsLogs "Not found list: $envNotFound"
     $requirements[$name]["Values"] = $envNotFound
     return "KO"
 }
 else {
-    invoke-writeOutputRequirements "All the environment variables have been found" $true
+    invoke-WriteRequirementsLogs "All the environment variables have been found"
     return "OK"
 }
 

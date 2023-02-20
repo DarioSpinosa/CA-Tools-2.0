@@ -10,7 +10,6 @@ $mainForm.Location = '700, 250'
 $mainForm.ClientSize = '1000, 550'
 $mainForm.StartPosition = "CenterScreen"
 $mainForm.FormBorderStyle = "None"; #The window size can't be changed by the user
-$mainForm.BackgroundImage = [System.Drawing.Image]::Fromfile(".\assets\background.jpg")
 
 #---------------------------------------------------------------------------[SIDEBAR]---------------------------------------------------------------------------
 $sidebar = New-Object System.Windows.Forms.Panel
@@ -27,7 +26,7 @@ $logo.BackColor = "Transparent"
 
 $tabOutputRequirementsButton = New-Object System.Windows.Forms.Button
 $tabOutputRequirementsButton.BackColor = "#00ffffff"
-$tabOutputRequirementsButton.Text = "Output Requirements"
+$tabOutputRequirementsButton.Text = "Requirements"
 $tabOutputRequirementsButton.Size = "150, 75"
 $tabOutputRequirementsButton.Location = "0, 100"
 $tabOutputRequirementsButton.Font = 'Roboto,10'
@@ -35,21 +34,11 @@ $tabOutputRequirementsButton.ForeColor = "#ffffff"
 $tabOutputRequirementsButton.FlatStyle = "Flat"
 $tabOutputRequirementsButton.FlatAppearance.BorderSize = 0 
 
-$tabRequirementsResultsButton = New-Object System.Windows.Forms.Button
-$tabRequirementsResultsButton.BackColor = "#00ffffff"
-$tabRequirementsResultsButton.Text = "Results Requirements"
-$tabRequirementsResultsButton.Size = "150, 75"
-$tabRequirementsResultsButton.Location = "0, 175"
-$tabRequirementsResultsButton.Font = 'Roboto,10'
-$tabRequirementsResultsButton.ForeColor = "#ffffff"
-$tabRequirementsResultsButton.FlatStyle = "Flat"
-$tabRequirementsResultsButton.FlatAppearance.BorderSize = 0;
-
 $tabOutputInstallationsButton = New-Object System.Windows.Forms.Button
 $tabOutputInstallationsButton.BackColor = "#00ffffff"
 $tabOutputInstallationsButton.Text = "Installation Output"
 $tabOutputInstallationsButton.Size = "150, 75"
-$tabOutputInstallationsButton.Location = "0, 250"
+$tabOutputInstallationsButton.Location = "0, 175"
 $tabOutputInstallationsButton.Font = 'Roboto,10'
 $tabOutputInstallationsButton.ForeColor = "#ffffff"
 $tabOutputInstallationsButton.FlatStyle = "Flat"
@@ -59,47 +48,64 @@ $tabInstallationsResultsButton = New-Object System.Windows.Forms.Button
 $tabInstallationsResultsButton.BackColor = "#00ffffff"
 $tabInstallationsResultsButton.Text = "Installations Results"
 $tabInstallationsResultsButton.Size = "150, 75"
-$tabInstallationsResultsButton.Location = "0, 325"
+$tabInstallationsResultsButton.Location = "0, 250"
 $tabInstallationsResultsButton.Font = 'Roboto,10'
 $tabInstallationsResultsButton.ForeColor = "#ffffff"
 $tabInstallationsResultsButton.FlatStyle = "Flat"
 $tabInstallationsResultsButton.FlatAppearance.BorderSize = 0;
 
 #---------------------------------------------------------------------------[TABS]---------------------------------------------------------------------------
+$tabRequirements = New-Object System.Windows.Forms.Panel
+$tabRequirements.Location = "150, 0"
+$tabRequirements.Size = "850, 600"
+$tabRequirements.BackColor = "#00ffffff"
+$tabRequirements.BackgroundImage = [System.Drawing.Image]::Fromfile(".\assets\background.jpg")
+
+$selectedRequirement = New-Object System.Windows.Forms.Label
+$selectedRequirement.Text = ""
+$selectedRequirement.AutoSize = $true
+$selectedRequirement.Location = "607, 15"
+$selectedRequirement.Font = 'Location, 20'
+$selectedRequirement.BackColor = "Transparent"
+$selectedRequirement.ForeColor = "#000000"
+$selectedRequirement.Bold
+
 $outputRequirementsLabel = New-Object System.Windows.Forms.TextBox
 $outputRequirementsLabel.Text = ""
-$outputRequirementsLabel.Size = "750, 500"
+$outputRequirementsLabel.Size = "435, 470"
 $outputRequirementsLabel.Multiline = $true
-$outputRequirementsLabel.Location = "200, 25"
-$outputRequirementsLabel.Font = 'Roboto,12'
+$outputRequirementsLabel.Location = "390, 55"
+$outputRequirementsLabel.Font = 'Century Gothic, 13'
 $outputRequirementsLabel.ScrollBars = "Vertical"
 $outputRequirementsLabel.ReadOnly = $true
-$outputRequirementsLabel.visible = $false
 
 $gridRequirements = New-Object System.Windows.Forms.DataGridView
 $gridRequirements.Name = "Grid"
 $gridRequirements.BorderStyle = 0
 $gridRequirements.RowHeadersVisible = $false
 $gridRequirements.EnableHeadersVisualStyles = $false
-$gridRequirements.BackgroundColor = "#ffffff"
+$gridRequirements.BackgroundColor = "#FFFFFF"
 $gridRequirements.DefaultCellStyle.Font = "Century Gothic, 13"
 $gridRequirements.DefaultCellStyle.BackColor = "#ffffff"
 $gridRequirements.AdvancedCellBorderStyle.All = "None"
+$gridRequirements.AllowUserToResizeRows = $false
 $gridRequirements.ColumnCount = 2
 $gridRequirements.Columns[0].Name = "Requirement";
+$gridRequirements.Columns[0].Width = 240;
 $gridRequirements.Columns[1].Name = "Status";
+$gridRequirements.Columns[1].Width = 82;
 $gridRequirements.ColumnHeadersBorderStyle = 4
 $gridRequirements.ColumnHeadersDefaultCellStyle.Font = "Century Gothic, 15"
 $gridRequirements.ColumnHeadersDefaultCellStyle.ForeColor = "#ffffff"
-$gridRequirements.ColumnHeadersDefaultCellStyle.BackColor = "#2f5a84"
-$gridRequirements.AutoSizeColumnsMode = "Fill"
-$gridRequirements.Size = "750, 450"
-$gridRequirements.Location = "200, 25"
+$gridRequirements.ColumnHeadersDefaultCellStyle.BackColor = "#555555"
+$gridRequirements.Size = "340, 500"
+$gridRequirements.Location = "25, 25"
 $gridRequirements.MultiSelect = $false
 $gridRequirements.AllowUserToAddRows = $false
 $gridRequirements.ReadOnly = $true
 $gridRequirements.BackgroundImage = [System.Drawing.Image]::Fromfile(".\assets\background.jpg")
-$gridRequirements.visible = $false
+
+$tabRequirements.Controls.AddRange(@($selectedRequirement, $outputRequirementsLabel, $gridRequirements))
 
 $outputInstallationLabel = New-Object System.Windows.Forms.TextBox
 $outputInstallationLabel.Text = ""
@@ -161,17 +167,13 @@ $nextButton.Font = 'roboto, 13'
 $nextButton.ForeColor = "#ffffff"
 $nextButton.Visible = $false
 
-$sidebar.Controls.AddRange(@($logo, $tabOutputRequirementsButton, $tabRequirementsResultsButton, $tabOutputInstallationsButton, $tabInstallationsResultsButton))
-$mainForm.Controls.AddRange(@($sidebar, $installButton, $nextButton, $postActionButton, $outputRequirementsLabel, $gridRequirements, $outputInstallationLabel, $gridInstallation))
+$sidebar.Controls.AddRange(@($logo, $tabOutputRequirementsButton, $tabOutputInstallationsButton, $tabInstallationsResultsButton))
+$mainForm.Controls.AddRange(@($sidebar, $installButton, $nextButton, $postActionButton, $tabRequirements, $outputInstallationLabel, $gridInstallation))
 
 #---------------------------------------------------------------------------[EVENTS]---------------------------------------------------------------------------
-$tabOutputRequirementsButton.Add_Click({ tabButton_Click $outputRequirementsLabel })
+$tabOutputRequirementsButton.Add_Click({ tabButton_Click $tabRequirements })
 $tabOutputRequirementsButton.Add_MouseEnter({ Button_MouseEnter $tabOutputRequirementsButton })
 $tabOutputRequirementsButton.Add_MouseLeave({ Button_MouseLeave $tabOutputRequirementsButton })
-
-$tabRequirementsResultsButton.Add_Click({ tabButton_Click $gridRequirements })
-$tabRequirementsResultsButton.Add_MouseEnter({ Button_MouseEnter $tabRequirementsResultsButton })
-$tabRequirementsResultsButton.Add_MouseLeave({ Button_MouseLeave $tabRequirementsResultsButton })
 
 $tabOutputInstallationsButton.Add_Click({ tabButton_Click $outputInstallationLabel })
 $tabOutputInstallationsButton.Add_MouseEnter({ Button_MouseEnter $tabOutputInstallationsButton })
@@ -184,3 +186,5 @@ $tabInstallationsResultsButton.Add_MouseLeave({ Button_MouseLeave $tabInstallati
 $postActionButton.Add_Click({ postAction_Click })
 $installButton.Add_Click({ installButton_Click })
 $nextButton.Add_Click({ nextButton_Click })
+$gridRequirements.Add_Click({ gridRequirementrs_Click })
+$selectedRequirement.Add_SizeChanged({ selectedRequirement_SizeChanged })

@@ -1,6 +1,6 @@
 $gitVersion = invoke-executeCommand("git --version")
 if (!$gitVersion) { 
-    invoke-writeOutputRequirements "Installazione di git non presente" $true
+    invoke-WriteRequirementsLogs "Installazione di git non presente"
     return 'KO' 
 }
 return $(if ($gitVersion[12] -eq $requirements["Git"]["MajorVersion"]) { "OK" } else { "KO" })

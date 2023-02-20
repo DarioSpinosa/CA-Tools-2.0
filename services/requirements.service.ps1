@@ -1,9 +1,9 @@
-Add-Type -AssemblyName System.Windows.Forms
-Add-Type -AssemblyName System.Drawing
+Add-Type -Assemblyname System.Windows.Forms
+Add-Type -Assemblyname System.Drawing
 #--------------------------------------------------------[FUNCTIONS]--------------------------------------------------------
 function Invoke-Main() {
   $debugPreference = 'Continue'
-  $VerbosePreference = 'Continue'
+  $verbosePreference = 'Continue'
   $InformationPreference = 'Continue'
   New-Item -Path "~\.ca\$currentDate" -ItemType Directory
   Start-Transcript $logFilePath
@@ -18,24 +18,26 @@ function Invoke-Main() {
   Remove-Item $downloadExeFolder* -Recurse -Force
   if (!(Test-Path -Path $downloadExeFolder)) {
     Remove-Item 
-    invoke-writeOutputRequirements("$downloadExeFolder not found. Creating it...")
+    invoke-WriteRequirementsLogs("$downloadExeFolder not found. Creating it...")
     New-Item -Path $downloadExeFolder -ItemType Directory
   }
 
   #Resolve the Requirement's dependencies
   Resolve-Dependencies
   Invoke-OverrideRequirement
-  Invoke-LoadRequirementGrid
+  Invoke-CheckRequirements
+  $mainForm.Hide()
+  $mainForm.ShowDialog()
   $backofficeProjectPath = "C:\dev\scarface\back-office"
   if (Test-Path $backofficeProjectPath) { Remove-Item -Path $backofficeProjectPath -Force -Recurse }
   New-StartupCmd
 }
 
 function Resolve-Dependencies() {
-  foreach ($Name in $requirements.Keys) {
-    $dependencies = $requirements[$Name]["Dependencies"]
+  foreach ($name in $requirements.Keys) {
+    $dependencies = $requirements[$name]["Dependencies"]
     if ($dependencies.Count -eq 0) { break }
-    $requirements[$Name]["Dependencies"] = Resolve-SingleDependency $dependencies
+    $requirements[$name]["Dependencies"] = Resolve-SingleDependency $dependencies
   } 
 }
 
@@ -48,8 +50,8 @@ Creates a new list of Requirements with their dependencies resolved
 #>
   $TempDependencies = $dependencies
   foreach ($dependency in $dependencies) {
-    $ResolvedDependecy = Resolve-SingleDependency $requirements[$dependency]["Dependencies"]
-    if (!$TempDependencies.Contains($ResolvedDependecy)) { $TempDependencies += $ResolvedDependecy }
+    $resolvedDependecy = Resolve-SingleDependency $requirements[$dependency]["Dependencies"]
+    if (!$TempDependencies.Contains($resolvedDependecy)) { $TempDependencies += $resolvedDependecy }
   }
 
   return $TempDependencies
@@ -65,13 +67,13 @@ Override custom json to Requirements
 
   $overrideJson = DownloadScarConfigJson
   if (!($overrideJson)) {
-    invoke-writeOutputRequirements("No override found")
+    # invoke-WriteRequirementsLogs("No override found")
     return
   }
 
-  foreach ($Name in $overrideJson.Keys) {
-    foreach ($Property in $overrideJson[$Name].Keys) {
-      $requirements[$Name][$Property] = $overrideJson[$Name][$Property]
+  foreach ($name in $overrideJson.Keys) {
+    foreach ($Property in $overrideJson[$name].Keys) {
+      $requirements[$name][$Property] = $overrideJson[$name][$Property]
     }
   }
 }
@@ -88,26 +90,26 @@ Download scarface.config.json
   if ( Test-Path $scarConfigPath) { Remove-Item -Path $scarConfigPath -Force }
   New-Item -Path $scarConfigPath -Force | Out-Null
 
-  invoke-writeOutputRequirements("downloading $ScarConfig")
-  $overrideRequirement = (((Invoke-WebRequest -Uri $ScarConfig -UseBasicParsing).Content) | ConvertFrom-Json).overrideRequirement
+  # invoke-WriteRequirementsLogs("downloading $scarConfig")
+  $overrideRequirement = (((Invoke-WebRequest -Uri $scarConfig -UseBasicParsing).Content) | ConvertFrom-Json).overrideRequirement
   if (!$overrideRequirement) { return $false }
-  invoke-writeOutputRequirements("downloading " + $overrideRequirement)
+  # invoke-WriteRequirementsLogs("downloading " + $overrideRequirement)
   return ((Invoke-WebRequest -Uri $overrideRequirement -UseBasicParsing).Content | ConvertFrom-Json | ConvertPSObjectToHashtable)
 }
 
 function Invoke-OrderRequirements {
   $dependenciesCount = @{}
-  foreach ($Name in $requirements.Keys) {
-    $dependenciesCount.Add($Name, $requirements[$Name]["Dependencies"].Count)
+  foreach ($name in $requirements.Keys) {
+    $dependenciesCount.Add($name, $requirements[$name]["Dependencies"].Count)
   }
 
-  $SortedNames = @()
+  $sortednames = @()
   foreach ($element in $dependenciesCount.GetEnumerator() | Sort-Object Value) {
-    $SortedNames += $element.Name 
+    $sortednames += $element.name 
   }
 
-  [array]::Reverse($SortedNames)
-  return $SortedNames
+  # [array]::Reverse($sortednames)
+  return $sortednames
 }
 
 function Invoke-CheckRequirements {
@@ -118,60 +120,32 @@ Check if the Requirement was satisfied or not
 For each Requirement it will check if it's satisfied or not,
 if the Requirement isn't satisfied then add it to the list of Requirements that have to be satisfied through the installer
 #>
-  $SortedRequirements = Invoke-OrderRequirements
-  $requirementsNotMet = @()
-  $requirementsMet = @()
-  # List of Requirements that have to be executed, no matter what
-  foreach ($Name in $SortedRequirements) {
-    if (!$requirements[$Name]["CheckRequirement"]) { break }
-    $result = $requirements[$Name]["CheckRequirement"] | Invoke-Expression
-    $requirements[$Name].Add("Result", $result)
-    if ($result -eq 'OK') { 
-      $requirements.Remove($Name)
-      $requirementsMet += $Name 
-    }
-    else{
-      $requirementsNotMet += $Name 
-    }
-  }
-
-  return @($requirementsNotMet, $requirementsMet)
-}
-
-function Invoke-LoadRequirementGrid {
-  <#
-.SYNOPSIS
-Show on the GUI, each Requirement and their status
-.DESCRIPTION
-Shows each Requirement and their status that indicates if they were satisfied (OK) or not satisfied (KO) on the GUI
-#>
-  $Lists = Invoke-CheckRequirements
-  $requirementsNotMet = @()
-  $requirementsMet = @()
-  $requirementsNotMet += $Lists[0]
-  $requirementsMet += $Lists[1]
-  $Red = [System.Drawing.Color]::FromArgb(255, 236, 84, 84)
+  $sortedRequirements = Invoke-OrderRequirements
+  $red = [System.Drawing.Color]::FromArgb(255, 236, 84, 84)
   $green = [System.Drawing.Color]::FromArgb(255, 13, 173, 141)
 
-  foreach ($Name in $requirementsNotMet | Sort-Object) {
-    Invoke-CreateRow  @($Name, $requirements[$name]["Result"]) $Red
-  }
-
-  foreach ($Name in $requirementsMet | Sort-Object) {
-    Invoke-CreateRow  @($Name, "OK") $green
+  # List of Requirements that have to be executed, no matter what
+  foreach ($name in $sortedRequirements) {
+    $result = $requirements[$name]["CheckRequirement"] | Invoke-Expression
+    $requirements[$name].Add("Result", $result)
+    if ($result -eq 'OK') { 
+      $requirements.Remove($name)
+      Invoke-CreateRow $name $result $green
+    }
+    else{ 
+      Invoke-CreateRow $name $result $red
+    }
   }
   
-  Button_MouseLeave($tabOutputRequirementsButton)
-  Button_MouseEnter($tabRequirementsResultsButton)
-  tabButton_Click($gridRequirements)
+  ($requirementsLogs  | ConvertTo-Json) > "~\.ca\$currentDate\requirements.json" 
   $installButton.visible = $true
 }
 
-function Invoke-CreateRow($Value, $color) {
-  $Row = New-Object System.Windows.Forms.DataGridViewRow
-  $Row.CreateCells($gridRequirements, $Value)
-  $Row.DefaultCellStyle.BackColor = $color
-  $gridRequirements.Rows.Add($Row);
+function Invoke-CreateRow($name, $result, $color) {
+  $row = New-Object System.Windows.Forms.DataGridViewRow
+  $row.CreateCells($gridRequirements, @($name, $result))
+  $row.DefaultCellStyle.BackColor = $color
+  $gridRequirements.Rows.Add($row);
 }
 function New-StartupCmd() {
   <#
@@ -181,14 +155,14 @@ Create a .cmd that will execute the CAEP installer at startup
 Creates a .cmd that will execute the CAEP installer at startup until they won't complete it
 #>
 
-  $ScriptArgs = "\`"$(Join-Path $(Get-Location) "caep-main.ps1")\`""
+  $scriptArgs = "\`"$(Join-Path $(Get-Location) "caep-main.ps1")\`""
 
-  if ($ScarConfig) { $ScriptArgs += " -ScarConfig " + $ScarConfig }
-  if ($ScarVersion) { $ScriptArgs += " -ScarVersion " + $ScarVersion }
+  if ($scarConfig) { $scriptArgs += " -ScarConfig " + $scarConfig }
+  if ($scarVersion) { $scriptArgs += " -ScarVersion " + $scarVersion }
 
-  if (!(Test-Path $StartupPath)) {
-    New-Item -Path $StartupPath | Out-Null
-    Add-Content -Path $StartupPath -Value "start powershell -Command `"Start-Process powershell -verb runas -ArgumentList '-NoExit -file " + $ScriptArgs + "'`""
+  if (!(Test-Path $startupPath)) {
+    New-Item -Path $startupPath | Out-Null
+    Add-Content -Path $startupPath -Value "start powershell -Command `"Start-Process powershell -verb runas -ArgumentList '-NoExit -file " + $scriptArgs + "'`""
   }
 }
 

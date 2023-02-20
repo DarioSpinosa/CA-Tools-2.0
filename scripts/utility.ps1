@@ -29,6 +29,16 @@ function ConvertPSObjectToHashtable {
   }
 }
 
+function invoke-WriteRequirementsLogs($log) {
+  $log += ";"
+  if ($requirementsLogs.Contains($name)) {
+    $requirementsLogs[$name] += $log 
+  }
+  else {
+    $requirementsLogs.Add($name, $log)
+  }
+}
+
 function Remove-StartupCmd {
   <#
   .SYNOPSIS
@@ -40,7 +50,7 @@ function Remove-StartupCmd {
   Remove-Item -Path $StartupPath -Force -ErrorAction Ignore
 }
 
-function Get-MissingEnvironmentVariablePath($envToCheck){
+function Get-MissingEnvironmentVariablePath($envToCheck) {
   <#
   .SYNOPSIS
   Get missing Environment Variable
@@ -53,14 +63,14 @@ function Get-MissingEnvironmentVariablePath($envToCheck){
   $envSplitted = $envToCheck.ToLower().Split(';')
   
   foreach ($value in $envSplitted) {
-     invoke-writeOutputRequirements("Checking if $value exists in environment variable PATH")
-    if(-not $envInPath.Contains($value) ) {
+    invoke-WriteRequirementsLogs("Checking if $value exists in environment variable PATH")
+    if (-not $envInPath.Contains($value) ) {
       $notFound += $value
     }
   }
 
   if ($notFound.Count) {
-    invoke-writeOutputRequirements "path not found: $notFound"
+    invoke-WriteRequirementsLogs "Path not found: $notFound"
   }
 
   return $notFound
@@ -84,7 +94,7 @@ function New-CommandString($String) {
   return $StringWithValue
 }
 
-function invoke-executeCommand($command){
+function invoke-executeCommand($command) {
   try {
     return (Invoke-Expression $command) 
   }
@@ -93,13 +103,17 @@ function invoke-executeCommand($command){
   }
 }
 
-function invoke-request($command){
+function invoke-request($command) {
   try {
     return (Invoke-WebRequest $command) 
   }
   catch {
     return $false
   }
+}
+
+function getSmallestArraySize($array1, $array2) {
+  return $(if ($array1.Count -le $array2.Count) { $array1.Count } else { $array2.Count })
 }
 
 # SIG # Begin signature block

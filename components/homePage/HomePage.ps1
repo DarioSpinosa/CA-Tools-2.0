@@ -2,6 +2,10 @@ param(
   [Diagnostics.Stopwatch]$timer
 )
 
+function selectedRequirement_SizeChanged(){
+  $selectedRequirement.Left = 607 - ($selectedRequirement.Width / 2)
+}
+
 function invoke-writeOutputRequirements($message, $newLine) {
   writeOutput $outputRequirementsLabel $message $newLine
 }
@@ -16,9 +20,10 @@ function writeOutput($label, $message, $newLine) {
 }
 
 function tabButton_Click($newTab) {
-  foreach ($element in @($outputRequirementsLabel, $gridRequirements, $outputInstallationLabel, $gridInstallation)){
+  foreach ($element in @($outputRequirementsLabel, $gridRequirements, $outputInstallationLabel, $gridInstallation)) {
     $element.visible = $false
   }
+
   $newTab.visible = $true
 }
 
@@ -32,7 +37,7 @@ function Button_MouseLeave ($button) {
   $button.ForeColor = "#ffffff"
 }
 
-function installButton_Click{
+function installButton_Click {
   $mainForm.controls.remove($installButton)
   Button_MouseLeave($tabRequirementsResultsButton)
   Button_MouseEnter($tabOutputInstallationsButton)
@@ -43,7 +48,7 @@ function installButton_Click{
   nextButton_Click
 }
 
-function nextButton_Click{
+function nextButton_Click {
   installRequirement $keysRequirements[$indexRequirement]
   $indexRequirement = $indexRequirement + 1
   $nextButton.visible = $false
@@ -67,11 +72,27 @@ function postAction_Click {
   $postActionButton.visible = $false
 }
 
+function gridRequirementrs_Click {
+  $key = $gridRequirements.CurrentRow.Cells[0].Value
+  $gridRequirements.ClearSelection()
+  $selectedRequirement.Text = $key
+  $outputRequirementsLabel.Text = ""
+
+  if (-not $requirementsLogs.Contains($key)) {
+    invoke-writeOutputRequirements "Nessun log trovato per questo requirement"
+    return
+  }
+
+  $log = ($requirementsLogs[$key]).split(";").replace(";", "")
+  foreach ($row in $log) {
+    invoke-writeOutputRequirements $row $true
+  }
+
+}
 #---------------------------------------------------------------------------------------------------------[LOGIC]---------------------------------------------------------------------------------------------------------
 . .\components\homePage\Form.ps1
 $indexRequirement = 0
 $keysRequirements = @()
-Button_MouseEnter($tabOutputRequirementsButton)
+$mainForm.Show()
 . .\services\requirements.service.ps1
 . .\services\installation.service.ps1
-$mainForm.ShowDialog()

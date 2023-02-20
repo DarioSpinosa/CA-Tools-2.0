@@ -4,7 +4,7 @@ if (!$ListExtensions) { return 'KO'}
 $missingExtentions = @()
 
 foreach ($extension in $requirements["VS Code Extentions"]["Extentions"]) {
-    if (-not $ListExtensions.Contains($extension)) { $missingExtentions.Add($extension) }
+    if (-not $ListExtensions.Contains($extension)) { $missingExtentions += $extension }
 }
 
 $requirements["VS Code Extentions"]["Extentions"] = $missingExtentions

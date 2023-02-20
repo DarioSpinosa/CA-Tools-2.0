@@ -1,12 +1,12 @@
-invoke-writeOutputRequirements("Generate npm log for npm view commands in $capturedPath ...")
+invoke-WriteRequirementsLogs("Generate npm log for npm view commands in $capturedPath ...")
 
 if (!(invoke-executeCommand("npm view @ca/cli  2>&1 > $capturedPath")) -or !(invoke-executeCommand("npm view @ca-codegen/core 2>&1 >> $capturedPath"))) {return 'KO'}
 
 $npmErrCheck = Get-Content $capturedPath
 
-invoke-writeOutputRequirements("$capturedPath content: ")
+invoke-WriteRequirementsLogs("$capturedPath content: ")
 foreach ($element in $npmErrCheck) {
-    invoke-writeOutputRequirements "$element" $true
+    invoke-WriteRequirementsLogs "$element" $true
 }
 
 foreach ($item in $npmErrCheck) {

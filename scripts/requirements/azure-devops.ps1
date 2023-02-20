@@ -1,5 +1,5 @@
 if (!((Test-NetConnection devops.codearchitects.com -port 444).TcpTestSucceeded)) { 
-    invoke-writeOutputRequirements "AzureDevops TCP TEST Failed" $true
+    invoke-WriteRequirementsLogs "AzureDevops TCP TEST Failed" $true
     return 'TCP' 
 }
 try {
