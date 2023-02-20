@@ -18,11 +18,14 @@ else {
 invoke-writeOutputRequirements('Searching for ca plugins...')
 $npmPlugin = ca plugins
 if ($npmPlugin -like '*@ca/cli-plugin-scarface*' ) {
-	 invoke-writeOutputRequirements('ca plugins: @ca/cli-plugin-scarface found!')
+	 invoke-writeOutputRequirements 'ca plugins: @ca/cli-plugin-scarface found!' $true
   return 'OK'
 }
+else {
+  invoke-writeOutputRequirements 'ca plugins: @ca/cli-plugin-scarface not found!' $true
+  return 'KO'
+}
 
-return 'KO'
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

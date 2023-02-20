@@ -1,13 +1,47 @@
 
-$dotNetVersion = invoke-executeCommand("dotnet --list-sdks")
-if (!$dotNetVersion) { return 'KO' }
-if ( $dotNetVersion -match $requirements["DotNet Core"]["MaxVersion"]) {
-    invoke-writeOutputRequirements("$maxVersion match with $dotnetVersion")
-    return 'OK'
+function getSmallestArraySize($array1, $array2){
+    return $(if ($array1.Count -le $array2.Count) {$array1.Count} else {$array2.Count})
 }
-else {
-    return 'KO'
+
+$dotNetVersions = invoke-executeCommand ("dotnet --list-sdks")
+if (-not $dotNetVersion) { return "KO" }
+$dotNetVersions.replace("[C:\Program Files\dotnet\sdk]", "").split("")
+$minCheck = $false
+$maxCheck = $false
+$minVersion = $requirements[$name]["MinVersion"].split(".")
+$maxVersion = $requirements[$name]["MaxVersion"].split(".")
+
+for ($i = 0; $i -lt $dotNetVersions.Count; $i += 2) {
+    $actualVersion = $dotNetVersions[$i].split(".")
+    $minCheck = $false
+    $maxCheck = $false
+    for ($j = 0; $j -lt (getSmallestArraySize $actualVersion $minVersion); $j++){
+        if ($actualVersion[$j] -gt $minVersion[$j]) {
+            $minCheck = $true
+            break
+        }
+        elseif ($actualVersion[$j] -lt $minVersion[$j]) {
+            break
+        }
+    }
+    
+    if (-not $minCheck) { continue }
+
+    for ($j = 0; $j -lt (getSmallestArraySize $actualVersion $maxVersion); $j++){
+        if ($actualVersion[$j] -lt $maxVersion[$j]) {
+            $maxCheck = $true
+            break
+        }
+        elseif ($actualVersion[$j] -gt $maxVersion[$j]) {
+            break
+        }
+    }
+
+    if ($minCheck -and $maxCheck) { return "OK" }
+
 }
+invoke-writeOutputRequirements "Le installazioni trovate non soddisfano le versioni minime e massime" $true
+return ("VER")
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

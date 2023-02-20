@@ -154,7 +154,7 @@ Shows each Requirement and their status that indicates if they were satisfied (O
   $green = [System.Drawing.Color]::FromArgb(255, 13, 173, 141)
 
   foreach ($Name in $requirementsNotMet | Sort-Object) {
-    Invoke-CreateRow  @($Name, "KO") $Red
+    Invoke-CreateRow  @($Name, $requirements[$name]["Result"]) $Red
   }
 
   foreach ($Name in $requirementsMet | Sort-Object) {

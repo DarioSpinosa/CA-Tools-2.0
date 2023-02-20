@@ -1,7 +1,35 @@
 $npmVersion = invoke-executeCommand("npm --version")
-if ($npmVersion) { return 'KO' }
-return $(if ($npmVersion[0] -eq ($requirements["npm"]["MajorVersion"])) { "OK" } else { "KO" })
+if (-not $npmVersion) { return 'KO' }
+$minCheck = $false
+$maxCheck = $false
+$minVersion = $requirements[$name]["MinVersion"].split(".")
+$maxVersion = $requirements[$name]["MaxVersion"].split(".")
+$actualVersion = $npmVersion.split(".")
+$minCheck = $false
+$maxCheck = $false
+for ($j = 0; $j -lt (getSmallestArraySize $actualVersion $minVersion); $j++) {
+    if ($actualVersion[$j] -gt $minVersion[$j]) {
+        $minCheck = $true
+        break
+    }
+    elseif ($actualVersion[$j] -lt $minVersion[$j]) {
+        break
+    }
+}
+    
+if (-not $minCheck) { return "VER" }
 
+for ($j = 0; $j -lt (getSmallestArraySize $actualVersion $maxVersion); $j++) {
+    if ($actualVersion[$j] -lt $maxVersion[$j]) {
+        $maxCheck = $true
+        break
+    }
+    elseif ($actualVersion[$j] -gt $maxVersion[$j]) {
+        break
+    }
+}
+
+return $(if ($maxCheck) { "OK" } else {"VER"})
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

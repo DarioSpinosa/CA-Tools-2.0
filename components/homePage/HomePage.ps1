@@ -2,17 +2,17 @@ param(
   [Diagnostics.Stopwatch]$timer
 )
 
-function invoke-writeOutputRequirements($message) {
-  writeOutput $outputRequirementsLabel $message
+function invoke-writeOutputRequirements($message, $newLine) {
+  writeOutput $outputRequirementsLabel $message $newLine
 }
 
-function invoke-writeOutputInstallations($message) {
-  writeOutput $outputInstallationLabel $message
+function invoke-writeOutputInstallations($message, $newLine) {
+  writeOutput $outputInstallationLabel $message $newLine
 }
 
-function writeOutput($label, $message) {
+function writeOutput($label, $message, $newLine) {
   $label.AppendText("$message`r`n")
-  $label.AppendText([System.Environment]::NewLine)
+  if ($newLine) { $label.AppendText([System.Environment]::NewLine) }
 }
 
 function tabButton_Click($newTab) {

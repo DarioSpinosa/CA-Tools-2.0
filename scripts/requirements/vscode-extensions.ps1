@@ -1,11 +1,14 @@
 $ListExtensions = invoke-executeCommand("code --list-extensions")
 if (!$ListExtensions) { return 'KO'}
 
-foreach ($extension in $requirements["VS Code Extentions"]["Attributes"]) {
-    if ($ListExtensions.Contains($extension)) { $requirements["VS Code Extentions"]["Attributes"].Remove($extension) }
+$missingExtentions = @()
+
+foreach ($extension in $requirements["VS Code Extentions"]["Extentions"]) {
+    if (-not $ListExtensions.Contains($extension)) { $missingExtentions.Add($extension) }
 }
 
-return $(if($requirements["VS Code Extentions"]["Attributes"].Count -eq 0 ) {"OK"} else {"KO"})
+$requirements["VS Code Extentions"]["Extentions"] = $missingExtentions
+return $(if($missingExtentions.Count -eq 0 ) {"OK"} else {"KO"})
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

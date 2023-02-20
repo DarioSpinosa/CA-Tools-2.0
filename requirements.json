@@ -35,7 +35,6 @@
         "PostInstallTrueOkCommand": "./scripts/postInstallTrueOk/proxy-npm.ps1 -currentDate `$currentDate",
         "DeclineMessage": "return `\"You have declined to automatically set your proxy for npm.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "PostInstallCommand": "./scripts/postInstall/proxy-npm.ps1",
-        "Attributes": [],
         "CheckRequirement": "return ./scripts/requirements/proxy-npm.ps1",
         "PostAction": ""
         },
@@ -50,7 +49,6 @@
         "PostInstallTrueOkCommand": "./scripts/postInstallTrueOk/proxy-docker.ps1 -currentDate `$currentDate",
         "DeclineMessage": "return `\"You have declined to automatically set your proxy for Docker.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "PostInstallCommand": "./scripts/postInstall/proxy-docker.ps1",
-        "Attributes": [],
         "CheckRequirement": "return ./scripts/requirements/proxy-docker.ps1",
         "PostAction": ""
     },
@@ -65,7 +63,6 @@
         "PostInstallTrueOkCommand": "",
         "DeclineMessage": "return `\"You have declined to automatically set your default WSL Version.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "PostInstallCommand": "wsl --set-default-version 2",
-        "Attributes": [],
         "CheckRequirement": "return ./scripts/requirements/proxy-docker.ps1",
         "PostAction": ""
     },
@@ -80,7 +77,6 @@
         "PostInstallTrueOkCommand": "",
         "DeclineMessage": "return `\"You have declined to automatically set your default WSL Distribution.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "PostInstallCommand": "./scripts/postInstall/wsl-distribution.ps1",
-        "Attributes": [],
         "CheckRequirement": "return ./scripts/requirements/wsl-distribution.ps1",
         "PostAction": ""
     },
@@ -95,7 +91,6 @@
         "PostInstallTrueOkCommand": "",
         "DeclineMessage": "return `\"You have declined to automatically Update Visual Studio Code Settings.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "PostInstallCommand": "./scripts/postInstall/vscode-settings.ps1",
-        "Attributes": [],
         "CheckRequirement": "return ./scripts/requirements/vscode-settings.ps1",
         "PostAction": ""
     },
@@ -110,7 +105,7 @@
         "PostInstallTrueOkCommand": "",
         "DeclineMessage": "return `\"You have declined to automatically Install Visual Studio Code Extensions.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "InstallCommand": "./scripts/postInstall/vscode-extensions.ps1",
-        "Attributes": [
+        "Extentions": [
             "Mikael.Angular-BeastCode",
             "steoates.autoimport",
             "HookyQR.beautify",
@@ -140,7 +135,12 @@
         "Dependencies": [],
         "QuestionMessage": "Press 'Accept' to add the missing Environment Variable Path.",
         "Variable": "Path",
-        "Values": "`\"C:\\windows\\system32;C:\\windows\\system32\\wbem;C:\\windows;C:\\windows\\system32\\windowspowershell\\v1.0;C:\\Program Files\\Git\\usr\\bin`\"",
+        "Values": [
+            "C:\\windows\\system32",
+            "C:\\windows\\system32\\wbem",
+            "C:\\windows;C:\\windows\\system32\\windowspowershell\\v1.0",
+            "C:\\Program Files\\Git\\usr\\bin\\"
+        ],
         "Scope": "Machine",
         "DeclineMessage": "return `\"You have declined to automatically set your Environment Variable Path.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "CheckRequirement": "return ./scripts/requirements/env-var-path.ps1",
@@ -411,7 +411,7 @@
     },
     "Install CAEP": {
         "Type": "Activity",
-        "Dependencies": [ "Npm Login"],
+        "Dependencies": ["Npm Login"],
         "QuestionMessage": "Press 'Accept' to install the Code Architects Enterprise Platform (CAEP)",
         "PathFile": "C:\\Program Files\\Ca-Tools\\setup-ca-platform.exe",
         "ArgumentList": "-s",

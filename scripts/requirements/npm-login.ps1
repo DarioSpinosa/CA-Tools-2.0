@@ -6,7 +6,7 @@ $npmErrCheck = Get-Content $capturedPath
 
 invoke-writeOutputRequirements("$capturedPath content: ")
 foreach ($element in $npmErrCheck) {
-    invoke-writeOutputRequirements("$element")
+    invoke-writeOutputRequirements "$element" $true
 }
 
 foreach ($item in $npmErrCheck) {

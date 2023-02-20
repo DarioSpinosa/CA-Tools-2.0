@@ -40,29 +40,28 @@ function Remove-StartupCmd {
   Remove-Item -Path $StartupPath -Force -ErrorAction Ignore
 }
 
-function Get-MissingEnvironmentVariablePath {
+function Get-MissingEnvironmentVariablePath($envToCheck){
   <#
   .SYNOPSIS
   Get missing Environment Variable
   .DESCRIPTION
   Get missing Environment Variable
   #>
-  param(
-    [string]$envToCheck
-  )
 
   $notFound = @()
-  $envInPath = $env:PATH.ToLower()
-  $envSplitted = ($envToCheck -replace "`"","").ToLower().Split(';')
+  $envInPath = $env:PATH.ToLower().Split(';')
+  $envSplitted = $envToCheck.ToLower().Split(';')
   
   foreach ($value in $envSplitted) {
      invoke-writeOutputRequirements("Checking if $value exists in environment variable PATH")
-    if(!$envInPath.Contains($value) ) {
+    if(-not $envInPath.Contains($value) ) {
       $notFound += $value
     }
   }
 
-   invoke-writeOutputRequirements("path not found: $notFound")
+  if ($notFound.Count) {
+    invoke-writeOutputRequirements "path not found: $notFound"
+  }
 
   return $notFound
 
@@ -87,7 +86,7 @@ function New-CommandString($String) {
 
 function invoke-executeCommand($command){
   try {
-    return = ($command | Invoke-Expression) 
+    return (Invoke-Expression $command) 
   }
   catch {
     return $false
@@ -96,8 +95,7 @@ function invoke-executeCommand($command){
 
 function invoke-request($command){
   try {
-    $result = Invoke-WebRequest $command 
-    return $(if ($result) {$result} else {$true})
+    return (Invoke-WebRequest $command) 
   }
   catch {
     return $false

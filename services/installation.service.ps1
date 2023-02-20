@@ -44,11 +44,7 @@ function installRequirement($name) {
     Default {
       Write-Error "$($requirement["Type"]) not defined!!!"
     }
-  }
-  # Updates the Environment Variables
-  $env:PATH = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
-  invoke-writeOutputInstallations("Env var Path reloaded correctly")
-  
+  }invoke-executeCommand
   # Execute the post action for the current Requirement if present.
   if ($requirement["PostAction"]) {
     $postActionButton.visible = $true
@@ -88,7 +84,7 @@ function Invoke-EnableFeatureAction($name, $requirement) {
 }
 
 function Invoke-EnvironmentVariableAction($requirement) {
-  $envNotFound = Get-MissingEnvironmentVariablePath -envToCheck ($requirement["Values"] -replace "``", "")
+  $envNotFound = $requirement["Values"]
   
   foreach ($value in $envNotFound) {
     invoke-writeOutputInstallations("Add $value in Environment Variable Path")
@@ -131,6 +127,7 @@ function Invoke-PostInstallAction($requirement) {
 function Invoke-PermissionAction {
   invoke-writeOutputInstallations("Administrator Permission Unknown...")
 }
+
 function Invoke-ConnectionAction($requirement) {
   $outputInstallationLabel.SelectionColor = "Red"
   invoke-writeOutputInstallations[$requirement["Messages"][$requirement["Result"]]]

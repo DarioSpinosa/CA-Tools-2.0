@@ -1,6 +1,6 @@
 if ($scarConfig.Contains('terranova')) { return 'OK' }
 
-$dockerVersion = (invoke-executeCommand("docker --version"))
+$dockerVersion = Invoke-executeCommand("docker --version")
 if (!$dockerVersion) { return 'KO'}
 $dockerVersion = $dockerVersion.SubString(15, 4)
 return $(if (($dockerVersion -ge $requirements["Docker"]["MinVersion"]) -and ($dockerVersion -le $requirements["Docker"]["MaxVersion"])) { "OK" } else { "KO" })

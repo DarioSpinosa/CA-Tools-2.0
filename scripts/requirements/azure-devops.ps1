@@ -1,5 +1,13 @@
-if (!((Test-NetConnection devops.codearchitects.com -port 444).TcpTestSucceeded)) { return 'TCP' }
-if (!(invoke-request("-Uri https://devops.codearchitects.com:444/ -UseBasicParsing -DisableKeepAlive"))) { $status = $_.Exception.Response.StatusCode.value__ }
+if (!((Test-NetConnection devops.codearchitects.com -port 444).TcpTestSucceeded)) { 
+    invoke-writeOutputRequirements "AzureDevops TCP TEST Failed" $true
+    return 'TCP' 
+}
+try {
+    Invoke-WebRequest -Uri https://devops.codearchitects.com:444/ -UseBasicParsing -DisableKeepAlive
+}
+catch {
+    $status = $_.Exception.Response.StatusCode.value__
+}
 return $(if ($status -eq 401) { 'OK' } else { 'KO' })
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

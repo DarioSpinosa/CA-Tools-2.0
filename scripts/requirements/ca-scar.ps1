@@ -6,7 +6,7 @@ $backOfficeNodeModulesPath = Join-Path $backOfficeClientPath "node_modules"
 invoke-writeOutputRequirements('Checking if back-office sample project is generated...')
 
 if (!(Test-Path $backOfficeNodeModulesPath)) {
-    invoke-writeOutputRequirements('node_modules $backOfficeNodeModulesPath Opath not found!')
+    invoke-writeOutputRequirements("Path $backOfficeNodeModulesPath not found!")
 }
 else {
     $Result = (Get-ChildItem $backOfficeNodeModulesPath -Recurse -Filter *.js).Count
@@ -14,7 +14,7 @@ else {
 }
 
 $Result2 = Test-Path -Path $backOfficeBundlePath*.js
-invoke-writeOutputRequirements("js files in $backOfficeBundlePath" + $(if ($Result2) {" "} else {"not"}) + "found!")
+invoke-writeOutputRequirements "js files in $backOfficeBundlePath" + $(if ($Result2) {" "} else {"not"}) + "found!" $true
 return "KO"
 
 # SIG # Begin signature block

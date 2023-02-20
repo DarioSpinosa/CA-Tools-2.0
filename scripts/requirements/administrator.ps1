@@ -1,10 +1,15 @@
 $whoAmI = whoami
+$result = invoke-executeCommand "Get-LocalGroupMember -Group Administrators"
+if (-not $result) {
+    invoke-writeOutputRequirements "Administrator.ps1 has not ended correctly" $true
+    return 'KO'
+}
 
-if ((Get-LocalGroupMember -Group Administrators).Name -like "*$whoAmI*") {
-    invoke-writeOutputRequirements("$whoAmI local account is admin!")
+if ($result.Name -like "*$whoAmI*") {
+    invoke-writeOutputRequirements "$whoAmI local account is admin!" $true
     return 'OK'
 } else {
-   invoke-writeOutputRequirements("$whoAmI local account is NOT admin!")
+   invoke-writeOutputRequirements "$whoAmI local account is NOT admin!" $true
    return 'KO'
 }
 # SIG # Begin signature block

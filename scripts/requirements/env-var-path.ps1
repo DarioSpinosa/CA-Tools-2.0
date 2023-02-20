@@ -1,8 +1,15 @@
 # Extecute function to get missing environment variable path
 # . .\scripts\utility.ps1 Should be work anyway
-$envNotFound = Get-MissingEnvironmentVariablePath -envToCheck $requirements["Environment Variable Path"]["Values"]
-invoke-writeOutputRequirements("not found list: $envNotFound")
-return $(if ($envNotFound.Count) {'KO'} else {"OK"})
+$envNotFound = (Get-MissingEnvironmentVariablePath -envToCheck $requirements[$name]["Values"])
+if ($envNotFound.Count){
+    invoke-writeOutputRequirements("not found list: $envNotFound", $true)
+    $requirements[$name]["Values"] = $envNotFound
+    return "KO"
+}
+else {
+    invoke-writeOutputRequirements "All the environment variables have been found" $true
+    return "OK"
+}
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
