@@ -1,13 +1,39 @@
-Start-Process $requirement["DownloadOutFile"] -ArgumentList @( '/VERYSILENT', '/NORESTART', '/mergetasks=!runcode' )
--Wait
+if ($requirementsLogs[$name]["Result"] -eq "KO") {
+    Start-Process $requirement["DownloadOutFile"] -ArgumentList @( '/VERYSILENT', '/NORESTART', '/mergetasks=!runcode' )
+    -Wait
 
-$env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path', 'User')
-code
+    $env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path', 'User')
+    code
 
-foreach ($codeProcess in (Get-Process Code -ErrorAction SilentlyContinue)) {
-    $codeProcess.CloseMainWindow()
-
+    foreach ($codeProcess in (Get-Process Code -ErrorAction SilentlyContinue)) {
+        $codeProcess.CloseMainWindow()
+    }
+    $requirementsLogs[$name]["Result"] = "EXTENTIONS"
 }
+
+if ($requirementsLogs[$name]["Result"] -eq "EXTENTIONS") {
+    foreach ($script:item in $requirement["Attributes"]) {
+        invoke-writeOutputInstallations("Installing $item...")
+        try {
+            Start-Process code -ArgumentList "--install-extension $item --force" -NoNewWindow -Wait
+            $resultInstallation = $true
+        }
+        catch {
+            $resultInstallation = $false
+        }
+        $ContentErrLogfile = Get-Content $logFilePath
+        if (-not $resultInstallation -or $contentErrLogfile -like "*Failed Installing Extensions*") {
+            $outputInstallationLabel.SelectionColor = "Red"
+            invoke-writeOutputInstallations("Failed installing extension $item!")
+        } 
+        elseif ($contentErrLogfile -like "*was successfully installed.*") {
+            $outputInstallationLabel.SelectionColor = "Green"
+            invoke-writeOutputInstallations("$item was successfully installed.")
+        }
+    } 
+}
+
+
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

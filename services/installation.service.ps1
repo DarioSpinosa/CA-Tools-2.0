@@ -13,33 +13,12 @@ function installRequirement($name) {
   Add-Content -Path $InstallRequirementsLogfile -Value "ACCEPTED, Name = $($name)$($Version)`r`n$('-'*70)" -Force
   
   # It will execute a determinatedd function based on the type of the current requirement
-  switch ($requirement["Type"]) {
-    "Software" {
-      Invoke-DownloadInstallRequirementAction $name $requirement
+  switch ($name) {
+    "Visual Studio Code" {
+      invoke-visualStudioCode $name, $requirement
     }
-    "Feature" {
-      Invoke-EnableFeatureAction $name $requirement
-    }
-    "Env Variable Path" {
-      Invoke-EnvironmentVariableAction $requirement
-    }
-    "PostInstallSoftware" {
-      Invoke-PostInstallAction $requirement
-    }
-    "Extentions" {
-      Invoke-ExtentionsAction $requirement
-    }
-    "Permission" {
-      Invoke-PermissionAction
-    }
-    "Connection" {
-      Invoke-ConnectionAction $requirement
-    }
-    "PreInstallSoftware" {
-      Invoke-PreInstallAction $requirement
-    }
-    "Activity" {
-      Invoke-ActivityAction $name $requirement
+    "Windows Features" {
+      invoke-windowsFeatures $name, $requirement
     }
     Default {
       Write-Error "$($requirement["Type"]) not defined!!!"
@@ -55,7 +34,137 @@ function installRequirement($name) {
   }
 }
   
-function Invoke-DownloadInstallRequirementAction($name, $requirement) {
+
+function invoke-visualStudioCode($name, $requirement) {
+  $isKo = $requirementsLogs[$Name]["Logs"].Contains("KO")
+  $isKoOrVer = $isKo -or $requirementsLogs[$Name]["Logs"].Contains("VER")
+
+  if ($isKo) {
+    Invoke-DownloadInstall $name, $requirement
+  }
+
+  if ($isKoOrVer -or $requirementsLogs[$Name]["Logs"].Contains("SETTINGS")) {
+    invoke-writeOutputInstallations "Updating Visual Studio Code Settings:``r``n- Default Integrated Terminal: Command Prompt``r``n- Update Mode: Manual...`\"
+    $requirement['PostInstallScript'] | Invoke-Expression
+    invoke-writeOutputInstallations "return 'Update of Visual Studio Code Settings complete.'"
+  }
+
+  if ($isKoOrVer -or $requirementsLogs[$Name]["Logs"].Contains("EXTENTIONS")) {
+    invoke-writeOutputInstallations "Installing Visual Studio Code Extentions..."
+
+    foreach ($script:item in $requirement["Attributes"]) {
+
+      invoke-writeOutputInstallations("Installing $item...")
+      $resultInstallation = Invoke-Expression $requirement["InstallExtentionsScript"]
+      $ContentErrLogfile = Get-Content $logFilePath
+      
+      if (-not $resultInstallation -or $contentErrLogfile -like "*Failed Installing Extensions*") {
+        $outputInstallationLabel.SelectionColor = "Red"
+        invoke-writeOutputInstallations("Failed installing extension $item!")
+      } 
+      elseif ($contentErrLogfile -like "*was successfully installed.*") {
+        $outputInstallationLabel.SelectionColor = "Green"
+        invoke-writeOutputInstallations("$item was successfully installed.")
+      }
+    }  
+
+    invoke-writeOutputInstallations "Install of Visual Studio Code Extensions complete."
+  }
+}
+
+function invoke-windowsFeatures($name, $requirement) {
+  invoke-writeOutputInstallations( "Enabling Windows Subsystem for Linux' and 'Virtual Machine Platform...")
+  if ($requirementsLogs[$Name]["Logs"].Contains("WSL")) {"& dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart" | Invoke-Expression }
+  if ($requirementsLogs[$Name]["Logs"].Contains("VM")) {"& dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart" | Invoke-Expression }
+  invoke-writeOutputInstallations("The feature $($name) was enabled successfully.")
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function Invoke-DownloadInstall($name, $requirement) {
   $subMessage = "$($name) $($requirement["ExtraMessage"]) version: $($requirement["MaxVersion"])"
 
   if ($requirement['DownloadCommand']) {
@@ -77,12 +186,6 @@ function Invoke-DownloadInstallRequirementAction($name, $requirement) {
   }
 }
 
-function Invoke-EnableFeatureAction($name, $requirement) {
-  invoke-writeOutputInstallations( "Enabling feature $($name)...")
-  $requirement["EnableCommand"] | Invoke-Expression
-  invoke-writeOutputInstallations("The feature $($name) was enabled successfully.")
-}
-
 function Invoke-EnvironmentVariableAction($requirement) {
   $envNotFound = $requirement["Values"]
   
@@ -93,22 +196,6 @@ function Invoke-EnvironmentVariableAction($requirement) {
     [System.Environment]::SetEnvironmentVariable("PATH", $newEnvPath, "Machine")
   }
 
-}
-
-function Invoke-ExtentionsAction($requirement) {
-  foreach ($script:item in $requirement["Attributes"]) {
-    invoke-writeOutputInstallations("Installing $item...")
-    $resultInstallation = Invoke-Expression $requirement["InstallCommand"]
-    $ContentErrLogfile = Get-Content $logFilePath
-    if (-not $resultInstallation -or $contentErrLogfile -like "*Failed Installing Extensions*") {
-      $outputInstallationLabel.SelectionColor = "Red"
-      invoke-writeOutputInstallations("Failed installing extension $item!")
-    } 
-    elseif ($contentErrLogfile -like "*was successfully installed.*") {
-      $outputInstallationLabel.SelectionColor = "Green"
-      invoke-writeOutputInstallations("$item was successfully installed.")
-    }
-  }  
 }
 
 function Invoke-PostInstallAction($requirement) {

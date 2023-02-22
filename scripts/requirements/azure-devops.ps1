@@ -8,6 +8,8 @@ try {
 catch {
     $status = $_.Exception.Response.StatusCode.value__
 }
+
+invoke-WriteRequirementsLogs "Status: $status" $true
 return $(if ($status -eq 401) { 'OK' } else { 'KO' })
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

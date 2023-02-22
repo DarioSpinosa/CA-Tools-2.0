@@ -1,6 +1,18 @@
 $codeVersion = invoke-executeCommand("code --version")
-if (!$codeVersion) { return 'KO'}
-return $(if ($codeVersion[0] -ge $requirements["Visual Studio Code"]["Min Version"]) { 'OK' } else { 'VER' })
+if (!$codeVersion) { 
+    invoke-CreateRequirementsLogs "Nessun'installazione di Visual Studio Code Rilevata sulla macchina"
+    return 'KO'
+}
+
+invoke-CreateRequirementsLogs "Versione di Visual Studio rilevata $codeVersion. Tollerabilità compresa tra $(requirements[$name]['MinVersion']) e $(requirements[$name]['MaxVersion'])"
+if (-not (checkCorrectVersion $codeVersion[0])) { return 'VERSION' }
+
+
+invoke-CreateRequirementsLogs "Check della versione terminato con successo"
+$output = vscode-extentions.ps1
+$output += vscode-settings.ps1
+return $output
+
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

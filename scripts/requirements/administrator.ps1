@@ -1,7 +1,7 @@
 $whoAmI = whoami
 $result = invoke-executeCommand "Get-LocalGroupMember -Group Administrators"
 if (-not $result) {
-    invoke-WriteRequirementsLogs "Administrator.ps1 has not ended correctly"
+    invoke-WriteRequirementsLogs "L'esecuzione di Get-LocalGroupMember -Group Administrators non è andata a buon fine"
     return 'KO'
 }
 

@@ -1,5 +1,8 @@
 $ListExtensions = invoke-executeCommand("code --list-extensions")
-if (!$ListExtensions) { return 'KO'}
+if (!$ListExtensions) { 
+    invoke-CreateRequirementsLogs "Nessuna estensione di visual studio code rilevata"
+    return 'EXTENTIONS'
+}
 
 $missingExtentions = @()
 
@@ -8,7 +11,19 @@ foreach ($extension in $requirements["VS Code Extentions"]["Extentions"]) {
 }
 
 $requirements["VS Code Extentions"]["Extentions"] = $missingExtentions
-return $(if($missingExtentions.Count -eq 0 ) {"OK"} else {"KO"})
+
+if ($missingExtentions.Count ) {
+    $message = "Non sono state rilevate le seguenti estensioni"
+    foreach ($ext in $missingExtentions) {
+        $message += $ext
+    }
+    invoke-CreateRequirementsLogs $message
+    return 'EXTENTIONS' 
+   
+}
+
+invoke-CreateRequirementsLogs "Tutte le estensioni sono già installate"
+return "OK"
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

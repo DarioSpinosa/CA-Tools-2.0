@@ -121,13 +121,14 @@ For each Requirement it will check if it's satisfied or not,
 if the Requirement isn't satisfied then add it to the list of Requirements that have to be satisfied through the installer
 #>
   $sortedRequirements = Invoke-OrderRequirements
+  invoke-CreateRequirementsLogs
   $red = [System.Drawing.Color]::FromArgb(255, 236, 84, 84)
   $green = [System.Drawing.Color]::FromArgb(255, 13, 173, 141)
 
   # List of Requirements that have to be executed, no matter what
   foreach ($name in $sortedRequirements) {
     $result = $requirements[$name]["CheckRequirement"] | Invoke-Expression
-    $requirements[$name].Add("Result", $result)
+    $requirementsLogs[$name]["Result"] = $result
     if ($result -eq 'OK') { 
       $requirements.Remove($name)
       Invoke-CreateRow $name $result $green
@@ -137,7 +138,7 @@ if the Requirement isn't satisfied then add it to the list of Requirements that 
     }
   }
   
-  ($requirementsLogs  | ConvertTo-Json) > "~\.ca\$currentDate\requirements.json" 
+  ($requirementsLogs  | ConvertTo-Json) > "~\.ca\$currentDate\requirementsLogs.json" 
   $installButton.visible = $true
 }
 
@@ -146,7 +147,9 @@ function Invoke-CreateRow($name, $result, $color) {
   $row.CreateCells($gridRequirements, @($name, $result))
   $row.DefaultCellStyle.BackColor = $color
   $gridRequirements.Rows.Add($row);
+  $gridRequirements.ClearSelection()
 }
+
 function New-StartupCmd() {
   <#
 .SYNOPSIS

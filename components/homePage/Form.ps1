@@ -72,7 +72,7 @@ $selectedRequirement.Bold
 
 $outputRequirementsLabel = New-Object System.Windows.Forms.TextBox
 $outputRequirementsLabel.Text = ""
-$outputRequirementsLabel.Size = "435, 470"
+$outputRequirementsLabel.Size = "435, 440"
 $outputRequirementsLabel.Multiline = $true
 $outputRequirementsLabel.Location = "390, 55"
 $outputRequirementsLabel.Font = 'Century Gothic, 13'

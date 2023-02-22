@@ -78,13 +78,12 @@ function gridRequirementrs_Click {
   $selectedRequirement.Text = $key
   $outputRequirementsLabel.Text = ""
 
-  if (-not $requirementsLogs.Contains($key)) {
-    invoke-writeOutputRequirements "Nessun log trovato per questo requirement"
+  if (-not $requirementsLogs[$key]["Logs"]) {
+    invoke-writeOutputRequirements "Nessun log disponibile"
     return
   }
-
-  $log = ($requirementsLogs[$key]).split(";").replace(";", "")
-  foreach ($row in $log) {
+  
+  foreach ($row in ($requirementsLogs[$key]["Logs"]).split(";").replace(";", "")) {
     invoke-writeOutputRequirements $row $true
   }
 

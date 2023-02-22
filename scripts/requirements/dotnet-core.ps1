@@ -1,42 +1,15 @@
 $dotNetVersions = invoke-executeCommand ("dotnet --list-sdks")
-if (-not $dotNetVersion) { return "KO" }
-$dotNetVersions.replace("[C:\Program Files\dotnet\sdk]", "").split("")
-$minCheck = $false
-$maxCheck = $false
-$minVersion = $requirements[$name]["MinVersion"].split(".")
-$maxVersion = $requirements[$name]["MaxVersion"].split(".")
-
-for ($i = 0; $i -lt $dotNetVersions.Count; $i += 2) {
-    $actualVersion = $dotNetVersions[$i].split(".")
-    $minCheck = $false
-    $maxCheck = $false
-    for ($j = 0; $j -lt (getSmallestArraySize $actualVersion $minVersion); $j++){
-        if ($actualVersion[$j] -gt $minVersion[$j]) {
-            $minCheck = $true
-            break
-        }
-        elseif ($actualVersion[$j] -lt $minVersion[$j]) {
-            break
-        }
-    }
-    
-    if (-not $minCheck) { continue }
-
-    for ($j = 0; $j -lt (getSmallestArraySize $actualVersion $maxVersion); $j++){
-        if ($actualVersion[$j] -lt $maxVersion[$j]) {
-            $maxCheck = $true
-            break
-        }
-        elseif ($actualVersion[$j] -gt $maxVersion[$j]) {
-            break
-        }
-    }
-
-    if ($minCheck -and $maxCheck) { return "OK" }
-
+if (-not $dotNetVersion) { 
+    invoke-WriteRequirementsLogs "Si e' verificato un problema nel check delle versioni installate di dotnet"
+    return "KO" 
 }
-invoke-WriteRequirementsLogs "Le installazioni trovate non soddisfano le versioni minime e massime"
-return ("VER")
+$dotNetVersions.replace("[C:\Program Files\dotnet\sdk]", "").split("")
+$message = "Versioni di .Net Core rilevate sulla macchina: "
+foreach ($version in $dotNetVersions){
+    $message += $version
+}
+$message += ". Almeno una delle installazioni deve essere compresa tra $(requirements[$name]['MinVersion']) e $(requirements[$name]['MaxVersion'])"
+return $(if (checkCorrectVersion $dotNetVersions) {"OK"} else {"VER"})
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

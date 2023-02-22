@@ -1,23 +1,35 @@
 $VSCodeSettingsPath = "~\AppData\Roaming\Code\User"
 $VSCodeSettingsJsonPath = "~\AppData\Roaming\Code\User\settings.json"
 
-if (!(Test-Path $VSCodeSettingsPath)) { return 'KO' }
+if (!(Test-Path $VSCodeSettingsPath)) { 
+    invoke-CreateRequirementsLogs "Path $VSCodeSettingsPath non trovato"
+    return 'SETTINGS'
+}
+
+invoke-CreateRequirementsLogs "Path $VSCodeSettingsPath trovato"
 
 if (!(Test-Path $VSCodeSettingsJsonPath)) {
   New-Item -Path $VSCodeSettingsJsonPath -Value '{ }' -Force | Out-Null
-  return 'KO'
+  invoke-CreateRequirementsLogs "File $VSCodeSettingsJsonPath non trovato"
+  return 'SETTINGS'
 }
 
-$SettingsContent = Get-Content -Path $VSCodeSettingsJsonPath | ConvertFrom-Json
-if (($null -ne $SettingsContent.'terminal.integrated.defaultProfile.windows') -or ($null -ne $SettingsContent.'terminal.integrated.shellArgs.windows') -or ($null -ne $SettingsContent.'terminal.integrated.profiles.windows')) {
-  return 'KO'
+invoke-CreateRequirementsLogs "File $VSCodeSettingsJsonPath trovato"
+$SettingsContent = Get-Content -Path "~\AppData\Roaming\Code\User\settings.json" | ConvertFrom-Json
+
+if (($SettingsContent.'terminal.integrated.defaultProfile.windows') -or ($SettingsContent.'terminal.integrated.shellArgs.windows') -or ($SettingsContent.'terminal.integrated.profiles.windows')) {
+    invoke-CreateRequirementsLogs "Valore di Default Profile $SettingsContent.'terminal.integrated.defaultProfile.windows'"
+    invoke-CreateRequirementsLogs "Valore di Shell Args $SettingsContent.'terminal.integrated.shellArgs.windows'"
+    invoke-CreateRequirementsLogs "Valore di Integrated Profile $SettingsContent.'terminal.integrated.profiles.windows'"
+  return 'SETTINGS'
 }
-elseif ( ($SettingsContent.'terminal.integrated.shell.windows' -eq 'C:\WINDOWS\System32\cmd.exe') -and ($SettingsContent.'update.mode' -eq 'manual') ) {
-  return 'OK'
+elseif (($SettingsContent.'terminal.integrated.shell.windows' -ne 'C:\WINDOWS\System32\cmd.exe') -or ($SettingsContent.'update.mode' -ne 'manual')) {
+  invoke-CreateRequirementsLogs "Valore di Shell $SettingsContent.'terminal.integrated.shell.windows'"
+  invoke-CreateRequirementsLogs "Valore di Update Mode $SettingsContent.'update.mode'"
+  return 'SETTINGS'
 }
-else {
-  return 'KO'
-}
+
+return 'OK'
 
 
 # SIG # Begin signature block

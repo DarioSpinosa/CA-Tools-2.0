@@ -17,7 +17,7 @@ foreach ($t in $TokenList) {
 }
 $ScarConfigObj.token = $TokenObj.token
 $ScarConfigObj.user = $TokenObj.user
-if ($ScarVersion -ne '') {
+if ($ScarVersion) {
     $ScarConfigObj.version = $ScarVersion
 }
 $ScarConfigObj | ConvertTo-Json | Set-Content -Path $scarConfigPath

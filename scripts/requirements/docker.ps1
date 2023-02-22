@@ -3,6 +3,7 @@ if ($scarConfig.Contains('terranova')) { return 'OK' }
 $dockerVersion = Invoke-executeCommand("docker --version")
 if (!$dockerVersion) { return 'KO'}
 $dockerVersion = $dockerVersion.SubString(15, 4)
+#TODO Centralizzare controllo versione
 return $(if (($dockerVersion -ge $requirements["Docker"]["MinVersion"]) -and ($dockerVersion -le $requirements["Docker"]["MaxVersion"])) { "OK" } else { "KO" })
 
 # SIG # Begin signature block
