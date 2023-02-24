@@ -13,5 +13,7 @@ $RoundObject = Add-Type -MemberDefinition $LIBRARY -Name "Win32Helpers" -PassThr
 $currentDate = (Get-Date -Format yyyyMMdd-HHmmss).ToString()
 $requirementsLogs = @{}
 $logFilePath = "~\.ca\$currentDate\caep.log"
-$InstallRequirementsLogfile = "$($HOME)\.ca\$currentDate\install_requirements.log"
 $capturedPath = "~\.ca\$currentDate\npmErrCheck.txt"
+$checkRequirementsLogFile = "~\.ca\$currentDate\requirementsLogs.json" 
+$InstallRequirementsLogfile = "$($HOME)\.ca\$currentDate\install_requirements.log"
+

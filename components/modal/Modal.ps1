@@ -1,11 +1,10 @@
-function Invoke-SetError($message){
+function Invoke-Modal($message){
     $messageLabel.Text = $message
     $modalForm.ShowDialog()
 }
 
 function ExitButton_Click() {
     $modalForm.Close()
-    $welcomeForm.Close()
 }
 
 function MessageLabel_SizeChanged(){

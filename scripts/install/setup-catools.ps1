@@ -1,5 +1,5 @@
 Remove-StartupCmd
-Start-Process msiexec.exe -ArgumentList @( '/I', $requirements["Setup CaTools.msi"]["DownloadOutfile"], '/passive') -Wait
+Start-Process msiexec.exe -ArgumentList @('/I', $requirements["Setup CaTools.msi"]["DownloadOutfile"], '/passive') -Wait
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

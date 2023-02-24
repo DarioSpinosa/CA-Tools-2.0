@@ -31,34 +31,106 @@ $HorizontalLine.Width = $welcomeForm.ClientSize.Width
 $HorizontalLine.Height = 2
 $HorizontalLine.Location = "0, 90"
 
-$line = New-Object System.Windows.Forms.Panel
-$line.Location = "0, 91"
-$line.Size = "325, 336"
-$line.BackColor = "#eeeeee"
-$line.BackgroundImage = [System.Drawing.Image]::Fromfile(".\assets\background.jpg")
+$panel = New-Object System.Windows.Forms.Panel
+$panel.Location = "0, 91"
+$panel.Size = "325, 336"
+$panel.BackColor = "#eeeeee"
+$panel.BackgroundImage = [System.Drawing.Image]::Fromfile(".\assets\background.jpg")
 
 $welcomeLabel = New-Object System.Windows.Forms.Label
 $welcomeLabel.Text = "Welcome to the Code Architects`n      Enterprise Platform Setup"
 $welcomeLabel.AutoSize = $true
 $welcomeLabel.Location = "20, 10"
-$welcomeLabel.Font = 'Roboto,14'
+$welcomeLabel.Font = 'Century Gothic, 13'
 $welcomeLabel.BackColor = "Transparent"
 
 $startButton = New-Object System.Windows.Forms.Button
 $startButton.BackColor = "#ffffff"
 $startButton.Text = "Start"
 $startButton.Size = "125, 40"
-$startButton.Location = "100, 143"
-$startButton.Font = 'Roboto,15'
+$startButton.Location = "100, 70"
+$startButton.Font = 'Century Gothic,15'
 $startButton.ForeColor = "#0a0a0a"
 $startButton.FlatStyle = "Flat"
 $startButton.FlatAppearance.BorderSize = 0;
 $startButton.FlatAppearance.MouseOverBackColor = "#2daae1"
 $startButton.Region = [System.Drawing.Region]::FromHrgn($roundObject::CreateRoundRectRgn(0, 0, $startButton.Width, $startButton.Height, 8, 8))
 
-$line.controls.AddRange(@($welcomeLabel, $startButton))
-$welcomeForm.controls.AddRange(@($logo, $line, $HorizontalLine))
+$azureLabel = New-Object System.Windows.Forms.Label
+$azureLabel.Text = "CA Azure Devops"
+$azureLabel.AutoSize = $true
+$azureLabel.Location = "90, 170"
+$azureLabel.Font = 'Century Gothic, 13'
+$azureLabel.BackColor = "Transparent"
+$azureLabel.Cursor = "Hand"
+
+$azureCheck = New-Object System.Windows.Forms.PictureBox
+$azureCheck.Size = "30, 24"
+$azureCheck.Location = "55, 170"
+$azureCheck.SizeMode = "Zoom"
+$azureCheck.BackColor = "Transparent"
+
+$nugetLabel = New-Object System.Windows.Forms.Label
+$nugetLabel.Text = "NuGet Registry"
+$nugetLabel.AutoSize = $true
+$nugetLabel.Location = "102, 210"
+$nugetLabel.Font = 'Century Gothic, 13'
+$nugetLabel.BackColor = "Transparent"
+$nugetLabel.Cursor = "Hand"
+
+$nugetCheck = New-Object System.Windows.Forms.PictureBox
+$nugetCheck.Size = "30, 24"
+$nugetCheck.Location = "55, 210"
+$nugetCheck.SizeMode = "Zoom"
+$nugetCheck.BackColor = "Transparent"
+
+$npmLabel = New-Object System.Windows.Forms.Label
+$npmLabel.Text = "Npm Registry"
+$npmLabel.AutoSize = $true
+$npmLabel.Location = "108, 250"
+$npmLabel.Font = 'Century Gothic, 13'
+$npmLabel.BackColor = "Transparent"
+$npmLabel.Cursor = "Hand"
+
+$npmCheck = New-Object System.Windows.Forms.PictureBox
+$npmCheck.Size = "30, 24"
+$npmCheck.Location = "55, 250"
+$npmCheck.SizeMode = "Zoom"
+$npmCheck.BackColor = "Transparent"
+
+$logLabel = New-Object System.Windows.Forms.Label
+$logLabel.Text = "CA Log Repository"
+$logLabel.AutoSize = $true
+$logLabel.Location = "90, 290"
+$logLabel.Font = 'Century Gothic, 13'
+$logLabel.BackColor = "Transparent"
+
+$logCheck = New-Object System.Windows.Forms.PictureBox
+$logCheck.Size = "30, 24"
+$logCheck.Location = "55, 290"
+$logCheck.SizeMode = "Zoom"
+$logCheck.BackColor = "Transparent"
+
+$connectionButton = New-Object System.Windows.Forms.Button
+$connectionButton.BackColor = "#ffffff"
+$connectionButton.Text = "Test Connections"
+$connectionButton.Size = "180, 25"
+$connectionButton.Location = "70, 140"
+$connectionButton.Font = 'Century Gothic,15'
+$connectionButton.ForeColor = "#0a0a0a"
+$connectionButton.FlatStyle = "Flat"
+$connectionButton.FlatAppearance.BorderSize = 0;
+$connectionButton.FlatAppearance.MouseOverBackColor = "#2daae1"
+$connectionButton.Region = [System.Drawing.Region]::FromHrgn($roundObject::CreateRoundRectRgn(0, 0, $connectionButton.Width, $connectionButton.Height, 8, 8))
+$connectionButton.Enabled = $false
+
+$panel.controls.AddRange(@($welcomeLabel, $startButton, $azureLabel, $azureCheck, $nugetLabel, $nugetCheck, $npmLabel, $npmCheck, $logLabel, $logCheck, $connectionButton))
+$welcomeForm.controls.AddRange(@($logo, $panel, $HorizontalLine))
 
 #---------------------------------------------------------[Events]--------------------------------------------------------
 
 $startButton.Add_Click({ startButton_Click })
+$connectionButton.Add_Click({ connectionButton_Click })
+$azureLabel.Add_Click({ label_Click "https://devops.codearchitects.com:444/" })
+$npmLabel.Add_Click({ label_Click "https://registry.npmjs.org" })
+$nugetLabel.Add_Click({ label_Click "https://api.nuget.org/v3/index.json" })

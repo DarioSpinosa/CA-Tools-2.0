@@ -24,15 +24,15 @@ $logo.Size = "120, 45"
 $logo.Location = '15, 20'
 $logo.BackColor = "Transparent"
 
-$tabOutputRequirementsButton = New-Object System.Windows.Forms.Button
-$tabOutputRequirementsButton.BackColor = "#00ffffff"
-$tabOutputRequirementsButton.Text = "Requirements"
-$tabOutputRequirementsButton.Size = "150, 75"
-$tabOutputRequirementsButton.Location = "0, 100"
-$tabOutputRequirementsButton.Font = 'Roboto,10'
-$tabOutputRequirementsButton.ForeColor = "#ffffff"
-$tabOutputRequirementsButton.FlatStyle = "Flat"
-$tabOutputRequirementsButton.FlatAppearance.BorderSize = 0 
+$requirementsTabButton = New-Object System.Windows.Forms.Button
+$requirementsTabButton.BackColor = "#00ffffff"
+$requirementsTabButton.Text = "Requirements"
+$requirementsTabButton.Size = "150, 75"
+$requirementsTabButton.Location = "0, 100"
+$requirementsTabButton.Font = 'Roboto,10'
+$requirementsTabButton.ForeColor = "#ffffff"
+$requirementsTabButton.FlatStyle = "Flat"
+$requirementsTabButton.FlatAppearance.BorderSize = 0 
 
 $tabOutputInstallationsButton = New-Object System.Windows.Forms.Button
 $tabOutputInstallationsButton.BackColor = "#00ffffff"
@@ -42,7 +42,7 @@ $tabOutputInstallationsButton.Location = "0, 175"
 $tabOutputInstallationsButton.Font = 'Roboto,10'
 $tabOutputInstallationsButton.ForeColor = "#ffffff"
 $tabOutputInstallationsButton.FlatStyle = "Flat"
-$tabOutputInstallationsButton.FlatAppearance.BorderSize = 0 
+$tabOutputInstallationsButton.FlatAppearance.BorderSize = 0
 
 $tabInstallationsResultsButton = New-Object System.Windows.Forms.Button
 $tabInstallationsResultsButton.BackColor = "#00ffffff"
@@ -105,7 +105,18 @@ $gridRequirements.AllowUserToAddRows = $false
 $gridRequirements.ReadOnly = $true
 $gridRequirements.BackgroundImage = [System.Drawing.Image]::Fromfile(".\assets\background.jpg")
 
-$tabRequirements.Controls.AddRange(@($selectedRequirement, $outputRequirementsLabel, $gridRequirements))
+$installButton = New-Object System.Windows.Forms.Button
+$installButton.BackColor = "#000000"
+$installButton.Text = "Install"
+$installButton.Size = "90, 30"
+$installButton.Location = "850, 500"
+$installButton.Font = 'roboto, 13'
+$installButton.ForeColor = "#ffffff"
+$installButton.FlatStyle = "Flat"
+$installButton.FlatAppearance.BorderSize = 0
+$installButton.Visible = $false
+
+$tabRequirements.Controls.AddRange(@($selectedRequirement, $outputRequirementsLabel, $gridRequirements, $installButton))
 
 $outputInstallationLabel = New-Object System.Windows.Forms.TextBox
 $outputInstallationLabel.Text = ""
@@ -149,15 +160,6 @@ $postActionButton.Font = 'roboto, 13'
 $postActionButton.ForeColor = "#ffffff"
 $postActionButton.Visible = $false
 
-$installButton = New-Object System.Windows.Forms.Button
-$installButton.BackColor = "#000000"
-$installButton.Text = "Install"
-$installButton.Size = "90, 30"
-$installButton.Location = "850, 500"
-$installButton.Font = 'roboto, 13'
-$installButton.ForeColor = "#ffffff"
-$installButton.Visible = $false
-
 $nextButton = New-Object System.Windows.Forms.Button
 $nextButton.BackColor = "#000000"
 $nextButton.Text = "Install"
@@ -167,24 +169,28 @@ $nextButton.Font = 'roboto, 13'
 $nextButton.ForeColor = "#ffffff"
 $nextButton.Visible = $false
 
-$sidebar.Controls.AddRange(@($logo, $tabOutputRequirementsButton, $tabOutputInstallationsButton, $tabInstallationsResultsButton))
-$mainForm.Controls.AddRange(@($sidebar, $installButton, $nextButton, $postActionButton, $tabRequirements, $outputInstallationLabel, $gridInstallation))
+$sidebar.Controls.AddRange(@($logo, $requirementsTabButton, $tabOutputInstallationsButton, $tabInstallationsResultsButton))
+$mainForm.Controls.AddRange(@($sidebar, $tabRequirements, $outputInstallationLabel, $gridInstallation))
 
 #---------------------------------------------------------------------------[EVENTS]---------------------------------------------------------------------------
-$tabOutputRequirementsButton.Add_Click({ tabButton_Click $tabRequirements })
-$tabOutputRequirementsButton.Add_MouseEnter({ Button_MouseEnter $tabOutputRequirementsButton })
-$tabOutputRequirementsButton.Add_MouseLeave({ Button_MouseLeave $tabOutputRequirementsButton })
+$requirementsTabButton.Add_Click({ tabButton_Click $requirementsTabButton })
+$requirementsTabButton.Add_MouseEnter({ Button_MouseEnter $requirementsTabButton })
+$requirementsTabButton.Add_MouseLeave({ Button_MouseLeave $requirementsTabButton })
 
-$tabOutputInstallationsButton.Add_Click({ tabButton_Click $outputInstallationLabel })
+$tabOutputInstallationsButton.Add_Click({ tabButton_Click $tabOutputInstallationsButton })
 $tabOutputInstallationsButton.Add_MouseEnter({ Button_MouseEnter $tabOutputInstallationsButton })
 $tabOutputInstallationsButton.Add_MouseLeave({ Button_MouseLeave $tabOutputInstallationsButton })
 
-$tabInstallationsResultsButton.Add_Click({ tabButton_Click $gridInstallation })
+$tabInstallationsResultsButton.Add_Click({ tabButton_Click $tabInstallationsResultsButton })
 $tabInstallationsResultsButton.Add_MouseEnter({ Button_MouseEnter $tabInstallationsResultsButton })
 $tabInstallationsResultsButton.Add_MouseLeave({ Button_MouseLeave $tabInstallationsResultsButton })
-
-$postActionButton.Add_Click({ postAction_Click })
-$installButton.Add_Click({ installButton_Click })
-$nextButton.Add_Click({ nextButton_Click })
+# $postActionButton.Add_Click({ postAction_Click })
+# $installButton.Add_Click({ installButton_Click })
+# $nextButton.Add_Click({ nextButton_Click })
 $gridRequirements.Add_Click({ gridRequirementrs_Click })
 $selectedRequirement.Add_SizeChanged({ selectedRequirement_SizeChanged })
+
+$buttonTabs = @{}
+$buttonTabs.Add($requirementsTabButton, $tabRequirements)
+$buttonTabs.Add($tabOutputInstallationsButton, $outputInstallationLabel)
+$buttonTabs.Add($tabInstallationsResultsButton, $gridInstallation)

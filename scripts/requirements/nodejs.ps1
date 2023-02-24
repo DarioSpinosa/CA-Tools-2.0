@@ -1,6 +1,18 @@
 $nodeVersion = invoke-executeCommand("node --version")
-if (!$nodeVersion) { return 'KO'}
-return $(if ($nodeVersion.SubString(1, 2) -eq $requirements["Node.js"]["MajorVersion"]) { "OK" } else { "KO" })
+if (!$nodeVersion) { 
+    invoke-WriteRequirementsLogs "Si e' verificato un errore durante l'esecuzione del comando ('node --version'). Node potrebbe non essere presente sulla macchina"
+    return 'KO'
+}
+
+$nodeVersion = $nodeVersion.split('v').split('.')[1]
+$majorVersion =  $requirements[$name]["MajorVersion"]
+if ($nodeVersion -lt $majorVersion){
+    invoke-WriteRequirementsLogs "La Major Version rilevata di Node $nodeVersion non rispetta i requisiti. Major Version: $majorVersion."
+    return 'VER'
+}
+
+invoke-WriteRequirementsLogs "La Major Version rilevata di Node $nodeVersion rispetta i requisiti. Major Version: $majorVersion."
+return 'OK'
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

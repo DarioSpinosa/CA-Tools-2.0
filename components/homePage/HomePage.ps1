@@ -6,25 +6,14 @@ function selectedRequirement_SizeChanged(){
   $selectedRequirement.Left = 607 - ($selectedRequirement.Width / 2)
 }
 
-function invoke-writeOutputRequirements($message, $newLine) {
-  writeOutput $outputRequirementsLabel $message $newLine
-}
-
-function invoke-writeOutputInstallations($message, $newLine) {
-  writeOutput $outputInstallationLabel $message $newLine
-}
-
-function writeOutput($label, $message, $newLine) {
-  $label.AppendText("$message`r`n")
-  if ($newLine) { $label.AppendText([System.Environment]::NewLine) }
-}
-
-function tabButton_Click($newTab) {
-  foreach ($element in @($outputRequirementsLabel, $gridRequirements, $outputInstallationLabel, $gridInstallation)) {
-    $element.visible = $false
+function tabButton_Click($button) {
+  foreach ($element in $buttonTabs.Keys) {
+    $buttonTabs[$element].visible = $false
+    Button_MouseLeave $element
   }
 
-  $newTab.visible = $true
+  Button_MouseEnter $button
+  $buttonTabs[$button].visible = $true
 }
 
 function Button_MouseEnter($button) {
@@ -33,14 +22,14 @@ function Button_MouseEnter($button) {
 }
 
 function Button_MouseLeave ($button) {
+  if ($buttonTabs[$button].visible) {return }
   $button.BackgroundImage = $null
   $button.ForeColor = "#ffffff"
 }
 
 function installButton_Click {
+  . .\services\installation.service.ps1
   $mainForm.controls.remove($installButton)
-  Button_MouseLeave($tabRequirementsResultsButton)
-  Button_MouseEnter($tabOutputInstallationsButton)
   tabButton_Click($outputInstallationLabel)
   foreach ($element in $requirements.Keys) {
     $keysRequirements += $element
@@ -54,23 +43,33 @@ function nextButton_Click {
   $nextButton.visible = $false
 }
 
-function postAction_Click {
-  switch ($postActionButton.Text) {
-    "Login" {
-      Invoke-LoginNpm
-    }
-    "Logout" {
-      logoff.exe 
-    }
-    "Restart" {
-      Restart-Computer -Force
-    }
-    "End" {
-      Close-Installer
-    }
-  }
-  $postActionButton.visible = $false
+# function postAction_Click {
+#   switch ($postActionButton.Text) {
+#     "Login" {
+#       Invoke-LoginNpm
+#     }
+#     "Logout" {
+#       logoff.exe 
+#     }
+#     "Restart" {
+#       Restart-Computer -Force
+#     }
+#     "End" {
+#       Close-Installer
+#     }
+#   }
+#   $postActionButton.visible = $false
+# }
+
+function invoke-writeOutputInstallations($message, $newLine) {
+  writeOutput $outputInstallationLabel $message $newLine
 }
+
+function writeOutput($label, $message, $newLine) {
+  $label.AppendText("$message`r`n")
+  if ($newLine) { $label.AppendText([System.Environment]::NewLine) }
+}
+
 
 function gridRequirementrs_Click {
   $key = $gridRequirements.CurrentRow.Cells[0].Value
@@ -79,19 +78,22 @@ function gridRequirementrs_Click {
   $outputRequirementsLabel.Text = ""
 
   if (-not $requirementsLogs[$key]["Logs"]) {
-    invoke-writeOutputRequirements "Nessun log disponibile"
+    writeOutput $outputRequirementsLabel "Nessun log disponibile"
     return
   }
   
   foreach ($row in ($requirementsLogs[$key]["Logs"]).split(";").replace(";", "")) {
-    invoke-writeOutputRequirements $row $true
+    writeOutput $outputRequirementsLabel $row $true
   }
 
 }
 #---------------------------------------------------------------------------------------------------------[LOGIC]---------------------------------------------------------------------------------------------------------
 . .\components\homePage\Form.ps1
 $indexRequirement = 0
+
+#Definito poiche durante la fase di installazione non si puo accedere con indice alle keys dell'hashtable
 $keysRequirements = @()
+
 $mainForm.Show()
-. .\services\requirements.service.ps1
-. .\services\installation.service.ps1
+. .\services\check.service.ps1
+$mainForm.ShowDialog()

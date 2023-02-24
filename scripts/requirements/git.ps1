@@ -1,9 +1,22 @@
 $gitVersion = invoke-executeCommand("git --version")
 if (!$gitVersion) { 
-    invoke-WriteRequirementsLogs "Installazione di git non presente"
+    invoke-WriteRequirementsLogs "Si e' verificato un problema durante l'esecuzione del comando (git --version). Git potrebbe non essere presente sulla macchina"
     return 'KO' 
 }
-return $(if ($gitVersion[12] -eq $requirements["Git"]["MajorVersion"]) { "OK" } else { "KO" })
+
+$gitVersion = $gitVersion.split(' ')[2].split(".")
+$gitVersion = [Version]::new($gitVersion[0], $gitVersion[1], $gitVersion[2])
+
+$minVersion = $requirements[$name]["MinVersion"].split(".")
+$minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
+
+if ($gitVersion -lt $minVersion){
+    invoke-WriteRequirementsLogs "La versione rilevata di git $gitVersion non rispetta i requisiti. Min Version: $minVersion"
+    return "VER"
+}
+
+invoke-WriteRequirementsLogs "La versione rilevata di git $gitVersion rispetta i requisiti. Min Version: $minVersion."
+return "OK"
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

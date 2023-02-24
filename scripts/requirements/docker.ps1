@@ -1,10 +1,46 @@
 if ($scarConfig.Contains('terranova')) { return 'OK' }
 
 $dockerVersion = Invoke-executeCommand("docker --version")
-if (!$dockerVersion) { return 'KO'}
-$dockerVersion = $dockerVersion.SubString(15, 4)
-#TODO Centralizzare controllo versione
-return $(if (($dockerVersion -ge $requirements["Docker"]["MinVersion"]) -and ($dockerVersion -le $requirements["Docker"]["MaxVersion"])) { "OK" } else { "KO" })
+if (!$dockerVersion) { 
+  invoke-WriteRequirementsLogs "Si e' verificato un errore durante l'esecuzione del comando ('docker --version'). Docker potrebbe non essere presente sulla macchina"
+  return 'KO'
+}
+
+$dockerVersion = $dockerVersion.split(' ').split(',')[2].split(".")
+$dockerVersion = [Version]::new($dockerVersion[0], $dockerVersion[1], $dockerVersion[2])
+
+$minVersion = $requirements[$name]["MinVersion"].split(".")
+$minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
+
+$maxVersion = $requirements[$name]["MaxVersion"].split(".")
+$maxVersion = [Version]::new($maxVersion[0], $maxVersion[1], $maxVersion[2])
+
+$output = ""
+if (($dockerVersion -lt $minVersion) -or ($dockerVersion -gt $maxVersion)) {
+  invoke-WriteRequirementsLogs "La versione rilevata di docker $dockerVersion non rispetta i requisiti. Min Version: $minVersion. Max Version: $maxVersion"
+  $output = "VER"
+}
+
+if ($requirements[$name]["Proxy"] -ne "KO") {
+  if (Test-Path $dockerConfigPath) {
+    $dockerConfigJson = Get-Content $dockerConfigPath | ConvertFrom-Json | ConvertPSObjectToHashtabl
+    if (-not $dockerConfigJson.Contains("proxies")) {
+      $output += "PROXY"
+    }
+    else {
+      $proxy = $dockerConfigJson["proxies"]
+      if (-not $proxy.Contains("proxies") -or -not ($proxy.Contains("proxies"))) {
+        $output += "PROXY"
+      }
+    }
+  }
+  if ($requirements[$name]["Proxy"] -eq "TCP") { $output += "TCP" }
+}
+
+if ($output) { return $output }
+invoke-WriteRequirementsLogs "La versione rilevata di docker $dockerVersion rispetta i requisiti. Min Version: $minVersion. Max Version: $maxVersion"
+return "OK"
+
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

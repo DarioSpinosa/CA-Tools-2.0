@@ -1,4 +1,11 @@
-return $(if (Test-Path "$env:PROGRAMFILES\Ca-Tools") {"OK"} else {"KO"})
+if (Test-Path "$env:PROGRAMFILES\Ca-Tools") {
+    invoke-WriteRequirementsLogs "Ca Tools gia' presenti nella macchina"
+    return "OK"
+}
+else {
+    invoke-WriteRequirementsLogs "Ca Tools non presenti nella macchina"
+    return "KO"
+}
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

@@ -15,15 +15,19 @@ function installRequirement($name) {
   # It will execute a determinatedd function based on the type of the current requirement
   switch ($name) {
     "Visual Studio Code" {
-      invoke-visualStudioCode $name, $requirement
+      invoke-visualStudioCode $name $requirement
     }
-    "Windows Features" {
-      invoke-windowsFeatures $name, $requirement
+    "Wsl" {
+      invoke-wsl $name $requirement
     }
-    Default {
-      Write-Error "$($requirement["Type"]) not defined!!!"
+    "Docker" {
+      invoke-docker $name $requirement
     }
-  }invoke-executeCommand
+    "NPM" {
+      invoke-npm  $name $requirement
+    }
+  }
+  
   # Execute the post action for the current Requirement if present.
   if ($requirement["PostAction"]) {
     $postActionButton.visible = $true
@@ -36,20 +40,20 @@ function installRequirement($name) {
   
 
 function invoke-visualStudioCode($name, $requirement) {
-  $isKo = $requirementsLogs[$Name]["Logs"].Contains("KO")
-  $isKoOrVer = $isKo -or $requirementsLogs[$Name]["Logs"].Contains("VER")
+  $isKo = $requirementsLogs[$Name]["Result"].Contains("KO")
+  $isKoOrVer = $isKo -or $requirementsLogs[$Name]["Result"].Contains("VER")
 
   if ($isKo) {
     Invoke-DownloadInstall $name, $requirement
   }
 
-  if ($isKoOrVer -or $requirementsLogs[$Name]["Logs"].Contains("SETTINGS")) {
+  if ($isKoOrVer -or $requirementsLogs[$Name]["Result"].Contains("SETTINGS")) {
     invoke-writeOutputInstallations "Updating Visual Studio Code Settings:``r``n- Default Integrated Terminal: Command Prompt``r``n- Update Mode: Manual...`\"
     $requirement['PostInstallScript'] | Invoke-Expression
     invoke-writeOutputInstallations "return 'Update of Visual Studio Code Settings complete.'"
   }
 
-  if ($isKoOrVer -or $requirementsLogs[$Name]["Logs"].Contains("EXTENTIONS")) {
+  if ($isKoOrVer -or $requirementsLogs[$Name]["Result"].Contains("EXTENTIONS")) {
     invoke-writeOutputInstallations "Installing Visual Studio Code Extentions..."
 
     foreach ($script:item in $requirement["Attributes"]) {
@@ -72,16 +76,69 @@ function invoke-visualStudioCode($name, $requirement) {
   }
 }
 
-function invoke-windowsFeatures($name, $requirement) {
-  invoke-writeOutputInstallations( "Enabling Windows Subsystem for Linux' and 'Virtual Machine Platform...")
-  if ($requirementsLogs[$Name]["Logs"].Contains("WSL")) {"& dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart" | Invoke-Expression }
-  if ($requirementsLogs[$Name]["Logs"].Contains("VM")) {"& dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart" | Invoke-Expression }
-  invoke-writeOutputInstallations("The feature $($name) was enabled successfully.")
+function invoke-wsl($name, $requirement) {
+  $tmp = $false
+
+  if ($requirementsLogs[$Name]["Result"] -eq "UPDATE") {
+    Invoke-Expression wsl --update
+    $tmp = $true
+  }
+
+  if ($tmp -or $requirementsLogs[$Name]["Result"] -eq "VERSION") {
+    Invoke-Expression wsl --set-default-version 2
+    $tmp = $true
+  }
+
+  # if($tmp -or $requirementsLogs[$Name]["Result"] -eq "UBUNTU"){
+  #   Invoke-Expression wsl --set-default-version 2
+  #   $tmp = $true
+  # }
+
+}
+
+function invoke-npm($name, $requirement) {
+  $isKo = $requirementsLogs[$Name]["Result"].Contains("KO")
+
+  if ($isKo) {
+    Invoke-DownloadInstall $name, $requirement
+  }
+
+  if ($isKo -or $requirementsLogs[$Name]["Result"].Contains("PROXY")) {
+    $ProxyServer = ($((Get-ItemProperty -Path 'Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings')).ProxyServer)
+    Start-Process powershell.exe -ArgumentList "npm config set proxy $ProxyServer" -NoNewWindow -Wait
+    Start-Process powershell.exe -ArgumentList "npm config set https-proxy $ProxyServer" -NoNewWindow -Wait
+  }
 }
 
 
+function invoke-docker($name, $requirement) {
+  $isKo = $requirementsLogs[$Name]["Result"].Contains("KO")
 
+  if ($isKo) {
+    Invoke-DownloadInstall $name, $requirement
+  }
 
+  if ($isKo -or $requirementsLogs[$Name]["Result"].Contains("PROXY")) {
+    $dockerConfigPath = "~\.docker\config.json" #Dovrebbe crearlo docker (?)
+    if (-not (Test-Path $dockerConfigPath)) { return }
+
+    $dockerConfigJson = Get-Content $dockerConfigPath | ConvertFrom-Json | ConvertPSObjectToHashtable
+    
+    $InternetSettings = (Get-ItemProperty -Path "Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings")
+    $proxies = @{ 'default' = @{
+        'httpProxy'  = $InternetSettings.ProxyServer
+        'httpsProxy' = $InternetSettings.ProxyServer
+      }
+    }
+
+    if ($dockerConfigJson.Contains("proxies")) {
+      $dockerConfigJson["proxies"] = $proxies
+    }
+
+    $dockerConfigJson.Add("proxies", $proxies)
+    Set-Content -Path $dockerConfigPath $dockerConfigJson | ConvertTo-Json
+  }
+}
 
 
 
@@ -186,18 +243,6 @@ function Invoke-DownloadInstall($name, $requirement) {
   }
 }
 
-function Invoke-EnvironmentVariableAction($requirement) {
-  $envNotFound = $requirement["Values"]
-  
-  foreach ($value in $envNotFound) {
-    invoke-writeOutputInstallations("Add $value in Environment Variable Path")
-    # Prevent ;; between paths replacing with just one ;
-    $newEnvPath = ([System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";$value") -replace ";;", ";"
-    [System.Environment]::SetEnvironmentVariable("PATH", $newEnvPath, "Machine")
-  }
-
-}
-
 function Invoke-PostInstallAction($requirement) {
   if ($requirement["Result"] -eq 'KO') {
     invoke-writeOutputInstallations(($requirement['PostInstallMessage'] | Invoke-Expression))
@@ -209,19 +254,6 @@ function Invoke-PostInstallAction($requirement) {
     $outputInstallationLabel.SelectionColor = "Red"
     invoke-writeOutputInstallations("TCP connect to Proxy Address failed") 
   }
-}
-  
-function Invoke-PermissionAction {
-  invoke-writeOutputInstallations("Administrator Permission Unknown...")
-}
-
-function Invoke-ConnectionAction($requirement) {
-  $outputInstallationLabel.SelectionColor = "Red"
-  invoke-writeOutputInstallations[$requirement["Messages"][$requirement["Result"]]]
-}
-
-function Invoke-PreInstallAction ($requirement) {
-  invoke-writeOutputInstallations((Invoke-Expression $requirement["Messages"][$requirement["Result"]]))
 }
   
 function Invoke-ActivityAction($name, $requirement) {

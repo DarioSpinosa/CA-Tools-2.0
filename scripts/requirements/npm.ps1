@@ -1,35 +1,42 @@
+$output = ""
 $npmVersion = invoke-executeCommand("npm --version")
-if (-not $npmVersion) { return 'KO' }
-$minCheck = $false
-$maxCheck = $false
+if (-not $npmVersion) { 
+    invoke-WriteRequirementsLogs "Si è verificato un errore durante l'esecuzione del comando (npm --version). Npm potrebbe non essere presente nella macchina"
+    $output = 'KO' 
+}
+
+$npmVersion = $npmVersion.split(".")
+$npmVersion = [Version]::new($npmVersion[0], $npmVersion[1], $npmVersion[2])
+
 $minVersion = $requirements[$name]["MinVersion"].split(".")
+$minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
+
 $maxVersion = $requirements[$name]["MaxVersion"].split(".")
-$actualVersion = $npmVersion.split(".")
-$minCheck = $false
-$maxCheck = $false
-for ($j = 0; $j -lt (getSmallestArraySize $actualVersion $minVersion); $j++) {
-    if ($actualVersion[$j] -gt $minVersion[$j]) {
-        $minCheck = $true
-        break
-    }
-    elseif ($actualVersion[$j] -lt $minVersion[$j]) {
-        break
-    }
-}
-    
-if (-not $minCheck) { return "VER" }
+$maxVersion = [Version]::new($maxVersion[0], $maxVersion[1], $maxVersion[2])
 
-for ($j = 0; $j -lt (getSmallestArraySize $actualVersion $maxVersion); $j++) {
-    if ($actualVersion[$j] -lt $maxVersion[$j]) {
-        $maxCheck = $true
-        break
-    }
-    elseif ($actualVersion[$j] -gt $maxVersion[$j]) {
-        break
-    }
+if (($npmVersion -lt $minVersion) -or ($npmVersion -gt $maxVersion)) {
+    invoke-WriteRequirementsLogs "La versione rilevata di Npm $npmVersion non rispetta i requisiti. Min Version: $minVersion. Max Version: $maxVersion"
+    $output = "VER"
 }
 
-return $(if ($maxCheck) { "OK" } else {"VER"})
+if ($requirements[$name]["Proxy"] -ne "KO") {
+    $foundProxy = $false
+    $contentNpmrc = Get-Content "~/.npmrc"
+    foreach ($row in $contentNpmrc) {
+        if ($row.Contains("proxy")) {
+            $foundProxy = $true
+            break
+        }
+    }
+    if (-not $foundProxy) { $output += "PROXY"}
+    if ($requirements[$name]["Proxy"] -eq "TCP") { $output += "TCP" }
+}
+
+if ($output) { return $output }
+invoke-WriteRequirementsLogs "La versione rilevata di Npm $npmVersion rispetta i requisiti. Min Version: $minVersion. Max Version: $maxVersion"
+return "OK"
+
+
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

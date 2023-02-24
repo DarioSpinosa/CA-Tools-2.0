@@ -2,30 +2,30 @@ $VSCodeSettingsPath = "~\AppData\Roaming\Code\User"
 $VSCodeSettingsJsonPath = "~\AppData\Roaming\Code\User\settings.json"
 
 if (!(Test-Path $VSCodeSettingsPath)) { 
-    invoke-CreateRequirementsLogs "Path $VSCodeSettingsPath non trovato"
+    invoke-WriteRequirementsLogs "Path $VSCodeSettingsPath non trovato"
     return 'SETTINGS'
 }
 
-invoke-CreateRequirementsLogs "Path $VSCodeSettingsPath trovato"
+invoke-WriteRequirementsLogs "Path $VSCodeSettingsPath trovato"
 
 if (!(Test-Path $VSCodeSettingsJsonPath)) {
   New-Item -Path $VSCodeSettingsJsonPath -Value '{ }' -Force | Out-Null
-  invoke-CreateRequirementsLogs "File $VSCodeSettingsJsonPath non trovato"
+  invoke-WriteRequirementsLogs "File $VSCodeSettingsJsonPath non trovato"
   return 'SETTINGS'
 }
 
-invoke-CreateRequirementsLogs "File $VSCodeSettingsJsonPath trovato"
+invoke-WriteRequirementsLogs "File $VSCodeSettingsJsonPath trovato"
 $SettingsContent = Get-Content -Path "~\AppData\Roaming\Code\User\settings.json" | ConvertFrom-Json
 
 if (($SettingsContent.'terminal.integrated.defaultProfile.windows') -or ($SettingsContent.'terminal.integrated.shellArgs.windows') -or ($SettingsContent.'terminal.integrated.profiles.windows')) {
-    invoke-CreateRequirementsLogs "Valore di Default Profile $SettingsContent.'terminal.integrated.defaultProfile.windows'"
-    invoke-CreateRequirementsLogs "Valore di Shell Args $SettingsContent.'terminal.integrated.shellArgs.windows'"
-    invoke-CreateRequirementsLogs "Valore di Integrated Profile $SettingsContent.'terminal.integrated.profiles.windows'"
+    invoke-WriteRequirementsLogs "Valore di Default Profile $SettingsContent.'terminal.integrated.defaultProfile.windows'"
+    invoke-WriteRequirementsLogs "Valore di Shell Args $SettingsContent.'terminal.integrated.shellArgs.windows'"
+    invoke-WriteRequirementsLogs "Valore di Integrated Profile $SettingsContent.'terminal.integrated.profiles.windows'"
   return 'SETTINGS'
 }
 elseif (($SettingsContent.'terminal.integrated.shell.windows' -ne 'C:\WINDOWS\System32\cmd.exe') -or ($SettingsContent.'update.mode' -ne 'manual')) {
-  invoke-CreateRequirementsLogs "Valore di Shell $SettingsContent.'terminal.integrated.shell.windows'"
-  invoke-CreateRequirementsLogs "Valore di Update Mode $SettingsContent.'update.mode'"
+  invoke-WriteRequirementsLogs "Valore di Shell $SettingsContent.'terminal.integrated.shell.windows'"
+  invoke-WriteRequirementsLogs "Valore di Update Mode $SettingsContent.'update.mode'"
   return 'SETTINGS'
 }
 

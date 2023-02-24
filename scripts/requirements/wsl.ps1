@@ -1,12 +1,49 @@
-$codeVersion = invoke-executeCommand("code --version")
-if (!$codeVersion) { 
-    invoke-WriteRequirementsLogs "Si e' verificato un errore durante l'esecuzione del comando ('code --version'). Code potrebbe non essere presente sulla macchina"
-    return 'KO'
+if ($scarConfig.Contains('terranova')) { return 'OK' }
+
+#Controlli Molto Complessi
+#KO = Esecuzione del comando fallito
+#VERSION = La defualt version di wsl non è la 2
+#UBUNTU = Non è stata rilevata alcuna distribuzione di ubuntu
+#MAIN + UBUNTU = Ubuntu non è settato come distribuzione principale e nessuna delle versioni rilevate rispetta i requisiti min e max, si procede al download della max
+#VER MAIN + UBUNTU = Ubuntu è settato come distribuzione principale ma non rispetta i requisiti min e max, e non c'è alcun'altra versione installa che li rispetti. Si procede al download della ma
+#MAIN + VER AVAILABLE = Ubuntu non è settato come distribuzione principale e esiste una versione che rispetta i requisiti min e max, si procede al settaggio
+#VER MAIN + VER AVAILABLE = Ubuntu è settato come distribuzione principale ma non rispetta i requisiti min e max, e esiste una versione che rispetta i requisiti min e max, si procede al settaggio
+#OK La distribuzione principale è ubuntu e rispetta i requisiti min e max
+$wslStatus = invoke-executeCommand("wsl --status")
+if (!$wslStatus) { 
+  invoke-WriteRequirementsLogs "Errore nell'esecuzione del comando wsl --status"
+  return "KO" 
 }
 
+$wslStatus = ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes($wslStatus))).split(' '); 
+  
+ #can't check if wsl has just been downloaded
+ $wslUpdate = invoke-executeCommand("wsl --update")
+if (!$wslUpdate) { 
+  invoke-WriteRequirementsLogs "Errore nell'esecuzione del comando wsl --update"
+  return "KO" 
+}
 
-$codeVersion = $codeVersion[0].split(".")
-$codeVersion = [Version]::new($codeVersion[0], $codeVersion[1], $codeVersion[2])
+if (-not $wslStatus.Contains("2")) {
+  invoke-WriteRequirementsLogs "La versione di default non e' la 2"
+  return "VERSION"
+}
+
+$wslVersions = invoke-executeCommand("wsl -l -v")
+if (!$wslVersions) { 
+  invoke-WriteRequirementsLogs "Errore nell'esecuzione dle comando wsl -l -v"
+  return "KO" 
+}
+
+$wslVersions = ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes($wslVersions))).split(' '); 
+if (-not $wslVersions.split("-").Contains("Ubuntu")) {
+  invoke-WriteRequirementsLogs "Non risulta installata alcuna distribuzione di UBUNTU installata nella macchina"
+  return "UBUNTU"
+}
+
+$output = ""
+$wslStatus = $wslStatus.split("-")
+
 
 $minVersion = $requirements[$name]["MinVersion"].split(".")
 $minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
@@ -14,22 +51,45 @@ $minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
 $maxVersion = $requirements[$name]["MaxVersion"].split(".")
 $maxVersion = [Version]::new($maxVersion[0], $maxVersion[1], $maxVersion[2])
 
-
-if (($codeVersion -lt $minVersion) -or ($codeVersion -gt $maxVersion)){
-    invoke-WriteRequirementsLogs "La versione rilevata di Visual Studio Code $codeVersion non rispetta i requisiti. Min Version: $minVersion. Max Version: $maxVersion"
-    return "VER"
+if (-not $wslStatus.Contains("Ubuntu")) {
+  invoke-WriteRequirementsLogs "Ubuntu non e' impostato come distribuzione principale"
+  $output += "MAIN" 
+}
+else{
+  $mainDistroVersion = $wslStatus[($wslStatus.IndexOf("Ubuntu") + 1)]
+  if (($mainDistroVersion -ge $minVersion) -or ($mainDistroVersion -le $maxVersion)){ 
+    invoke-WriteRequirementsLogs "E' stata impostata come distribuzione principale una versione corretta di ubuntu: $mainDistroVersion, Tollerabilita compresa da $($requirements[$name]['MinVersion']) a $($requirements[$name]['MaxVersion'])"
+    return "OK"
+  } #Caso Positivo
+  invoke-WriteRequirementsLogs "E' stata impostata come distribuzione principale una versione errata di ubuntu: $mainDistroVersion, Tollerabilita compresa da $($requirements[$name]['MinVersion']) a $($requirements[$name]['MaxVersion'])"
+  $output += "VER MAIN"
 }
 
-invoke-WriteRequirementsLogs "La versione rilevata di Visual Studio Code $codeVersion rispetta i requisiti. Min Version: $minVersion. Max Version: $maxVersion"
-$output = vscode-extentions.ps1
-$output += vscode-settings.ps1
-return $output
+$versions = @()
+$wslVersions = $wslVersions.split("-")
+for ($i = 0; $i -lt $wslVersions.Count; $i++) {
+  if ($wslVersions[$i] -like "Ubuntu") { $versions += $wslVersions[++$i] }
+}
+
+foreach ($version in $versions) {
+  if (($version -le $minVersion) -or ($version -ge $maxVersion)) { 
+    invoke-WriteRequirementsLogs "E' stata rilevata una versione di ubuntu che soddisfa i requisiti"
+    return "VER AVAILABLE"
+  }
+}
+
+$message = "Nessuna delle seguenti versioni di ubuntu presente nella macchina soddisfa i requisiti. Versioni rilevate: "
+foreach ($version in $versions) {
+  $message += "$version "
+}
+invoke-WriteRequirementsLogs  "$message. Requisiti da $($requirements[$name]['MinVersion']) a $($requirements[$name]['MaxVersion'])"
+return $output + "UBUNTU"
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUJfWBlcrzb+5GCk41wNKI+qkh
-# qx+ggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUjFcslb7KNsT8BG14s5tsfD+t
+# A5aggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -197,30 +257,30 @@ return $output
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUCQQgn38jVe+2Nhx7MLz2
-# C4abzTMwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQCvEtBrbvzkcupWEb/GVgCKt8IP4mfB0ixgI/4YeIsFx64j
-# Wp2fRkYMqyNK2Bicz+siPf3P7e4Cl0gmyfZ9shjrvkKX4jHfHUdYZby16u/qcIhL
-# 8ODAszTUEAN7IiukVOq0mu534jITPJ7KAIuLGo7TcgDLZhy64O8jLEkFVTHNIoTZ
-# M8s1AqBbSOi69uKaVCQ+FF8THZYiZ3dTfZoL5uBxIB20nMfF8IDsI0Lt3MPMF2iL
-# nHXwi9ExzyXMMwrJe4oSsQ8Bducvyh6DNEFCfd2NRoJFuycCG4/SSM3+NxRq2CAE
-# EYB6zQuZFgq12lv09aQhQxoQhYGSkT1ALxQBQe2soYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUWJGmA6ipoOwDW9emqugr
+# AbcphWIwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQBQ+DCqw/yAaR0rPF8r99Q0qHFLRGSQmrPoLLsHTGN5avi/
+# NVo/Q0bg5Tq+VO7QgBpoGWoQB9uNEr9RzoyVmW3Ys+j3FhED+CsQzCOOTS1+Mpoy
+# Dc9OVGH8EFJZPFGHPzxnyovH/foA38lsSThDlGjBH6rXcw3vMpdAxBaqhB8qbpbw
+# m7JjSO4GcQsC3qmVxeGYe/PjEC/+rskAq4/pfaasXJUVCSX8taF4cU4E8v6EC01A
+# STjTVbr+7e9Gm3JuRwRja3zpHpINvwczH7jVcrvI3gxfhOayJFE76p3tQRlqAyZt
+# wllUqilq5Ee9KUunpiZKs7AU+R5AEygbogizuYBToYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMjkxMzQxNDVaMD8GCSqG
-# SIb3DQEJBDEyBDC/a7srLaDZWmC5RBwC2SMgg4Uio9n2aIOLQ/HyFUgt/oBnPMlj
-# oC/7N7IjR8zU4FUwDQYJKoZIhvcNAQEBBQAEggIAEJ8uS6l1G2eX+b+w0P9yyYRy
-# +Vi+uVTiNTi5xtr/kO667UigP3rFR9tyoeB6l987IelvN0oVk1OZIYoEWylFWicq
-# KU3idnOEyamhGxnFvbNUWlmIkmGOaqs5B8LwRMdtveSMD2ZMR3k2LJQhvY+7bgA0
-# R7Ie9RjnphDcWVga1f0Sl+5LDkHZ1Nc8rGYsSw2+4MwmH6+tg41iVhp+GBQbaoPN
-# KP1He50nloCHCu2m+JAHv5vjCmpAKq9HDHlz4ODgxyXhTHX+9DQYsqVvZaAiwPfD
-# 4WvlHRGB5O7uSzWKPm/npbeydEoVqhUNdyXj3mFwChj3hhQYWJrwxvdAq+H+4Y6u
-# lLJJDxBHFbVVhlUILlbebkPjkkL1F5eEdP0vlWJreTJzjpa0tirorJ2t5oAEmNtx
-# ghUSiC4kbcOyDR0VXZPidR1+tyHA++T+V/xs4A2/bz6ftzWFgqvNC79gkOR/FeE2
-# uwADMJVqabSBiJWweMllivjdSI5YPXMa0BEDcsKz/0U2ilThQszNYYtoNcFwkMB3
-# /rKTbUjvXO2lhHDNtFvn/Rp5pYDRDhS4L4ruK7E6cbTCtLPpb0M2DV+9B/mhUpLr
-# I2Yqkwfrlq3WkQ8wZ3W0AUcksFb2ckWo23XzLXzL3MJ69BlEOHfwKw2RgUEAP3is
-# ylxglDl9AKgmsTpmnaE=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMjkxMzQxNTFaMD8GCSqG
+# SIb3DQEJBDEyBDAmTEV/TOyKcp+M0/UmFmZ4XngMdwu5uTi+FuSS5Hm182lYIacu
+# Fb8AwWnQLCDAOY8wDQYJKoZIhvcNAQEBBQAEggIAVfQ5FYEnyABEAg//2gfrshn6
+# SlJJpnTAFZ+x3irlfkkM1xM+3Nuwb24qin/wWN41HDYe0RcOde2Bz5szNfIWLpVO
+# AAVoh/3bZMND2541jI99CahiIxR1t1+EazF3OO6tAgctXJy/gMz0zVVSQaH5TxPD
+# yxQsWbtyX48cjQUGL3pI3OaSFr9pFAiGF1kh3AP1wOMxHLQwcArtqHD+3HX7yR7b
+# 1i+7ra1jHB/3C8Jh6HPIpsAT1eDXPu0YjCX2A2gW7gG5MSBEGO4or4pN9e5/Sbgx
+# Fcf/9Kzo1WbI6suh+UUSvZMid/8vDbi1wByq1wYcNT2437NDZtKIKCrTlcOA9Nm/
+# T1ZtfztIOzO/jI3dTtmUYMmysV7BkEDZS858aUGKMvPgbfJj+GtfqiUjJYbon5Kb
+# ifgwgfDEUFZfIq+fmjlolHFq889IrL7SCThi7ZIILaWJ04HQ2joCFaxt5zIDdpCa
+# drWO3kYM/dmIgPdNuDilY7Phkalwcc/GRk02LVlr1LUC3tIrCZoAAB2r+BF88UYa
+# D6dnx6XcIZK0wApyEXc0B1jxiDcMGoP97Hf/E3FN7/b5eu2pTAnKRBasMz65bBM+
+# gXxfTCzCEQgF+43iqdZz3EmhZOPXjCBRr2+W01pLOXzTASSvfObaU9rAk0ZTZNOq
+# Yxq2CR0LTz2Mk5ei0/s=
 # SIG # End signature block

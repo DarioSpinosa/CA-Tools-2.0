@@ -1,15 +1,36 @@
-$dotNetVersions = invoke-executeCommand ("dotnet --list-sdks")
-if (-not $dotNetVersion) { 
-    invoke-WriteRequirementsLogs "Si e' verificato un problema nel check delle versioni installate di dotnet"
-    return "KO" 
+$dotnetOutputCommand = invoke-executeCommand ("dotnet --list-sdks")
+
+if (-not $dotnetOutputCommand) { 
+  invoke-WriteRequirementsLogs "Si e' verificato un problema durante l'esecuzione del comando (dotnet --list-sdks). DotNet potrebbe non essere presente sulla macchina"
+  return "KO" 
 }
-$dotNetVersions.replace("[C:\Program Files\dotnet\sdk]", "").split("")
-$message = "Versioni di .Net Core rilevate sulla macchina: "
-foreach ($version in $dotNetVersions){
-    $message += $version
+
+$dotnetOutputCommand = $dotnetOutputCommand.replace(' ', '').split('[')
+$dotNetVersions = @()
+for ($i = 0; $i -lt $dotnetOutputCommand.Count; $i += 2) {
+  $dotNetVersions += $dotnetOutputCommand[$i]
 }
-$message += ". Almeno una delle installazioni deve essere compresa tra $(requirements[$name]['MinVersion']) e $(requirements[$name]['MaxVersion'])"
-return $(if (checkCorrectVersion $dotNetVersions) {"OK"} else {"VER"})
+
+$minVersion = $requirements[$name]["MinVersion"].split(".")
+$minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
+
+$maxVersion = $requirements[$name]["MaxVersion"].split(".")
+$maxVersion = [Version]::new($maxVersion[0], $maxVersion[1], $maxVersion[2])
+
+foreach ($version in $dotNetVersions) {
+  $version = $version.split(".")
+  $version = [Version]::new($version[0], $version[1], $version[2])
+  if (($version -ge $minVersion) -and ($version -le $maxVersion)) {
+    invoke-WriteRequirementsLogs "La versione rilevata di DotNet $version rispetta i requisiti. Min Version: $minVersion. Max Version: $maxVersion"
+    return "OK"
+  }
+}
+
+$message = "Nessuna tra le versioni rilevate di DotNet"
+foreach ($version in $dotNetVersions) {$message += " $version" }
+$message += " rispetta i requisiti. Min Version: $minVersion. Max Version: $maxVersion"
+invoke-WriteRequirementsLogs $message
+return "VER"
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
