@@ -1,7 +1,7 @@
 $dotnetOutputCommand = invoke-executeCommand ("dotnet --list-sdks")
 
 if (-not $dotnetOutputCommand) { 
-  invoke-WriteRequirementsLogs "Si e' verificato un problema durante l'esecuzione del comando (dotnet --list-sdks). DotNet potrebbe non essere presente sulla macchina"
+  invoke-WriteLogs $checkLogs "Si e' verificato un problema durante l'esecuzione del comando (dotnet --list-sdks).\r\nDotNet potrebbe non essere presente sulla macchina"
   return "KO" 
 }
 
@@ -21,15 +21,15 @@ foreach ($version in $dotNetVersions) {
   $version = $version.split(".")
   $version = [Version]::new($version[0], $version[1], $version[2])
   if (($version -ge $minVersion) -and ($version -le $maxVersion)) {
-    invoke-WriteRequirementsLogs "La versione rilevata di DotNet $version rispetta i requisiti. Min Version: $minVersion. Max Version: $maxVersion"
+    invoke-WriteLogs $checkLogs "La versione rilevata di DotNet $version rispetta i requisiti.\r\nMin Version: $minVersion. Max Version: $maxVersion"
     return "OK"
   }
 }
 
 $message = "Nessuna tra le versioni rilevate di DotNet"
 foreach ($version in $dotNetVersions) {$message += " $version" }
-$message += " rispetta i requisiti. Min Version: $minVersion. Max Version: $maxVersion"
-invoke-WriteRequirementsLogs $message
+$message += " rispetta i requisiti. Min Version: $minVersion.\r\nMax Version: $maxVersion"
+invoke-WriteLogs $checkLogs $message
 return "VER"
 
 # SIG # Begin signature block

@@ -1,4 +1,4 @@
-Remove-StartupCmd
+Remove-Item -Path $StartupPath -Force -ErrorAction Ignore
 Start-Process msiexec.exe -ArgumentList @('/I', $requirements["Setup CaTools.msi"]["DownloadOutfile"], '/passive') -Wait
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

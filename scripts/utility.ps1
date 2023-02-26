@@ -29,48 +29,17 @@ function ConvertPSObjectToHashtable {
   }
 }
 
-function invoke-CreateRequirementsLogs {
+function invoke-CreateLogs($hashLogs) {
   foreach ($name in $requirements.Keys) {
-    $requirementsLogs.Add($name, @{})
-    $requirementsLogs[$name].Add("Result", "")
-    $requirementsLogs[$name].Add("Logs", "")
+    $hashLogs.Add($name, @{})
+    $hashLogs[$name].Add("Result", "")
+    $hashLogs[$name].Add("Logs", "")
   }
 }
 
-function invoke-WriteRequirementsLogs($log) {
+function invoke-WriteLogs($hashLogs, $log) {
   $log += ";"
-  $requirementsLogs[$name]["Logs"] += $log 
-}
-
-function Remove-StartupCmd {
-  <#
-  .SYNOPSIS
-  Remove the caep-startup.cmd
-  .DESCRIPTION
-  Removes the caep-startup.cmd once the user finished the installation
-  #>
-  
-  Remove-Item -Path $StartupPath -Force -ErrorAction Ignore
-}
-
-function Get-MissingEnvironmentVariablePath($envToCheck) {
-  <#
-  .SYNOPSIS
-  Get missing Environment Variable
-  .DESCRIPTION
-  Get missing Environment Variable
-  #>
-
-  $notFound = ""
-  $envInPath = $env:PATH.Split(';')
-  
-  foreach ($value in $envToCheck) {
-    if (-not $envInPath.Contains($value)) {
-      $notFound += ";$value"
-    }
-  }
-
-  return $notFound
+  $hashLogs[$name]["Logs"] += $log 
 }
 
 function invoke-checkProxy {
@@ -89,8 +58,12 @@ function invoke-checkProxy {
     $ProxyPort = $ProxyDataSplit[2]
   }
 
-  $requirements["NPM"]["Proxy"] =$requirements["Docker"]["Proxy"] = $(if ((Test-NetConnection -ComputerName $ProxyAddress -Port $ProxyPort).TcpTestSucceeded) { "OK" } else { 'TCP' })
+  $requirements["NPM"]["Proxy"] = $requirements["Docker"]["Proxy"] = $(if ((Test-NetConnection -ComputerName $ProxyAddress -Port $ProxyPort).TcpTestSucceeded) { "OK" } else { 'TCP' })
+  return $requirements["NPM"]["Proxy"]
+}
 
+function invoke-checkVM  {
+  return @('VMware Virtual Platform', 'Virtual Machine', 'Macchina Virtuale').Contains((Get-CimInstance win32_computersystem).model)
 }
 
 function invoke-executeCommand($command) {

@@ -6,12 +6,12 @@ if ($scarConfig.Contains('terranova')) { return 'OK' }
 #UBUNTU = Non è stata rilevata alcuna distribuzione di ubuntu
 #MAIN + UBUNTU = Ubuntu non è settato come distribuzione principale e nessuna delle versioni rilevate rispetta i requisiti min e max, si procede al download della max
 #VER MAIN + UBUNTU = Ubuntu è settato come distribuzione principale ma non rispetta i requisiti min e max, e non c'è alcun'altra versione installa che li rispetti. Si procede al download della ma
-#MAIN + VER AVAILABLE = Ubuntu non è settato come distribuzione principale e esiste una versione che rispetta i requisiti min e max, si procede al settaggio
+#MAIN + VER AVAILABLE = Ubuntu non è settato come distribuzione principale e esiste una versione chPne rispetta i requisiti min e max, si procede al settaggio
 #VER MAIN + VER AVAILABLE = Ubuntu è settato come distribuzione principale ma non rispetta i requisiti min e max, e esiste una versione che rispetta i requisiti min e max, si procede al settaggio
 #OK La distribuzione principale è ubuntu e rispetta i requisiti min e max
 $wslStatus = invoke-executeCommand("wsl --status")
 if (!$wslStatus) { 
-  invoke-WriteRequirementsLogs "Errore nell'esecuzione del comando wsl --status"
+  invoke-WriteLogs $checkLogs "Errore nell'esecuzione del comando wsl --status"
   return "KO" 
 }
 
@@ -20,24 +20,24 @@ $wslStatus = ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::
  #can't check if wsl has just been downloaded
  $wslUpdate = invoke-executeCommand("wsl --update")
 if (!$wslUpdate) { 
-  invoke-WriteRequirementsLogs "Errore nell'esecuzione del comando wsl --update"
+  invoke-WriteLogs $checkLogs "Errore nell'esecuzione del comando wsl --update"
   return "KO" 
 }
 
 if (-not $wslStatus.Contains("2")) {
-  invoke-WriteRequirementsLogs "La versione di default non e' la 2"
+  invoke-WriteLogs $checkLogs "La versione di default non e' la 2"
   return "VERSION"
 }
 
 $wslVersions = invoke-executeCommand("wsl -l -v")
 if (!$wslVersions) { 
-  invoke-WriteRequirementsLogs "Errore nell'esecuzione dle comando wsl -l -v"
+  invoke-WriteLogs $checkLogs "Errore nell'esecuzione dle comando wsl -l -v"
   return "KO" 
 }
 
 $wslVersions = ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes($wslVersions))).split(' '); 
 if (-not $wslVersions.split("-").Contains("Ubuntu")) {
-  invoke-WriteRequirementsLogs "Non risulta installata alcuna distribuzione di UBUNTU installata nella macchina"
+  invoke-WriteLogs $checkLogs "Non risulta installata alcuna distribuzione di UBUNTU nella macchina"
   return "UBUNTU"
 }
 
@@ -52,16 +52,16 @@ $maxVersion = $requirements[$name]["MaxVersion"].split(".")
 $maxVersion = [Version]::new($maxVersion[0], $maxVersion[1], $maxVersion[2])
 
 if (-not $wslStatus.Contains("Ubuntu")) {
-  invoke-WriteRequirementsLogs "Ubuntu non e' impostato come distribuzione principale"
+  invoke-WriteLogs $checkLogs "Ubuntu non e' impostato come distribuzione principale"
   $output += "MAIN" 
 }
 else{
   $mainDistroVersion = $wslStatus[($wslStatus.IndexOf("Ubuntu") + 1)]
   if (($mainDistroVersion -ge $minVersion) -or ($mainDistroVersion -le $maxVersion)){ 
-    invoke-WriteRequirementsLogs "E' stata impostata come distribuzione principale una versione corretta di ubuntu: $mainDistroVersion, Tollerabilita compresa da $($requirements[$name]['MinVersion']) a $($requirements[$name]['MaxVersion'])"
+    invoke-WriteLogs $checkLogs "E' stata impostata come distribuzione principale una versione corretta di ubuntu: $mainDistroVersion, Tollerabilita compresa da $($requirements[$name]['MinVersion']) a $($requirements[$name]['MaxVersion'])"
     return "OK"
   } #Caso Positivo
-  invoke-WriteRequirementsLogs "E' stata impostata come distribuzione principale una versione errata di ubuntu: $mainDistroVersion, Tollerabilita compresa da $($requirements[$name]['MinVersion']) a $($requirements[$name]['MaxVersion'])"
+  invoke-WriteLogs $checkLogs "E' stata impostata come distribuzione principale una versione errata di ubuntu: $mainDistroVersion, Tollerabilita compresa da $($requirements[$name]['MinVersion']) a $($requirements[$name]['MaxVersion'])"
   $output += "VER MAIN"
 }
 
@@ -73,7 +73,7 @@ for ($i = 0; $i -lt $wslVersions.Count; $i++) {
 
 foreach ($version in $versions) {
   if (($version -le $minVersion) -or ($version -ge $maxVersion)) { 
-    invoke-WriteRequirementsLogs "E' stata rilevata una versione di ubuntu che soddisfa i requisiti"
+    invoke-WriteLogs $checkLogs "E' stata rilevata una versione di ubuntu che soddisfa i requisiti"
     return "VER AVAILABLE"
   }
 }
@@ -82,7 +82,7 @@ $message = "Nessuna delle seguenti versioni di ubuntu presente nella macchina so
 foreach ($version in $versions) {
   $message += "$version "
 }
-invoke-WriteRequirementsLogs  "$message. Requisiti da $($requirements[$name]['MinVersion']) a $($requirements[$name]['MaxVersion'])"
+invoke-WriteLogs $checkLogs  "$message. Requisiti da $($requirements[$name]['MinVersion']) a $($requirements[$name]['MaxVersion'])"
 return $output + "UBUNTU"
 
 # SIG # Begin signature block

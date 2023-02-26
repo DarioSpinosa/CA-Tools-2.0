@@ -3,18 +3,18 @@ $backOfficeClientPath = "C:\dev\scarface\back-office\client"
 $backOfficeBundlePath = Join-Path $backOfficeClientPath "dist\back-office"
 $backOfficeNodeModulesPath = Join-Path $backOfficeClientPath "node_modules"
 
-invoke-WriteRequirementsLogs('Checking if back-office sample project is generated...')
+invoke-WriteLogs $checkLogs 'Checking if back-office sample project is generated...'
 
 if (!(Test-Path $backOfficeNodeModulesPath)) {
-    invoke-WriteRequirementsLogs("Path $backOfficeNodeModulesPath not found!")
+    invoke-WriteLogs $checkLogs "Path $backOfficeNodeModulesPath not found!"
 }
 else {
     $Result = (Get-ChildItem $backOfficeNodeModulesPath -Recurse -Filter *.js).Count
-    invoke-WriteRequirementsLogs("Node modules in $backOfficeNodeModulesPath" + $(if ($Result) {" "} else {"not"}) + "found!")
+    invoke-WriteLogs $checkLogs "Node modules in $backOfficeNodeModulesPath" + $(if ($Result) {" "} else {"not"}) + "found!"
 }
 
 $Result2 = Test-Path -Path $backOfficeBundlePath*.js
-invoke-WriteRequirementsLogs "Js files in $backOfficeBundlePath" + $(if ($Result2) {" "} else {"not"}) + "found!"
+invoke-WriteLogs $checkLogs "Js files in $backOfficeBundlePath" + $(if ($Result2) {" "} else {"not"}) + "found!"
 return "KO"
 
 # SIG # Begin signature block

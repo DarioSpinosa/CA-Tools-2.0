@@ -9,7 +9,7 @@ $modalForm = New-Object System.Windows.Forms.Form
 $modalForm.StartPosition = "Manual"
 $modalForm.Text = "Error!"
 $modalForm.Location = '700, 250'
-$modalForm.ClientSize = '400, 100'
+$modalForm.ClientSize = '350, 150'
 $modalForm.BackColor = "#eeeeee"
 $modalForm.StartPosition = "CenterScreen"
 $modalForm.FormBorderStyle = "None"
@@ -17,7 +17,7 @@ $modalForm.BackgroundImage = [System.Drawing.Image]::Fromfile(".\assets\backgrou
 
 $panel = New-Object System.Windows.Forms.Panel
 $panel.Location = "5, 5"
-$panel.Size = "390, 90"
+$panel.Size = "340, 140"
 $panel.BackColor = "#00254d"
 $panel.BackgroundImage = [System.Drawing.Image]::Fromfile(".\assets\background.jpg")
 
@@ -25,7 +25,7 @@ $messageLabel = New-Object System.Windows.Forms.Label
 $messageLabel.Text = ""
 $messageLabel.AutoSize = $true
 $messageLabel.Location = "30, 10"
-$messageLabel.Font = 'Roboto, 10'
+$messageLabel.Font = 'Century Gothic, 12'
 $messageLabel.BackColor = "Transparent"
 $messageLabel.ForeColor = "#000000"
 
@@ -33,8 +33,8 @@ $exitButton = New-Object System.Windows.Forms.Button
 $exitButton.BackColor = "#ffffff"
 $exitButton.Text = "Close"
 $exitButton.Size = "80, 25"
-$exitButton.Location = "160, 40"
-$exitButton.Font = 'Roboto, 13'
+$exitButton.Location = "135, 100"
+$exitButton.Font = 'Century Gothic, 13'
 $exitButton.ForeColor = "#0a0a0a"
 $exitButton.ForeColor = "#0a0a0a"
 $exitButton.FlatStyle = "Flat"

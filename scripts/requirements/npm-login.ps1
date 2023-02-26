@@ -1,13 +1,13 @@
-invoke-WriteRequirementsLogs "Generate npm log for npm view commands in $capturedPath ..."
+invoke-WriteLogs $checkLogs "Generate npm log for npm view commands in $capturedPath ..."
 
 "npm view @ca/cli  2>&1 > $capturedPath" | Invoke-Expression
 "npm view @ca-codegen/core  2>&1 > $capturedPath" | Invoke-Expression
 
 $npmErrCheck = Get-Content $capturedPath
 
-invoke-WriteRequirementsLogs "$capturedPath content: "
+invoke-WriteLogs $checkLogs "$capturedPath content: "
 foreach ($element in $npmErrCheck) {
-    invoke-WriteRequirementsLogs "$element"
+    invoke-WriteLogs $checkLogs "$element"
 }
 
 foreach ($item in $npmErrCheck) {

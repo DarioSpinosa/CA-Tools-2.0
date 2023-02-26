@@ -1,28 +1,99 @@
-$codeVersion = invoke-executeCommand("code --version")
-if (!$codeVersion) { 
-    invoke-WriteRequirementsLogs "Si e' verificato un errore durante l'esecuzione del comando ('code --version'). Code potrebbe non essere presente sulla macchina"
+function checkApp {
+  $codeVersion = invoke-executeCommand("code --version")
+  if (!$codeVersion) { 
+    invoke-WriteLogs $checkLogs "Si e' verificato un errore durante l'esecuzione del comando ('code --version').\r\nCode potrebbe non essere presente sulla macchina"
     return 'KO'
-}
+  }
 
 
-$codeVersion = $codeVersion[0].split(".")
-$codeVersion = [Version]::new($codeVersion[0], $codeVersion[1], $codeVersion[2])
+  $codeVersion = $codeVersion[0].split(".")
+  $codeVersion = [Version]::new($codeVersion[0], $codeVersion[1], $codeVersion[2])
 
-$minVersion = $requirements[$name]["MinVersion"].split(".")
-$minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
+  $minVersion = $requirements[$name]["MinVersion"].split(".")
+  $minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
 
-$maxVersion = $requirements[$name]["MaxVersion"].split(".")
-$maxVersion = [Version]::new($maxVersion[0], $maxVersion[1], $maxVersion[2])
+  $maxVersion = $requirements[$name]["MaxVersion"].split(".")
+  $maxVersion = [Version]::new($maxVersion[0], $maxVersion[1], $maxVersion[2])
 
 
-if (($codeVersion -lt $minVersion) -or ($codeVersion -gt $maxVersion)){
-    invoke-WriteRequirementsLogs "La versione rilevata di Visual Studio Code $codeVersion non rispetta i requisiti. Min Version: $minVersion. Max Version: $maxVersion"
+  if (($codeVersion -lt $minVersion) -or ($codeVersion -gt $maxVersion)) {
+    invoke-WriteLogs $checkLogs "La versione rilevata di Visual Studio Code $codeVersion non rispetta i requisiti.\r\nMin Version: $minVersion. Max Version: $maxVersion"
     return "VER"
+  }
+
+  invoke-WriteLogs $checkLogs "La versione rilevata di Visual Studio Code $codeVersion rispetta i requisiti.\r\nMin Version: $minVersion. Max Version: $maxVersion"
+  return ""
 }
 
-invoke-WriteRequirementsLogs "La versione rilevata di Visual Studio Code $codeVersion rispetta i requisiti. Min Version: $minVersion. Max Version: $maxVersion"
-$output = vscode-extentions.ps1
-$output += vscode-settings.ps1
+function checkSettings {
+  $VSCodeSettingsPath = "~\AppData\Roaming\Code\User"
+  $VSCodeSettingsJsonPath = "~\AppData\Roaming\Code\User\settings.json"
+
+  if (!(Test-Path $VSCodeSettingsPath)) { 
+    invoke-WriteLogs $checkLogs "Path $VSCodeSettingsPath non trovato"
+    return 'SETTINGS'
+  }
+
+  invoke-WriteLogs $checkLogs "Path $VSCodeSettingsPath trovato"
+
+  if (!(Test-Path $VSCodeSettingsJsonPath)) {
+    New-Item -Path $VSCodeSettingsJsonPath -Value '{ }' -Force | Out-Null
+    invoke-WriteLogs $checkLogs "File $VSCodeSettingsJsonPath non trovato"
+    return 'SETTINGS'
+  }
+
+  invoke-WriteLogs $checkLogs "File $VSCodeSettingsJsonPath trovato"
+  $SettingsContent = Get-Content -Path "~\AppData\Roaming\Code\User\settings.json" | ConvertFrom-Json
+
+  if (($SettingsContent.'terminal.integrated.defaultProfile.windows') -or ($SettingsContent.'terminal.integrated.shellArgs.windows') -or ($SettingsContent.'terminal.integrated.profiles.windows')) {
+    invoke-WriteLogs $checkLogs "Valore di Default Profile $SettingsContent.'terminal.integrated.defaultProfile.windows'"
+    invoke-WriteLogs $checkLogs "Valore di Shell Args $SettingsContent.'terminal.integrated.shellArgs.windows'"
+    invoke-WriteLogs $checkLogs "Valore di Integrated Profile $SettingsContent.'terminal.integrated.profiles.windows'"
+    return 'SETTINGS'
+  }
+  elseif (($SettingsContent.'terminal.integrated.shell.windows' -ne 'C:\WINDOWS\System32\cmd.exe') -or ($SettingsContent.'update.mode' -ne 'manual')) {
+    invoke-WriteLogs $checkLogs "Valore di Shell $SettingsContent.'terminal.integrated.shell.windows'"
+    invoke-WriteLogs $checkLogs "Valore di Update Mode $SettingsContent.'update.mode'"
+    return 'SETTINGS'
+  }
+
+  return 'OK'
+}
+
+function checkExtentions {
+  $ListExtensions = invoke-executeCommand("code --list-extensions")
+  if (!$ListExtensions) { 
+    invoke-WriteLogs $checkLogs "Nessuna estensione di visual studio code rilevata"
+    return 'EXTENTIONS'
+  }
+
+  $missingExtentions = @()
+
+  foreach ($extension in $requirements["VS Code Extentions"]["Extentions"]) {
+    if (-not $ListExtensions.Contains($extension)) { $missingExtentions += $extension }
+  }
+
+  $requirements["VS Code Extentions"]["Extentions"] = $missingExtentions
+
+  if ($missingExtentions.Count ) {
+    $message = "Non sono state rilevate le seguenti estensioni"
+    foreach ($ext in $missingExtentions) {
+      $message += $ext
+    }
+    invoke-WriteLogs $checkLogs $message
+    return 'EXTENTIONS' 
+   
+  }
+
+  invoke-WriteLogs $checkLogs "Tutte le estensioni sono già installate"
+  return "OK"
+}
+
+
+$output = checkApp
+if ($output) { return $output } 
+$output = checkExtentions
+$output += checkSettings
 return $output
 
 # SIG # Begin signature block

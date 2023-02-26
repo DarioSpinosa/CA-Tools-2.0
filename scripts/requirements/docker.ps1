@@ -2,7 +2,7 @@ if ($scarConfig.Contains('terranova')) { return 'OK' }
 
 $dockerVersion = Invoke-executeCommand("docker --version")
 if (!$dockerVersion) { 
-  invoke-WriteRequirementsLogs "Si e' verificato un errore durante l'esecuzione del comando ('docker --version'). Docker potrebbe non essere presente sulla macchina"
+  invoke-WriteLogs $checkLogs "Si e' verificato un errore durante l'esecuzione del comando ('docker --version').\r\nDocker potrebbe non essere presente sulla macchina"
   return 'KO'
 }
 
@@ -17,7 +17,7 @@ $maxVersion = [Version]::new($maxVersion[0], $maxVersion[1], $maxVersion[2])
 
 $output = ""
 if (($dockerVersion -lt $minVersion) -or ($dockerVersion -gt $maxVersion)) {
-  invoke-WriteRequirementsLogs "La versione rilevata di docker $dockerVersion non rispetta i requisiti. Min Version: $minVersion. Max Version: $maxVersion"
+  invoke-WriteLogs $checkLogs "La versione rilevata di docker $dockerVersion non rispetta i requisiti.\r\nMin Version: $minVersion. Max Version: $maxVersion"
   $output = "VER"
 }
 
@@ -38,7 +38,7 @@ if ($requirements[$name]["Proxy"] -ne "KO") {
 }
 
 if ($output) { return $output }
-invoke-WriteRequirementsLogs "La versione rilevata di docker $dockerVersion rispetta i requisiti. Min Version: $minVersion. Max Version: $maxVersion"
+invoke-WriteLogs $checkLogs "La versione rilevata di docker $dockerVersion rispetta i requisiti.\r\nMin Version: $minVersion. Max Version: $maxVersion"
 return "OK"
 
 

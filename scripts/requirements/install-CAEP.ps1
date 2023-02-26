@@ -1,28 +1,28 @@
-invoke-WriteRequirementsLogs('Searching for npm-login.ps1...')
-$caPath = "C:\Program Files\Ca-Tools\npm-login.ps1"
+invoke-WriteLogs $checkLogs 'Searching for npm-login.ps1...')
+$caPath = "C:\Program Files\Ca-Tools\r\npm-login.ps1"
 if (!(Test-Path $caPath) -or !(Get-Content -Path $caPath) ) {
-	 invoke-WriteRequirementsLogs("Npm-login.ps1 not found!")
+	 invoke-WriteLogs $checkLogs "Npm-login.ps1 not found!")
   return 'KO'
 }
 
-invoke-WriteRequirementsLogs('Searching for @ca npm packages...')
+invoke-WriteLogs $checkLogs 'Searching for @ca npm packages...')
 $npmList = npm list -g --depth=0
 if (($npmList -like '*@ca/cli*') -and ($npmList -like '*@ca/generator-scarface*')) {
-  invoke-WriteRequirementsLogs('@ca/cli and @ca/generator-scarface are installed npm packages.')
+  invoke-WriteLogs $checkLogs '@ca/cli and @ca/generator-scarface are installed npm packages.')
 }
 else {
-	 invoke-WriteRequirementsLogs('npm packages @ca/cli and @ca/generator-scarface not found!')
+	 invoke-WriteLogs $checkLogs 'npm packages @ca/cli and @ca/generator-scarface not found!')
   return 'KO'
 }
 
-invoke-WriteRequirementsLogs('Searching for ca plugins...')
+invoke-WriteLogs $checkLogs 'Searching for ca plugins...')
 $npmPlugin = ca plugins
 if ($npmPlugin -like '*@ca/cli-plugin-scarface*' ) {
-	 invoke-WriteRequirementsLogs 'Ca plugins: @ca/cli-plugin-scarface found!'
+	 invoke-WriteLogs $checkLogs 'Ca plugins: @ca/cli-plugin-scarface found!'
   return 'OK'
 }
 else {
-  invoke-WriteRequirementsLogs 'Ca plugins: @ca/cli-plugin-scarface not found!'
+  invoke-WriteLogs $checkLogs 'Ca plugins: @ca/cli-plugin-scarface not found!'
   return 'KO'
 }
 

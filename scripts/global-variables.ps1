@@ -9,11 +9,15 @@ $LIBRARY = @"
 "@
 $RoundObject = Add-Type -MemberDefinition $LIBRARY -Name "Win32Helpers" -PassThru
 
+$red = [System.Drawing.Color]::FromArgb(255, 236, 84, 84)
+$green = [System.Drawing.Color]::FromArgb(255, 13, 173, 141)
 
 $currentDate = (Get-Date -Format yyyyMMdd-HHmmss).ToString()
-$requirementsLogs = @{}
+$checkLogs = @{}
+$installationLogs = @{}
 $logFilePath = "~\.ca\$currentDate\caep.log"
 $capturedPath = "~\.ca\$currentDate\npmErrCheck.txt"
 $checkRequirementsLogFile = "~\.ca\$currentDate\requirementsLogs.json" 
-$InstallRequirementsLogfile = "$($HOME)\.ca\$currentDate\install_requirements.log"
+$installRequirementsLogfile = "~\.ca\$currentDate\install_requirements.log"
+$sortedRequirements = @('WSL', 'Node.js', 'DotNet', 'Visual Studio', 'Visual Studio Code', 'Git', 'Setup CATools', 'NPM', 'Docker', 'Npm Login', 'Install CAEP', 'Execute Scarface')
 

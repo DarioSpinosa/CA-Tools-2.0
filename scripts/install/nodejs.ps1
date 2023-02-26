@@ -1,4 +1,4 @@
-invoke-writeOutputInstallations($addNodeBuildTools)
+invoke-WriteLogs $installationLogs $addNodeBuildTools
 
 $argumentList = @('/I', $requirement["DownloadOutFile"])
 
@@ -6,7 +6,7 @@ if (-not $addNodeBuildTools) {
 	$argumentList += '/passive'
 }
 else {
-	invoke-writeOutputInstallations("Starting manual Node install...")
+	invoke-WriteLogs $installationLogs "Starting manual Node install..."
 }
 Start-Process msiexec.exe -ArgumentList $argumentList -Wait
 
