@@ -1,12 +1,34 @@
-. .\scripts\utility.ps1
-. .\scripts\global-variables.ps1
-. .\components\modal\Modal.ps1
-. .\components\homePage\HomePage.ps1
+function invoke-installation($name, $requirement) {
+  $subMessage = "$($name) version: $($requirement["MaxVersion"])"
+	invoke-WriteInstallLogs "Installing $subMessage..."
+
+  $argumentList = @(
+    '--add Microsoft.VisualStudio.Workload.NetWeb',
+    '--add Microsoft.VisualStudio.Workload.CoreEditor',
+    '--add Microsoft.VisualStudio.Workload.ManagedDesktop',
+    '--add Microsoft.VisualStudio.Workload.Universal',
+    '--add Microsoft.NetCore.Component.Runtime.5.0',
+    '--add Microsoft.NetCore.Component.Runtime.3.1',
+    '--passive',
+    '--norestart'
+  )
+    
+  Start-Process $requirement["DownloadOutFile"] -ArgumentList $argumentList -Wait
+  invoke-WriteInstallLogs "Install of $subMessage complete."
+}
+
+#Return temporaneo per impedire l'installazione in caso di errore di versione "VER"
+#per cui non è stato ancora deciso il comportamento
+if (-not ($checkLogs[$Name]["Result"].Contains("KO"))) { return } 
+if (-not (invoke-download $name $requirement)) {return "KO"}
+invoke-installation $name, $requirement
+invoke-deleteDownload $name, $requirement
+return "OK"
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUxg2mq5oq5zVoFwLI6bItIWbX
-# PIqggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUVoeR8Ej8WXrwu5FYc1i8w5XN
+# hEWggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -31,7 +53,7 @@
 # Y3NwLnNlY3RpZ28uY29tMA0GCSqGSIb3DQEBCwUAA4IBAQBlnIYjhWZ4sTIbd/yg
 # CjBcY2IKtXvL5Nts38z5c/7NtoJrP5C7MyjdVfgP5hTcXGVsKbZu1FwI+qlmcKcl
 # YO9fiNP8qOIxDKrlETyduXknx70mjok/ZrrbrPYiCIRf3imGWb0dU6U1iDsphhng
-# My2352B8K4RICeHd/pLY8PGyM276RIVRL9qv/welyakOoqs9n8pJPz4SkQKZ1LELb
+# My2352B8K4RICeHd/pLY8PGyM276RIVRL9qv/welyakOoqs9n8JPz4SkQKZ1LELb
 # rHtxU9gSC6M/Sz3T0wLCF+qZw388HgpT0iv1PCWr3LFuzY1FxD9hOaGrVQKu1GeM
 # VBqF3Ac+jRy308kqZlzwvR5s6mYFyEvxS9CoUNBERBEFgULSkGH5O7SVjUcbiK8w
 # BlToMIIFgTCCBGmgAwIBAgIQOXJEOvkit1HX02wQ3TE1lTANBgkqhkiG9w0BAQwF
@@ -174,30 +196,30 @@
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUO8t+4gDFPr7Ogo1X9/JO
-# ocQe2jQwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQAyrPdw3jhPb6E3OzV1qQA4pNWd0Z4jhiRzVg9GMoQ20Dp4
-# Fol8ns2K7MXBlpP695q05tf2ufj2U9OQysT3YmlM7fHuMbMIp+dVapdtlfGzhYCF
-# MLX/wBX3TKIK6Ll0Vy/SjcAN8tUtwsZjr5oN2E+UC0YNdhfwacKrSMRJnSGs3naf
-# vlLhhlCT2V/NhZWcLceKVVMQuamMQoYA9O5rTj/sQrGwXpKwiH8AqM8bM4YSpL5J
-# XhhQEEWfOgPeRxeNwFZIMtmUZPOvdCF6iUIOVpZnepo05OB4nyYDj4W5wuTls+zy
-# jZ1RtLSc6LT484VwC96QP0V8sQlvv73ZkP1efutuoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUAcKGs/ZvnV3wu0LJZnDy
+# 9zpE9qQwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQAwQdrrORtcLbbYaifo8ZwJmmUgDkMuFzX4Ts6Et43hvQZA
+# 5wgKjqDRDAdTPat6EZV/5LyubOtNyzPmQZ0iIaZLylY7ayRZH8wJ4GMk84tB9ZMv
+# w2ydiEE4zTmeV0SX1aYZi8+/oulSDc23ynsGYYkqp+Wtmy7A/p5Zi2KWNQs40Eqd
+# 2bGrQVQ4/GNkOCAF/ib2rLdkl3FAjX2Qs9eAmjsd0RcouHfKAWv06zNkrfzIigqZ
+# 8yqqHN5TnT8mgGWC4Njd+j1Ymd54arhg6yprbNxyrefLFr/b/bE2ashtZcWqZoMk
+# 9/VinImLYaLVdxSapEzUYJlPduxuUByuZ046sT56oYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMzAyMDgwOTM4NTdaMD8GCSqG
-# SIb3DQEJBDEyBDA8+VLOaYL0l8998ketYLBfEYvDEQG7IBCq8yrS2yH5gE0OODss
-# aqWBqJhqz6HIpMswDQYJKoZIhvcNAQEBBQAEggIAGID7RQCJ/OlUYrnyseiVy54n
-# +OhpPwMNPRU85wsJ8hODX8oPsSZQSixpln7Ld8Hs2cVuKyLD2K0+gkkEWMXQUPWa
-# 0G1ToYOqcRG6enUGoCKfOUI3R+ezVe/J9aVK3NT9nAJ9RzPVqmIUketWDEB6yOAD
-# Ddfat14IpdtdhEc8jwapV/wV+kYhWkniX0Eb1a1mVFp+eMmK7tfIfp1uxFJpMrVK
-# DIDtCkmXMrKCWJgLTW4icUfS5VWS/j7R43EwWrQrWxT+/F3HAey6u4XBYFLEHQxi
-# 7GZtw2wB79JA26EVtX/z+g4uiwL2YKp09VBR3pOKwU0F0dTaM0qepGh5HMPCsWL/
-# cDvsiPqAuxUV3p1pNrch1TfupYxpz0F8wMH0/kRNokGLs90LgXzYtWg6aZ/AP0Ks
-# ePrRaZ5JyoF6K2x0rf30oXCZGer3Eoa8XvQlEZAeVB75xGSv+j01+07m+vuxlcQl
-# mI/A5Fq59JY+qo/0yKWOKxbUD4RdRu9Hr3IrbY4YwAMJ8WqKNLoXoIkm0kDti9AE
-# s3otusQj14nGJs+mgAHWF+T3Xb8AZM1XI7JuVX2CjbWe3Tp7eyWMbrPoTsUYcfux
-# Fz3EU68Xf70F0gaaNvQeIL9NxmDydtK5O3CvXX42KaKMDKtOZrJowonSkSWoPKu0
-# V7N5WUjJUzxjJVCtPjs=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMjkxMzQwMDZaMD8GCSqG
+# SIb3DQEJBDEyBDCaFPlXfOI3gCu2K1w45bW7lo8GLt20PiSUeee1WwNxvb985k6+
+# N1lZ7T34SElPq84wDQYJKoZIhvcNAQEBBQAEggIAhKySgu4E7qBuWl5D9zFNxfBm
+# t6617A8kC6AY6uvqc8vcTkR9QQ57150zf8/6Ts4FPbREBT9aX4mJcRJKtMCjASnA
+# me+aeosvBrDJ/nmzGTWSHTKYlGp9WCUbxho7Grdi7yjrRbFGlKwGaxPC+QYs/6ew
+# pWAB0VcUR+bdQqCV2RZ4bTHpn5iMjbA2fEkx6/+0v29dh6Wp/0Rc771n6UazYxj0
+# hE+qzqKtUznY0SRf7P1dxAm3cXAqGthgAh6YMC+mxF41xnq9UsUQqiIQjNfOI7ci
+# RZioR1ukMOIUT9n5/bNbdsqoAO7gFN3SBkAQHDWx6s8vX+fC26o7989KM3S2ECWN
+# OZQqKR6cOKPPr2v6cxuAz6UA2ullVXyngISLdbcnJ0EbRhg/vVBnJgM1Mbdcfo2t
+# Fl+GCz0e5pnMoLoYdAUdu2DKvuoggwiWWvIblEdYiDxLC3RLkDT8/byeSv01vq66
+# FZ3TpzJ7ynX2qXv2w3Yjn49UwhAXrNBM0IJ0MFn5kVaNbCytBtdvIp8eKKNsiXyk
+# 5tueQwXPgoEBO2KKooR8CecJat8hZd5XRH4kRuDoS/S88Bi/osA7ERgx1fnrfzG2
+# eLwUQ1eYtUS/eXbAKCV3eHcBs2DrPgeVQjR6jMXWvNAwehVIAYwzk79BPQQJMMSU
+# lNu7EKS0AoMDl3gERFQ=
 # SIG # End signature block

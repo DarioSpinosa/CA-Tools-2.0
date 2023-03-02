@@ -1,12 +1,106 @@
-. .\scripts\utility.ps1
-. .\scripts\global-variables.ps1
-. .\components\modal\Modal.ps1
-. .\components\homePage\HomePage.ps1
+function checkApp {
+  $codeVersion = invoke-executeCommand("code --version")
+  if (!$codeVersion) { 
+    invoke-WriteCheckLogs "Si e' verificato un errore durante l'esecuzione del comando ('code --version').\r\nCode potrebbe non essere presente sulla macchina"
+    return 'KO'
+  }
+
+
+  $codeVersion = $codeVersion[0].split(".")
+  $codeVersion = [Version]::new($codeVersion[0], $codeVersion[1], $codeVersion[2])
+
+  $minVersion = $requirements[$name]["MinVersion"].split(".")
+  $minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
+
+  $maxVersion = $requirements[$name]["MaxVersion"].split(".")
+  $maxVersion = [Version]::new($maxVersion[0], $maxVersion[1], $maxVersion[2])
+
+
+  if (($codeVersion -lt $minVersion) -or ($codeVersion -gt $maxVersion)) {
+    invoke-WriteCheckLogs "La versione rilevata di Visual Studio Code $codeVersion non rispetta i requisiti.\r\nMin Version: $minVersion. Max Version: $maxVersion"
+    return "VER"
+  }
+
+  invoke-WriteCheckLogs "La versione rilevata di Visual Studio Code $codeVersion rispetta i requisiti.\r\nMin Version: $minVersion. Max Version: $maxVersion"
+  return ""
+}
+
+function checkSettings {
+  $VSCodeSettingsPath = "~\AppData\Roaming\Code\User"
+  $VSCodeSettingsJsonPath = "~\AppData\Roaming\Code\User\settings.json"
+
+  if (!(Test-Path $VSCodeSettingsPath)) { 
+    invoke-WriteCheckLogs "Path $VSCodeSettingsPath non trovato"
+    return 'SETTINGS'
+  }
+
+  invoke-WriteCheckLogs "Path $VSCodeSettingsPath trovato"
+
+  if (!(Test-Path $VSCodeSettingsJsonPath)) {
+    New-Item -Path $VSCodeSettingsJsonPath -Value '{ }' -Force | Out-Null
+    invoke-WriteCheckLogs "File $VSCodeSettingsJsonPath non trovato"
+    return 'SETTINGS'
+  }
+
+  invoke-WriteCheckLogs "File $VSCodeSettingsJsonPath trovato"
+  $SettingsContent = Get-Content -Path "~\AppData\Roaming\Code\User\settings.json" | ConvertFrom-Json
+
+  if (($SettingsContent.'terminal.integrated.defaultProfile.windows') -or ($SettingsContent.'terminal.integrated.shellArgs.windows') -or ($SettingsContent.'terminal.integrated.profiles.windows')) {
+    invoke-WriteCheckLogs "Valore di Default Profile $SettingsContent.'terminal.integrated.defaultProfile.windows'"
+    invoke-WriteCheckLogs "Valore di Shell Args $SettingsContent.'terminal.integrated.shellArgs.windows'"
+    invoke-WriteCheckLogs "Valore di Integrated Profile $SettingsContent.'terminal.integrated.profiles.windows'"
+    return 'SETTINGS'
+  }
+  elseif (($SettingsContent.'terminal.integrated.shell.windows' -ne 'C:\WINDOWS\System32\cmd.exe') -or ($SettingsContent.'update.mode' -ne 'manual')) {
+    invoke-WriteCheckLogs "Valore di Shell $SettingsContent.'terminal.integrated.shell.windows'"
+    invoke-WriteCheckLogs "Valore di Update Mode $SettingsContent.'update.mode'"
+    return 'SETTINGS'
+  }
+
+  return 'OK'
+}
+
+function checkExtentions {
+  $ListExtensions = invoke-executeCommand("code --list-extensions")
+  if (!$ListExtensions) { 
+    invoke-WriteCheckLogs "Nessuna estensione di visual studio code rilevata"
+    return 'EXTENTIONS'
+  }
+
+  $missingExtentions = @()
+
+  foreach ($extension in $requirements["VS Code Extentions"]["Extentions"]) {
+    if (-not $ListExtensions.Contains($extension)) { $missingExtentions += $extension }
+  }
+
+  $requirements["VS Code Extentions"]["Extentions"] = $missingExtentions
+
+  if ($missingExtentions.Count ) {
+    $message = "Non sono state rilevate le seguenti estensioni"
+    foreach ($ext in $missingExtentions) {
+      $message += $ext
+    }
+    invoke-WriteCheckLogs $message
+    return 'EXTENTIONS' 
+   
+  }
+
+  invoke-WriteCheckLogs "Tutte le estensioni sono già installate"
+  return "OK"
+}
+
+
+$output = checkApp
+if ($output) { return $output } 
+$output = checkExtentions
+$output += checkSettings
+return $output
+
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUxg2mq5oq5zVoFwLI6bItIWbX
-# PIqggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUJfWBlcrzb+5GCk41wNKI+qkh
+# qx+ggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -31,7 +125,7 @@
 # Y3NwLnNlY3RpZ28uY29tMA0GCSqGSIb3DQEBCwUAA4IBAQBlnIYjhWZ4sTIbd/yg
 # CjBcY2IKtXvL5Nts38z5c/7NtoJrP5C7MyjdVfgP5hTcXGVsKbZu1FwI+qlmcKcl
 # YO9fiNP8qOIxDKrlETyduXknx70mjok/ZrrbrPYiCIRf3imGWb0dU6U1iDsphhng
-# My2352B8K4RICeHd/pLY8PGyM276RIVRL9qv/welyakOoqs9n8pJPz4SkQKZ1LELb
+# My2352B8K4RICeHd/pLY8PGyM276RIVRL9qv/welyakOoqs9n8JPz4SkQKZ1LELb
 # rHtxU9gSC6M/Sz3T0wLCF+qZw388HgpT0iv1PCWr3LFuzY1FxD9hOaGrVQKu1GeM
 # VBqF3Ac+jRy308kqZlzwvR5s6mYFyEvxS9CoUNBERBEFgULSkGH5O7SVjUcbiK8w
 # BlToMIIFgTCCBGmgAwIBAgIQOXJEOvkit1HX02wQ3TE1lTANBgkqhkiG9w0BAQwF
@@ -174,30 +268,30 @@
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUO8t+4gDFPr7Ogo1X9/JO
-# ocQe2jQwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQAyrPdw3jhPb6E3OzV1qQA4pNWd0Z4jhiRzVg9GMoQ20Dp4
-# Fol8ns2K7MXBlpP695q05tf2ufj2U9OQysT3YmlM7fHuMbMIp+dVapdtlfGzhYCF
-# MLX/wBX3TKIK6Ll0Vy/SjcAN8tUtwsZjr5oN2E+UC0YNdhfwacKrSMRJnSGs3naf
-# vlLhhlCT2V/NhZWcLceKVVMQuamMQoYA9O5rTj/sQrGwXpKwiH8AqM8bM4YSpL5J
-# XhhQEEWfOgPeRxeNwFZIMtmUZPOvdCF6iUIOVpZnepo05OB4nyYDj4W5wuTls+zy
-# jZ1RtLSc6LT484VwC96QP0V8sQlvv73ZkP1efutuoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUCQQgn38jVe+2Nhx7MLz2
+# C4abzTMwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQCvEtBrbvzkcupWEb/GVgCKt8IP4mfB0ixgI/4YeIsFx64j
+# Wp2fRkYMqyNK2Bicz+siPf3P7e4Cl0gmyfZ9shjrvkKX4jHfHUdYZby16u/qcIhL
+# 8ODAszTUEAN7IiukVOq0mu534jITPJ7KAIuLGo7TcgDLZhy64O8jLEkFVTHNIoTZ
+# M8s1AqBbSOi69uKaVCQ+FF8THZYiZ3dTfZoL5uBxIB20nMfF8IDsI0Lt3MPMF2iL
+# nHXwi9ExzyXMMwrJe4oSsQ8Bducvyh6DNEFCfd2NRoJFuycCG4/SSM3+NxRq2CAE
+# EYB6zQuZFgq12lv09aQhQxoQhYGSkT1ALxQBQe2soYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMzAyMDgwOTM4NTdaMD8GCSqG
-# SIb3DQEJBDEyBDA8+VLOaYL0l8998ketYLBfEYvDEQG7IBCq8yrS2yH5gE0OODss
-# aqWBqJhqz6HIpMswDQYJKoZIhvcNAQEBBQAEggIAGID7RQCJ/OlUYrnyseiVy54n
-# +OhpPwMNPRU85wsJ8hODX8oPsSZQSixpln7Ld8Hs2cVuKyLD2K0+gkkEWMXQUPWa
-# 0G1ToYOqcRG6enUGoCKfOUI3R+ezVe/J9aVK3NT9nAJ9RzPVqmIUketWDEB6yOAD
-# Ddfat14IpdtdhEc8jwapV/wV+kYhWkniX0Eb1a1mVFp+eMmK7tfIfp1uxFJpMrVK
-# DIDtCkmXMrKCWJgLTW4icUfS5VWS/j7R43EwWrQrWxT+/F3HAey6u4XBYFLEHQxi
-# 7GZtw2wB79JA26EVtX/z+g4uiwL2YKp09VBR3pOKwU0F0dTaM0qepGh5HMPCsWL/
-# cDvsiPqAuxUV3p1pNrch1TfupYxpz0F8wMH0/kRNokGLs90LgXzYtWg6aZ/AP0Ks
-# ePrRaZ5JyoF6K2x0rf30oXCZGer3Eoa8XvQlEZAeVB75xGSv+j01+07m+vuxlcQl
-# mI/A5Fq59JY+qo/0yKWOKxbUD4RdRu9Hr3IrbY4YwAMJ8WqKNLoXoIkm0kDti9AE
-# s3otusQj14nGJs+mgAHWF+T3Xb8AZM1XI7JuVX2CjbWe3Tp7eyWMbrPoTsUYcfux
-# Fz3EU68Xf70F0gaaNvQeIL9NxmDydtK5O3CvXX42KaKMDKtOZrJowonSkSWoPKu0
-# V7N5WUjJUzxjJVCtPjs=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMjkxMzQxNDVaMD8GCSqG
+# SIb3DQEJBDEyBDC/a7srLaDZWmC5RBwC2SMgg4Uio9n2aIOLQ/HyFUgt/oBnPMlj
+# oC/7N7IjR8zU4FUwDQYJKoZIhvcNAQEBBQAEggIAEJ8uS6l1G2eX+b+w0P9yyYRy
+# +Vi+uVTiNTi5xtr/kO667UigP3rFR9tyoeB6l987IelvN0oVk1OZIYoEWylFWicq
+# KU3idnOEyamhGxnFvbNUWlmIkmGOaqs5B8LwRMdtveSMD2ZMR3k2LJQhvY+7bgA0
+# R7Ie9RjnphDcWVga1f0Sl+5LDkHZ1Nc8rGYsSw2+4MwmH6+tg41iVhp+GBQbaoPN
+# KP1He50nloCHCu2m+JAHv5vjCmpAKq9HDHlz4ODgxyXhTHX+9DQYsqVvZaAiwPfD
+# 4WvlHRGB5O7uSzWKPm/npbeydEoVqhUNdyXj3mFwChj3hhQYWJrwxvdAq+H+4Y6u
+# lLJJDxBHFbVVhlUILlbebkPjkkL1F5eEdP0vlWJreTJzjpa0tirorJ2t5oAEmNtx
+# ghUSiC4kbcOyDR0VXZPidR1+tyHA++T+V/xs4A2/bz6ftzWFgqvNC79gkOR/FeE2
+# uwADMJVqabSBiJWweMllivjdSI5YPXMa0BEDcsKz/0U2ilThQszNYYtoNcFwkMB3
+# /rKTbUjvXO2lhHDNtFvn/Rp5pYDRDhS4L4ruK7E6cbTCtLPpb0M2DV+9B/mhUpLr
+# I2Yqkwfrlq3WkQ8wZ3W0AUcksFb2ckWo23XzLXzL3MJ69BlEOHfwKw2RgUEAP3is
+# ylxglDl9AKgmsTpmnaE=
 # SIG # End signature block

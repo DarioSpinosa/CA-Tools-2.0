@@ -1,12 +1,47 @@
-. .\scripts\utility.ps1
-. .\scripts\global-variables.ps1
-. .\components\modal\Modal.ps1
-. .\components\homePage\HomePage.ps1
+$output = ""
+
+if (-not (Test-Path "$env:PROGRAMFILES\Ca-Tools")) {
+  invoke-WriteCheckLogs "Ca Tools Folder non presente nella macchina"
+  $output = "FOLDER"
+}
+else {
+  invoke-WriteCheckLogs "Ca Tools Folder presente nella macchina"
+}
+
+if (-not (Test-Path "$env:PROGRAMFILES\Ca-Tools\npm-login.ps1")) {
+  invoke-WriteCheckLogs "npm-login.ps1 non presente nella macchina"
+  $output += "FILE"
+}
+else {
+  invoke-WriteCheckLogs "npm-login.ps1 presente nella macchina"
+}
+
+$npmList = (npm list -g --depth=0).split(' ').split('@')
+if ($npmList.Contains("empty")) { return $output + "CLI PLUGIN"} #Caso in cui si ha appena installato node+npm e non ci sono pacchetti
+
+if ($npmList.Contains('ca/cli')) {
+  invoke-WriteCheckLogs '@ca/cli presente nella macchina'
+}
+else {
+	 invoke-WriteCheckLogs ' @ca/cli non presente nella macchina'
+   return $output + 'CLI'
+}
+
+$npmPlugin = (ca plugins).split(' ').split('@')
+if ($npmPlugin.Contains('ca/cli-plugin-scarface')) {
+	 invoke-WriteCheckLogs '@ca/cli-plugin-scarface presente nella macchina'
+}
+else {
+  invoke-WriteCheckLogs '@ca/cli-plugin-scarface non presente nella macchina'
+  return $output + 'PLUGIN'
+}
+
+return "OK"
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUxg2mq5oq5zVoFwLI6bItIWbX
-# PIqggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUbDPFnyh7P87b9KmSgVx7jYES
+# Mh2ggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -31,7 +66,7 @@
 # Y3NwLnNlY3RpZ28uY29tMA0GCSqGSIb3DQEBCwUAA4IBAQBlnIYjhWZ4sTIbd/yg
 # CjBcY2IKtXvL5Nts38z5c/7NtoJrP5C7MyjdVfgP5hTcXGVsKbZu1FwI+qlmcKcl
 # YO9fiNP8qOIxDKrlETyduXknx70mjok/ZrrbrPYiCIRf3imGWb0dU6U1iDsphhng
-# My2352B8K4RICeHd/pLY8PGyM276RIVRL9qv/welyakOoqs9n8pJPz4SkQKZ1LELb
+# My2352B8K4RICeHd/pLY8PGyM276RIVRL9qv/welyakOoqs9n8JPz4SkQKZ1LELb
 # rHtxU9gSC6M/Sz3T0wLCF+qZw388HgpT0iv1PCWr3LFuzY1FxD9hOaGrVQKu1GeM
 # VBqF3Ac+jRy308kqZlzwvR5s6mYFyEvxS9CoUNBERBEFgULSkGH5O7SVjUcbiK8w
 # BlToMIIFgTCCBGmgAwIBAgIQOXJEOvkit1HX02wQ3TE1lTANBgkqhkiG9w0BAQwF
@@ -174,30 +209,30 @@
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUO8t+4gDFPr7Ogo1X9/JO
-# ocQe2jQwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQAyrPdw3jhPb6E3OzV1qQA4pNWd0Z4jhiRzVg9GMoQ20Dp4
-# Fol8ns2K7MXBlpP695q05tf2ufj2U9OQysT3YmlM7fHuMbMIp+dVapdtlfGzhYCF
-# MLX/wBX3TKIK6Ll0Vy/SjcAN8tUtwsZjr5oN2E+UC0YNdhfwacKrSMRJnSGs3naf
-# vlLhhlCT2V/NhZWcLceKVVMQuamMQoYA9O5rTj/sQrGwXpKwiH8AqM8bM4YSpL5J
-# XhhQEEWfOgPeRxeNwFZIMtmUZPOvdCF6iUIOVpZnepo05OB4nyYDj4W5wuTls+zy
-# jZ1RtLSc6LT484VwC96QP0V8sQlvv73ZkP1efutuoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUZcJzosKTpdIyIKdUal/F
+# 0lxiWO4wJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQCAnL1yx7JpnxJGH9Y4BUxndRQGIhaePqiWzhIizJTkG6E2
+# CIkt/3mW515c9s+nMprJQkyP/4si/Kfi7XaE7yCFjOUGmi2NNFDrSNJ1jlZ9zt6z
+# jX+nY3KPjXlUs6xjoj36j+nGmBjjs+KCmIyMubb6OJUEh0C5VW86iLLdDB5Suah3
+# jBIpjFhHByYdiFMqzLJyQNX5XN31chNKh3eL3pmsrVzlEaYHPJXx/Gjfef9Dft2m
+# nrEoln4fNOaRJx0CI2H5Zrn7MG8T1qqWb9K3OojFNQRrVNFfncZmOOF/ZXpp7kao
+# PUV+NOeW2czcayIpHAUqqadn4/L63ZkcxjmbgietoYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMzAyMDgwOTM4NTdaMD8GCSqG
-# SIb3DQEJBDEyBDA8+VLOaYL0l8998ketYLBfEYvDEQG7IBCq8yrS2yH5gE0OODss
-# aqWBqJhqz6HIpMswDQYJKoZIhvcNAQEBBQAEggIAGID7RQCJ/OlUYrnyseiVy54n
-# +OhpPwMNPRU85wsJ8hODX8oPsSZQSixpln7Ld8Hs2cVuKyLD2K0+gkkEWMXQUPWa
-# 0G1ToYOqcRG6enUGoCKfOUI3R+ezVe/J9aVK3NT9nAJ9RzPVqmIUketWDEB6yOAD
-# Ddfat14IpdtdhEc8jwapV/wV+kYhWkniX0Eb1a1mVFp+eMmK7tfIfp1uxFJpMrVK
-# DIDtCkmXMrKCWJgLTW4icUfS5VWS/j7R43EwWrQrWxT+/F3HAey6u4XBYFLEHQxi
-# 7GZtw2wB79JA26EVtX/z+g4uiwL2YKp09VBR3pOKwU0F0dTaM0qepGh5HMPCsWL/
-# cDvsiPqAuxUV3p1pNrch1TfupYxpz0F8wMH0/kRNokGLs90LgXzYtWg6aZ/AP0Ks
-# ePrRaZ5JyoF6K2x0rf30oXCZGer3Eoa8XvQlEZAeVB75xGSv+j01+07m+vuxlcQl
-# mI/A5Fq59JY+qo/0yKWOKxbUD4RdRu9Hr3IrbY4YwAMJ8WqKNLoXoIkm0kDti9AE
-# s3otusQj14nGJs+mgAHWF+T3Xb8AZM1XI7JuVX2CjbWe3Tp7eyWMbrPoTsUYcfux
-# Fz3EU68Xf70F0gaaNvQeIL9NxmDydtK5O3CvXX42KaKMDKtOZrJowonSkSWoPKu0
-# V7N5WUjJUzxjJVCtPjs=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMjkxMzQwNTdaMD8GCSqG
+# SIb3DQEJBDEyBDA23JmDGJwGNofigcdC+Isq7ADOQlWZvTHoej3Sxmq9XHryRs13
+# K3o2z21g6K5XCYcwDQYJKoZIhvcNAQEBBQAEggIAXJquiU46VM4spuZE9GmXokgl
+# ZHWLv7ats6RgKxqP1IxHXemq2yrrqlHgfAa06pEUB5mO/q/1BoLQ+ZZYFGajlDfF
+# SwYXSYWNQ4DRE/NTVzrlSe4NMQVx4H3zYlWyF63Nx5yQJd0RT5zeK1nF+8mqb7PT
+# 7b6dU0j7gYxa8bV60V8nrKKfKghM6RYlr1E8yDOxC2bn6En81CK41Pwo7l8+rEyg
+# 1PU/G67KYZUQsfymLOy/cQrg40aIUVgssyfjgYKBpE5QLd50NRtWNF8H3lfHm5QY
+# yK15Ty1JdBi71kLRCNxwAlVoEpiymtNvgh4LUGNlOOVDgL3oyuTK/zNHm/MtqXK3
+# hgC+r1qQok8U3LzHP3bIti3a8ii5kGoErYvibaLMyAZ/GhMISCPw6z22E78k9RGc
+# EHjk6p583SrCxvXUp38cs0QmIuqvgrjeOSxgrSdUdGyltgXl0C1HtXfyv4aPjSz3
+# A57JGzpy6Dm6IoU89rVKA3yMGHj4Xq3D4CJCVUULRZCDpwT3g26w4Pfdu3uzKmR/
+# ZCVBrbnhr5IQ9qbdUOLXsZ/UWpm4+7LqWdoxHjvGMUZyylYFQmFV3dVxQO/EzQOi
+# uXj//B+/GVWMvOvYXULQTSB6Lfjpo0NtUubMwf2HKxYna+9nmSxXCKOYDY9o+rmg
+# uAWB1hWvGi6SIxxHvjw=
 # SIG # End signature block

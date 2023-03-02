@@ -1,12 +1,47 @@
-. .\scripts\utility.ps1
-. .\scripts\global-variables.ps1
-. .\components\modal\Modal.ps1
-. .\components\homePage\HomePage.ps1
+$output = ""
+$npmVersion = invoke-executeCommand("npm --version")
+if (-not $npmVersion) { 
+    invoke-WriteCheckLogs "Si è verificato un errore durante l'esecuzione del comando (npm --version).\r\nNpm potrebbe non essere presente nella macchina"
+    $output = 'KO' 
+}
+
+$npmVersion = $npmVersion.split(".")
+$npmVersion = [Version]::new($npmVersion[0], $npmVersion[1], $npmVersion[2])
+
+$minVersion = $requirements[$name]["MinVersion"].split(".")
+$minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
+
+$maxVersion = $requirements[$name]["MaxVersion"].split(".")
+$maxVersion = [Version]::new($maxVersion[0], $maxVersion[1], $maxVersion[2])
+
+if (($npmVersion -lt $minVersion) -or ($npmVersion -gt $maxVersion)) {
+    invoke-WriteCheckLogs "La versione rilevata di Npm $npmVersion non rispetta i requisiti.\r\nMin Version: $minVersion. Max Version: $maxVersion"
+    $output = "VER"
+}
+
+if ($requirements[$name]["Proxy"] -ne "KO") {
+    $foundProxy = $false
+    $contentNpmrc = Get-Content $npmrcPath
+    foreach ($row in $contentNpmrc) {
+        if ($row.Contains("proxy")) {
+            $foundProxy = $true
+            break
+        }
+    }
+    if (-not $foundProxy) { $output += "PROXY"}
+    if ($requirements[$name]["Proxy"] -eq "TCP") { $output += "TCP" }
+}
+
+if ($output) { return $output }
+invoke-WriteCheckLogs "La versione rilevata di Npm $npmVersion rispetta i requisiti.\r\nMin Version: $minVersion. Max Version: $maxVersion"
+return "OK"
+
+
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUxg2mq5oq5zVoFwLI6bItIWbX
-# PIqggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUXzTEajt6zVYmkW6t0eauaEaL
+# Wa+ggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -31,7 +66,7 @@
 # Y3NwLnNlY3RpZ28uY29tMA0GCSqGSIb3DQEBCwUAA4IBAQBlnIYjhWZ4sTIbd/yg
 # CjBcY2IKtXvL5Nts38z5c/7NtoJrP5C7MyjdVfgP5hTcXGVsKbZu1FwI+qlmcKcl
 # YO9fiNP8qOIxDKrlETyduXknx70mjok/ZrrbrPYiCIRf3imGWb0dU6U1iDsphhng
-# My2352B8K4RICeHd/pLY8PGyM276RIVRL9qv/welyakOoqs9n8pJPz4SkQKZ1LELb
+# My2352B8K4RICeHd/pLY8PGyM276RIVRL9qv/welyakOoqs9n8JPz4SkQKZ1LELb
 # rHtxU9gSC6M/Sz3T0wLCF+qZw388HgpT0iv1PCWr3LFuzY1FxD9hOaGrVQKu1GeM
 # VBqF3Ac+jRy308kqZlzwvR5s6mYFyEvxS9CoUNBERBEFgULSkGH5O7SVjUcbiK8w
 # BlToMIIFgTCCBGmgAwIBAgIQOXJEOvkit1HX02wQ3TE1lTANBgkqhkiG9w0BAQwF
@@ -174,30 +209,30 @@
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUO8t+4gDFPr7Ogo1X9/JO
-# ocQe2jQwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQAyrPdw3jhPb6E3OzV1qQA4pNWd0Z4jhiRzVg9GMoQ20Dp4
-# Fol8ns2K7MXBlpP695q05tf2ufj2U9OQysT3YmlM7fHuMbMIp+dVapdtlfGzhYCF
-# MLX/wBX3TKIK6Ll0Vy/SjcAN8tUtwsZjr5oN2E+UC0YNdhfwacKrSMRJnSGs3naf
-# vlLhhlCT2V/NhZWcLceKVVMQuamMQoYA9O5rTj/sQrGwXpKwiH8AqM8bM4YSpL5J
-# XhhQEEWfOgPeRxeNwFZIMtmUZPOvdCF6iUIOVpZnepo05OB4nyYDj4W5wuTls+zy
-# jZ1RtLSc6LT484VwC96QP0V8sQlvv73ZkP1efutuoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUa3J0PhobOYNb7fBFqNQW
+# R2Gn88gwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQAVjMQF10WOqq7QVCeC72psqB9qdcFzI/gvMcliEcpkVMxm
+# hT5etg7s0Cpgj7a2r+BXYsp8ktANpVfvjBa1XBS9k0z9GQCqqrsNGOysFM36DH66
+# KeufYbL9EeFnIlbyojEwsblToDbRmMn+W4XEw9ZTTrv2asWxKF8UR0ZmRtvVwOP7
+# 5seM4vfCtaXWdxfZ1RK96zllU0daSRubOpPS9YL0we3Dqpf1ulag18xA5YNabqvg
+# zqUmA51RDSskLabRDx/JumrHBH2UJFZ20IHvetH5cjyr/9p0PTAq6PUS5q39UkE/
+# SAahME/gUtH4bvZ8OphOJl8dPYdGVSzYsSGzODDUoYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMzAyMDgwOTM4NTdaMD8GCSqG
-# SIb3DQEJBDEyBDA8+VLOaYL0l8998ketYLBfEYvDEQG7IBCq8yrS2yH5gE0OODss
-# aqWBqJhqz6HIpMswDQYJKoZIhvcNAQEBBQAEggIAGID7RQCJ/OlUYrnyseiVy54n
-# +OhpPwMNPRU85wsJ8hODX8oPsSZQSixpln7Ld8Hs2cVuKyLD2K0+gkkEWMXQUPWa
-# 0G1ToYOqcRG6enUGoCKfOUI3R+ezVe/J9aVK3NT9nAJ9RzPVqmIUketWDEB6yOAD
-# Ddfat14IpdtdhEc8jwapV/wV+kYhWkniX0Eb1a1mVFp+eMmK7tfIfp1uxFJpMrVK
-# DIDtCkmXMrKCWJgLTW4icUfS5VWS/j7R43EwWrQrWxT+/F3HAey6u4XBYFLEHQxi
-# 7GZtw2wB79JA26EVtX/z+g4uiwL2YKp09VBR3pOKwU0F0dTaM0qepGh5HMPCsWL/
-# cDvsiPqAuxUV3p1pNrch1TfupYxpz0F8wMH0/kRNokGLs90LgXzYtWg6aZ/AP0Ks
-# ePrRaZ5JyoF6K2x0rf30oXCZGer3Eoa8XvQlEZAeVB75xGSv+j01+07m+vuxlcQl
-# mI/A5Fq59JY+qo/0yKWOKxbUD4RdRu9Hr3IrbY4YwAMJ8WqKNLoXoIkm0kDti9AE
-# s3otusQj14nGJs+mgAHWF+T3Xb8AZM1XI7JuVX2CjbWe3Tp7eyWMbrPoTsUYcfux
-# Fz3EU68Xf70F0gaaNvQeIL9NxmDydtK5O3CvXX42KaKMDKtOZrJowonSkSWoPKu0
-# V7N5WUjJUzxjJVCtPjs=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMjkxMzQxMTVaMD8GCSqG
+# SIb3DQEJBDEyBDDipIod/qwnPAmXXf0zw3vzncsSZLWUNtjJrpG1OABgLSQcobPE
+# onMOURBw865t/sQwDQYJKoZIhvcNAQEBBQAEggIAX7x8ItJTl4zz1q/a46iEe3nB
+# FhuumRpiGFLub6KWBf4iPLEp7vVHmF0DSaZbP8I5tiCMGEwCIQfUsrFMj5IXxP91
+# avIxLVQKEvN8erq9tIMISs89++VGAZ9vzfX4Ac6lyolPWiroAqYLCrYO3U8g4Qcs
+# 7H34oe5xQuz9i/THWkLlBOAuq6TwrgH9J1NU7OHdlwpcLb/iupOqG/iruFK5pO6D
+# 7ekNHGBIc3o1B18zOqK4qJHNeEHmSQTYxImSN7ldH7r+fQlEOGJX4vpc7aqf6upk
+# 2wpADRw5hRFkocDKUh3s1NEz6zHSuSXM0LCFsF42u6L4GbRaMWkP0RG/TMqPOdWk
+# j+KHyqFnwh1GFyDqpJXoo5cZ8U0Sl3qltdFapWgloDWcNBtBeKZPquk24nvOlFJb
+# 6dYBoxXXdLtA7T9mDqHFqe51SFr8Hq/RtYxkm113lqM2qusgBOeyc16F1RH0C6kX
+# ngN2XzMNI98pTpUnGZ5VPcWJ2z3mH/okWE1dZ39XHV/GevglGzaLsoXWI6wIXaBh
+# jVDct/ZXPLcDnI8QLclAXoj2bSlPejl6lbDV/nN/iCB+bh7i5hrzVeqzRDCobUbJ
+# X0k9RXW5/UEz4p/Tu7ww7Ijhzyf4/I6gtQ5mozNQnr6KAsPaW+rKlLQZPo+EXn/1
+# CuBmYm58Q6EeHfWSjTs=
 # SIG # End signature block

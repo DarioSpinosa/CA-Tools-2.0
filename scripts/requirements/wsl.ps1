@@ -1,12 +1,95 @@
-. .\scripts\utility.ps1
-. .\scripts\global-variables.ps1
-. .\components\modal\Modal.ps1
-. .\components\homePage\HomePage.ps1
+if ($scarConfig.Contains('terranova')) { return 'OK' }
+
+#Controlli Molto Complessi
+#KO = Esecuzione del comando fallito
+#VERSION = La defualt version di wsl non è la 2
+#UBUNTU = Non è stata rilevata alcuna distribuzione di ubuntu
+#MAIN + UBUNTU = Ubuntu non è settato come distribuzione principale e nessuna delle versioni rilevate rispetta i requisiti min e max, si procede al download della max
+#VER MAIN + UBUNTU = Ubuntu è settato come distribuzione principale ma non rispetta i requisiti min e max, e non c'è alcun'altra versione installa che li rispetti. Si procede al download della ma
+#MAIN + VER AVAILABLE = Ubuntu non è settato come distribuzione principale e esiste una versione chPne rispetta i requisiti min e max, si procede al settaggio
+#VER MAIN + VER AVAILABLE = Ubuntu è settato come distribuzione principale ma non rispetta i requisiti min e max, e esiste una versione che rispetta i requisiti min e max, si procede al settaggio
+#OK La distribuzione principale è ubuntu e rispetta i requisiti min e max
+$wslStatus = invoke-executeCommand("wsl --status")
+if (!$wslStatus) { 
+  invoke-WriteCheckLogs "Errore nell'esecuzione del comando wsl --status"
+  return "KO" 
+}
+
+$wslStatus = ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes($wslStatus))).split(' '); 
+  
+ #can't check if wsl has just been downloaded
+ $wslUpdate = invoke-executeCommand("wsl --update")
+if (!$wslUpdate) { 
+  invoke-WriteCheckLogs "Errore nell'esecuzione del comando wsl --update"
+  return "KO" 
+}
+
+if (-not $wslStatus.Contains("2")) {
+  invoke-WriteCheckLogs "La versione di default non e' la 2"
+  return "VERSION"
+}
+
+$wslVersions = invoke-executeCommand("wsl -l -v")
+if (!$wslVersions) { 
+  invoke-WriteCheckLogs "Errore nell'esecuzione dle comando wsl -l -v"
+  return "KO" 
+}
+
+$wslVersions = ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes($wslVersions))).split(' '); 
+if (-not $wslVersions.split("-").Contains("Ubuntu")) {
+  invoke-WriteCheckLogs "Non risulta installata alcuna distribuzione di UBUNTU nella macchina"
+  return "UBUNTU"
+}
+
+$output = ""
+$wslStatus = $wslStatus.split("-")
+
+
+$minVersion = $requirements[$name]["MinVersion"].split(".")
+$minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
+
+$maxVersion = $requirements[$name]["MaxVersion"].split(".")
+$maxVersion = [Version]::new($maxVersion[0], $maxVersion[1], $maxVersion[2])
+
+if (-not $wslStatus.Contains("Ubuntu")) {
+  invoke-WriteCheckLogs "Ubuntu non e' impostato come distribuzione principale"
+  $output += "MAIN" 
+}
+else{
+  $mainDistroVersion = $wslStatus[($wslStatus.IndexOf("Ubuntu") + 1)]
+  if (($mainDistroVersion -ge $minVersion) -or ($mainDistroVersion -le $maxVersion)){ 
+    invoke-WriteCheckLogs "E' stata impostata come distribuzione principale una versione corretta di ubuntu: $mainDistroVersion, Tollerabilita compresa da $($requirements[$name]['MinVersion']) a $($requirements[$name]['MaxVersion'])"
+    return "OK"
+  } #Caso Positivo
+  invoke-WriteCheckLogs "E' stata impostata come distribuzione principale una versione errata di ubuntu: $mainDistroVersion, Tollerabilita compresa da $($requirements[$name]['MinVersion']) a $($requirements[$name]['MaxVersion'])"
+  $output += "VER MAIN"
+}
+
+$versions = @()
+$wslVersions = $wslVersions.split("-")
+for ($i = 0; $i -lt $wslVersions.Count; $i++) {
+  if ($wslVersions[$i] -like "Ubuntu") { $versions += $wslVersions[++$i] }
+}
+
+foreach ($version in $versions) {
+  if (($version -le $minVersion) -or ($version -ge $maxVersion)) { 
+    invoke-WriteCheckLogs "E' stata rilevata una versione di ubuntu che soddisfa i requisiti"
+    return "VER AVAILABLE"
+  }
+}
+
+$message = "Nessuna delle seguenti versioni di ubuntu presente nella macchina soddisfa i requisiti. Versioni rilevate: "
+foreach ($version in $versions) {
+  $message += "$version "
+}
+invoke-WriteCheckLogs  "$message. Requisiti da $($requirements[$name]['MinVersion']) a $($requirements[$name]['MaxVersion'])"
+return $output + "UBUNTU"
+
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUxg2mq5oq5zVoFwLI6bItIWbX
-# PIqggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUjFcslb7KNsT8BG14s5tsfD+t
+# A5aggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -31,7 +114,7 @@
 # Y3NwLnNlY3RpZ28uY29tMA0GCSqGSIb3DQEBCwUAA4IBAQBlnIYjhWZ4sTIbd/yg
 # CjBcY2IKtXvL5Nts38z5c/7NtoJrP5C7MyjdVfgP5hTcXGVsKbZu1FwI+qlmcKcl
 # YO9fiNP8qOIxDKrlETyduXknx70mjok/ZrrbrPYiCIRf3imGWb0dU6U1iDsphhng
-# My2352B8K4RICeHd/pLY8PGyM276RIVRL9qv/welyakOoqs9n8pJPz4SkQKZ1LELb
+# My2352B8K4RICeHd/pLY8PGyM276RIVRL9qv/welyakOoqs9n8JPz4SkQKZ1LELb
 # rHtxU9gSC6M/Sz3T0wLCF+qZw388HgpT0iv1PCWr3LFuzY1FxD9hOaGrVQKu1GeM
 # VBqF3Ac+jRy308kqZlzwvR5s6mYFyEvxS9CoUNBERBEFgULSkGH5O7SVjUcbiK8w
 # BlToMIIFgTCCBGmgAwIBAgIQOXJEOvkit1HX02wQ3TE1lTANBgkqhkiG9w0BAQwF
@@ -174,30 +257,30 @@
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUO8t+4gDFPr7Ogo1X9/JO
-# ocQe2jQwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQAyrPdw3jhPb6E3OzV1qQA4pNWd0Z4jhiRzVg9GMoQ20Dp4
-# Fol8ns2K7MXBlpP695q05tf2ufj2U9OQysT3YmlM7fHuMbMIp+dVapdtlfGzhYCF
-# MLX/wBX3TKIK6Ll0Vy/SjcAN8tUtwsZjr5oN2E+UC0YNdhfwacKrSMRJnSGs3naf
-# vlLhhlCT2V/NhZWcLceKVVMQuamMQoYA9O5rTj/sQrGwXpKwiH8AqM8bM4YSpL5J
-# XhhQEEWfOgPeRxeNwFZIMtmUZPOvdCF6iUIOVpZnepo05OB4nyYDj4W5wuTls+zy
-# jZ1RtLSc6LT484VwC96QP0V8sQlvv73ZkP1efutuoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUWJGmA6ipoOwDW9emqugr
+# AbcphWIwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQBQ+DCqw/yAaR0rPF8r99Q0qHFLRGSQmrPoLLsHTGN5avi/
+# NVo/Q0bg5Tq+VO7QgBpoGWoQB9uNEr9RzoyVmW3Ys+j3FhED+CsQzCOOTS1+Mpoy
+# Dc9OVGH8EFJZPFGHPzxnyovH/foA38lsSThDlGjBH6rXcw3vMpdAxBaqhB8qbpbw
+# m7JjSO4GcQsC3qmVxeGYe/PjEC/+rskAq4/pfaasXJUVCSX8taF4cU4E8v6EC01A
+# STjTVbr+7e9Gm3JuRwRja3zpHpINvwczH7jVcrvI3gxfhOayJFE76p3tQRlqAyZt
+# wllUqilq5Ee9KUunpiZKs7AU+R5AEygbogizuYBToYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMzAyMDgwOTM4NTdaMD8GCSqG
-# SIb3DQEJBDEyBDA8+VLOaYL0l8998ketYLBfEYvDEQG7IBCq8yrS2yH5gE0OODss
-# aqWBqJhqz6HIpMswDQYJKoZIhvcNAQEBBQAEggIAGID7RQCJ/OlUYrnyseiVy54n
-# +OhpPwMNPRU85wsJ8hODX8oPsSZQSixpln7Ld8Hs2cVuKyLD2K0+gkkEWMXQUPWa
-# 0G1ToYOqcRG6enUGoCKfOUI3R+ezVe/J9aVK3NT9nAJ9RzPVqmIUketWDEB6yOAD
-# Ddfat14IpdtdhEc8jwapV/wV+kYhWkniX0Eb1a1mVFp+eMmK7tfIfp1uxFJpMrVK
-# DIDtCkmXMrKCWJgLTW4icUfS5VWS/j7R43EwWrQrWxT+/F3HAey6u4XBYFLEHQxi
-# 7GZtw2wB79JA26EVtX/z+g4uiwL2YKp09VBR3pOKwU0F0dTaM0qepGh5HMPCsWL/
-# cDvsiPqAuxUV3p1pNrch1TfupYxpz0F8wMH0/kRNokGLs90LgXzYtWg6aZ/AP0Ks
-# ePrRaZ5JyoF6K2x0rf30oXCZGer3Eoa8XvQlEZAeVB75xGSv+j01+07m+vuxlcQl
-# mI/A5Fq59JY+qo/0yKWOKxbUD4RdRu9Hr3IrbY4YwAMJ8WqKNLoXoIkm0kDti9AE
-# s3otusQj14nGJs+mgAHWF+T3Xb8AZM1XI7JuVX2CjbWe3Tp7eyWMbrPoTsUYcfux
-# Fz3EU68Xf70F0gaaNvQeIL9NxmDydtK5O3CvXX42KaKMDKtOZrJowonSkSWoPKu0
-# V7N5WUjJUzxjJVCtPjs=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMjkxMzQxNTFaMD8GCSqG
+# SIb3DQEJBDEyBDAmTEV/TOyKcp+M0/UmFmZ4XngMdwu5uTi+FuSS5Hm182lYIacu
+# Fb8AwWnQLCDAOY8wDQYJKoZIhvcNAQEBBQAEggIAVfQ5FYEnyABEAg//2gfrshn6
+# SlJJpnTAFZ+x3irlfkkM1xM+3Nuwb24qin/wWN41HDYe0RcOde2Bz5szNfIWLpVO
+# AAVoh/3bZMND2541jI99CahiIxR1t1+EazF3OO6tAgctXJy/gMz0zVVSQaH5TxPD
+# yxQsWbtyX48cjQUGL3pI3OaSFr9pFAiGF1kh3AP1wOMxHLQwcArtqHD+3HX7yR7b
+# 1i+7ra1jHB/3C8Jh6HPIpsAT1eDXPu0YjCX2A2gW7gG5MSBEGO4or4pN9e5/Sbgx
+# Fcf/9Kzo1WbI6suh+UUSvZMid/8vDbi1wByq1wYcNT2437NDZtKIKCrTlcOA9Nm/
+# T1ZtfztIOzO/jI3dTtmUYMmysV7BkEDZS858aUGKMvPgbfJj+GtfqiUjJYbon5Kb
+# ifgwgfDEUFZfIq+fmjlolHFq889IrL7SCThi7ZIILaWJ04HQ2joCFaxt5zIDdpCa
+# drWO3kYM/dmIgPdNuDilY7Phkalwcc/GRk02LVlr1LUC3tIrCZoAAB2r+BF88UYa
+# D6dnx6XcIZK0wApyEXc0B1jxiDcMGoP97Hf/E3FN7/b5eu2pTAnKRBasMz65bBM+
+# gXxfTCzCEQgF+43iqdZz3EmhZOPXjCBRr2+W01pLOXzTASSvfObaU9rAk0ZTZNOq
+# Yxq2CR0LTz2Mk5ei0/s=
 # SIG # End signature block

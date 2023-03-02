@@ -1,12 +1,142 @@
-. .\scripts\utility.ps1
-. .\scripts\global-variables.ps1
-. .\components\modal\Modal.ps1
-. .\components\homePage\HomePage.ps1
+function ConvertPSObjectToHashtable { 
+  param (
+    [Parameter(ValueFromPipeline)]
+    $InputObject
+  )
+
+  process {
+    if ($null -eq $InputObject) { return $null }
+
+    if ($InputObject -is [System.Collections.IEnumerable] -and $InputObject -isnot [string]) {
+      $collection = @(
+        foreach ($object in $InputObject) { ConvertPSObjectToHashtable $object }
+      )
+
+      Write-Output -NoEnumerate $collection
+    }
+    elseif ($InputObject -is [psobject]) {
+      $hash = @{}
+
+      foreach ($property in $InputObject.PSObject.Properties) {
+        $hash[$property.Name] = ConvertPSObjectToHashtable $property.Value
+      }
+
+      $hash
+    }
+    else {
+      $InputObject
+    }
+  }
+}
+
+function invoke-CreateLogs($hashLogs) {
+  foreach ($name in $requirements.Keys) {
+    $hashLogs.Add($name, @{})
+    $hashLogs[$name].Add("Result", "")
+    $hashLogs[$name].Add("Logs", "")
+  }
+}
+
+function invoke-WriteCheckLogs($log) {
+  invoke-WriteLogs $checkLogs $log
+}
+
+function invoke-WriteInstallLogs($log) {
+  invoke-WriteLogs $installLogs $log
+}
+
+function invoke-WriteLogs($hashLogs, $log) {
+  $log += ";"
+  $hashLogs[$name]["Logs"] += $log 
+}
+
+function invoke-checkProxy {
+  $ProxyData = Get-ItemProperty -Path 'Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings';
+
+  if ($ProxyData.ProxyEnable -eq 0 ) { return }
+
+  $ProxyDataSplit = $ProxyData.ProxyServer -split ':'
+
+  if ($ProxyDataSplit.Count -eq 2) {
+    $ProxyAddress = $ProxyDataSplit[0]
+    $ProxyPort = $ProxyDataSplit[1]
+  }
+  else {
+    $ProxyAddress = $ProxyDataSplit[1].replace('/', '')
+    $ProxyPort = $ProxyDataSplit[2]
+  }
+
+  $requirements["NPM"]["Proxy"] = $requirements["Docker"]["Proxy"] = $(if ((Test-NetConnection -ComputerName $ProxyAddress -Port $ProxyPort).TcpTestSucceeded) { "OK" } else { 'TCP' })
+  return $requirements["NPM"]["Proxy"]
+}
+
+function invoke-checkVM {
+  return @('VMware Virtual Platform', 'Virtual Machine', 'Macchina Virtuale').Contains((Get-CimInstance win32_computersystem).model)
+}
+
+function invoke-executeCommand($command) {
+  try {
+    return (Invoke-Expression $command) 
+  }
+  catch {
+    return $false
+  }
+}
+
+function New-CommandString($String) {
+  <#
+  .SYNOPSIS
+  Resolve the Requirement's command, subsituting the variables inside the string with his concrete value
+  .DESCRIPTION
+  Resolves the Requirement's command, subsituting the variables inside the string with his concrete value
+  #>
+  $StringWithValue = $String
+  do {
+    Invoke-Expression("Set-Variable -name StringWithValue -Value `"$StringWithValue`"")
+
+    Write-Host "$StringWithValue"
+
+  } while ($StringWithValue -like '*$(*)*')
+  return $StringWithValue
+}
+
+
+function invoke-download($name, $requirement) {
+  try {
+    $subMessage = "$($name) version: $($requirement["MaxVersion"])"
+    invoke-WriteInstallLogs "Downloading $subMessage..." 
+    Invoke-RestMethod (New-CommandString $requirement["DownloadLink"]) -OutFile $requirement["DownloadOutfile"]
+    invoke-WriteInstallLogs "Download of $subMessage complete."
+    return $true
+  }
+  catch {
+    invoke-WriteInstallLogs "Download failed"
+    return $false
+  }
+}
+
+function invoke-deleteDownload($name, $requirement) {
+  invoke-WriteInstallLogs "Deleting the file $($requirement["DownloadOutfile"])..."
+  if (Test-Path $requirement["DownloadOutFile"]) { Remove-Item ($requirement["DownloadOutFile"].replace('"', '')) }
+  invoke-WriteInstallLogs "Delete of the file $($requirement["DownloadOutfile"]) complete."
+}
+
+function invoke-executeInstallCommand ($command) {
+  $result = invoke-executeCommand $command
+  if ($result) {
+    invoke-WriteInstallLogs "($command) eseguito correttamente: Output $result"
+  }
+  else {
+    invoke-WriteInstallLogs "Si è verificato il seguente errore durante l'esecuzione del comando ($command): $result"
+  }
+
+  return $result
+}
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUxg2mq5oq5zVoFwLI6bItIWbX
-# PIqggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUzmHIlQvqeMkYdbUwxWcSGkai
+# O1+ggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -31,7 +161,7 @@
 # Y3NwLnNlY3RpZ28uY29tMA0GCSqGSIb3DQEBCwUAA4IBAQBlnIYjhWZ4sTIbd/yg
 # CjBcY2IKtXvL5Nts38z5c/7NtoJrP5C7MyjdVfgP5hTcXGVsKbZu1FwI+qlmcKcl
 # YO9fiNP8qOIxDKrlETyduXknx70mjok/ZrrbrPYiCIRf3imGWb0dU6U1iDsphhng
-# My2352B8K4RICeHd/pLY8PGyM276RIVRL9qv/welyakOoqs9n8pJPz4SkQKZ1LELb
+# My2352B8K4RICeHd/pLY8PGyM276RIVRL9qv/welyakOoqs9n8JPz4SkQKZ1LELb
 # rHtxU9gSC6M/Sz3T0wLCF+qZw388HgpT0iv1PCWr3LFuzY1FxD9hOaGrVQKu1GeM
 # VBqF3Ac+jRy308kqZlzwvR5s6mYFyEvxS9CoUNBERBEFgULSkGH5O7SVjUcbiK8w
 # BlToMIIFgTCCBGmgAwIBAgIQOXJEOvkit1HX02wQ3TE1lTANBgkqhkiG9w0BAQwF
@@ -174,30 +304,30 @@
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUO8t+4gDFPr7Ogo1X9/JO
-# ocQe2jQwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQAyrPdw3jhPb6E3OzV1qQA4pNWd0Z4jhiRzVg9GMoQ20Dp4
-# Fol8ns2K7MXBlpP695q05tf2ufj2U9OQysT3YmlM7fHuMbMIp+dVapdtlfGzhYCF
-# MLX/wBX3TKIK6Ll0Vy/SjcAN8tUtwsZjr5oN2E+UC0YNdhfwacKrSMRJnSGs3naf
-# vlLhhlCT2V/NhZWcLceKVVMQuamMQoYA9O5rTj/sQrGwXpKwiH8AqM8bM4YSpL5J
-# XhhQEEWfOgPeRxeNwFZIMtmUZPOvdCF6iUIOVpZnepo05OB4nyYDj4W5wuTls+zy
-# jZ1RtLSc6LT484VwC96QP0V8sQlvv73ZkP1efutuoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU/BKmnjuAFGvmIKQiRMSF
+# zwNBvzkwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQCUC+229Qlu7KQcp+CqA8QoXtgMYb3vCds+K6vu4pEz6cX9
+# wXsGzi+Omaiwic0qq0P1faEJyacCyNd+ATQr8nm6TnIGoIgIAhpZh5JNnI6POmIx
+# nRHJskFZWROpYihH+n0iY1FOnP0UW0SNgvQqtQ7J3cq2SEM3EqIEwuvQSLa+1qKK
+# QgVylQZT7WmzNNdv8fAfoMZpPOGsNvTYtNswrWUErp2ZofvpUkYprA7tiognGOcx
+# 5/FqJovzBpoPGJEFDqqiJHxkH5lo2Nh4tlrCQ9GxSOcv7Zb2wm4fiULCDlS44uiN
+# Hl7j9HJrb+2M9iwlqWlLnBBY+oRt+gsUo52V9aoGoYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMzAyMDgwOTM4NTdaMD8GCSqG
-# SIb3DQEJBDEyBDA8+VLOaYL0l8998ketYLBfEYvDEQG7IBCq8yrS2yH5gE0OODss
-# aqWBqJhqz6HIpMswDQYJKoZIhvcNAQEBBQAEggIAGID7RQCJ/OlUYrnyseiVy54n
-# +OhpPwMNPRU85wsJ8hODX8oPsSZQSixpln7Ld8Hs2cVuKyLD2K0+gkkEWMXQUPWa
-# 0G1ToYOqcRG6enUGoCKfOUI3R+ezVe/J9aVK3NT9nAJ9RzPVqmIUketWDEB6yOAD
-# Ddfat14IpdtdhEc8jwapV/wV+kYhWkniX0Eb1a1mVFp+eMmK7tfIfp1uxFJpMrVK
-# DIDtCkmXMrKCWJgLTW4icUfS5VWS/j7R43EwWrQrWxT+/F3HAey6u4XBYFLEHQxi
-# 7GZtw2wB79JA26EVtX/z+g4uiwL2YKp09VBR3pOKwU0F0dTaM0qepGh5HMPCsWL/
-# cDvsiPqAuxUV3p1pNrch1TfupYxpz0F8wMH0/kRNokGLs90LgXzYtWg6aZ/AP0Ks
-# ePrRaZ5JyoF6K2x0rf30oXCZGer3Eoa8XvQlEZAeVB75xGSv+j01+07m+vuxlcQl
-# mI/A5Fq59JY+qo/0yKWOKxbUD4RdRu9Hr3IrbY4YwAMJ8WqKNLoXoIkm0kDti9AE
-# s3otusQj14nGJs+mgAHWF+T3Xb8AZM1XI7JuVX2CjbWe3Tp7eyWMbrPoTsUYcfux
-# Fz3EU68Xf70F0gaaNvQeIL9NxmDydtK5O3CvXX42KaKMDKtOZrJowonSkSWoPKu0
-# V7N5WUjJUzxjJVCtPjs=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMjkxMzQyMDBaMD8GCSqG
+# SIb3DQEJBDEyBDCSwEgClKvUZHdjitOIclEWcrrjPm/M+UTEkuywRwtkX9erzRi/
+# WpIU9776GrDJTdAwDQYJKoZIhvcNAQEBBQAEggIAVVdDk5y8A9D+dQlK+at6tb3k
+# I4n/iWAR75tfXuPn8Cozs4gikWwtiT6Xz0Me2C7bMpPJEJgWG7rKXX0LeNFTsMe6
+# S0E/s1sjKdT0E3HxHbkjQHhimDYvoSZa0hWFridacikZOd7S1YGvUTGiVpl+4Fqe
+# FBiyopRSAgyH8benWzylANQYH0esAjYNFbb12gZoM8jwF7hxz4w2HM3n+qaFD3Sb
+# UQPI2PAXphlH7OZORaRmPXTnH/M2n7Qgo04BBFpie1IYLsHExPoqzJhqk/TKj5q8
+# gOBy7NTKZLf9FLGwsDJbLagqwjd//+VOGFA2hAV7prLOPkB0vbwfZwz2ff13MSZ+
+# FtZxJ4LMsmE0Tx/ZFfMD99XtTmeadUXmisaazifXip84T5C0F4xiyHghrV3H5CGt
+# 8N5E9gYQ8a7YZ3MV7aoGYeg6TjKzINpaFoTzeZ3xqtvZypnIkLWeVFMEd/Fxtyhk
+# cyBtDFHZug00Uy81XJVwrgLGErfvokNscPwNG58KVlI9OsF9jRfctKHk/t0jy64q
+# FnT+Qjxqh3mOHtPbdngUvqvhNNeBmNKVPPtrXYXKJRuClBalQ9i1LrQhIF7EoAny
+# 0FgPfdsSKZSJKkBKn/BOXP0VdGsoybYz/Upy8VBB+ctRAmfQQzEmrsDhOW48mUOV
+# IQibBUPsrlJmPIFDZv8=
 # SIG # End signature block
