@@ -1,138 +1,106 @@
-#--------------------------------------------------------[FUNCTIONS]--------------------------------------------------------
-function Invoke-installRequirements {
-  if (installRequirements) { . .\requirements\install\ca-scarface.ps1 }
-  $closeButton.Enabled = $true
+function checkApp {
+  $codeVersion = invoke-executeCommand("code --version")
+  if (!$codeVersion) { 
+    invoke-WriteCheckLogs "Si e' verificato un errore durante l'esecuzione del comando ('code --version').\r\nCode potrebbe non essere presente sulla macchina"
+    return 'KO'
+  }
+
+
+  $codeVersion = $codeVersion[0].split(".")
+  $codeVersion = [Version]::new($codeVersion[0], $codeVersion[1], $codeVersion[2])
+
+  $minVersion = $requirements[$name]["MinVersion"].split(".")
+  $minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
+
+  $maxVersion = $requirements[$name]["MaxVersion"].split(".")
+  $maxVersion = [Version]::new($maxVersion[0], $maxVersion[1], $maxVersion[2])
+
+
+  if (($codeVersion -lt $minVersion) -or ($codeVersion -gt $maxVersion)) {
+    invoke-WriteCheckLogs "La versione rilevata di Visual Studio Code $codeVersion non rispetta i requisiti.\r\nMin Version: $minVersion. Max Version: $maxVersion"
+    return "VER"
+  }
+
+  invoke-WriteCheckLogs "La versione rilevata di Visual Studio Code $codeVersion rispetta i requisiti.\r\nMin Version: $minVersion. Max Version: $maxVersion"
+  return ''
 }
 
-function installRequirements {
-  <#
-    .SYNOPSIS
-    Execute a specific Action based on the type of Requirement
-    .DESCRIPTION
-    Once the user press the Accept button it will execute the Action specific to that Requirement
-    #>
-  $success = $true 
-  if (-not $requirements.Count) { return $success }
+function checkSettings {
+  $VSCodeSettingsPath = "~\AppData\Roaming\Code\User"
+  $VSCodeSettingsJsonPath = "~\AppData\Roaming\Code\User\settings.json"
 
-  invoke-CreateLogs $installLogs
-  # It will execute a determinatedd function based on the type of the current requirement
-  foreach ($name in $sortedRequirements) {
-    #per mantenere un ordinamento  basato sulle dipendenze anche durante la fase di installazione
-    if (-not $requirements.Contains($name)) { continue }
-    $requirement = $requirements[$name]
-    $result = $requirement["Install"] | Invoke-Expression
-    $installLogs[$name]["Result"] = $result
+  if (!(Test-Path $VSCodeSettingsPath)) { 
+    invoke-WriteCheckLogs "Path $VSCodeSettingsPath non trovato"
+    return 'SETTINGS'
+  }
 
-    if ($result -eq 'OK') { 
-      Invoke-CreateRow $gridInstallation $name $green
+  invoke-WriteCheckLogs "Path $VSCodeSettingsPath trovato"
+
+  if (!(Test-Path $VSCodeSettingsJsonPath)) {
+    New-Item -Path $VSCodeSettingsJsonPath -Value '{ }' -Force | Out-Null
+    invoke-WriteCheckLogs "File $VSCodeSettingsJsonPath non trovato"
+    return 'SETTINGS'
+  }
+
+  invoke-WriteCheckLogs "File $VSCodeSettingsJsonPath trovato"
+  $SettingsContent = Get-Content -Path "~\AppData\Roaming\Code\User\settings.json" | ConvertFrom-Json
+
+  if (($SettingsContent.'terminal.integrated.defaultProfile.windows') -or ($SettingsContent.'terminal.integrated.shellArgs.windows') -or ($SettingsContent.'terminal.integrated.profiles.windows')) {
+    invoke-WriteCheckLogs "Valore di Default Profile $SettingsContent.'terminal.integrated.defaultProfile.windows'"
+    invoke-WriteCheckLogs "Valore di Shell Args $SettingsContent.'terminal.integrated.shellArgs.windows'"
+    invoke-WriteCheckLogs "Valore di Integrated Profile $SettingsContent.'terminal.integrated.profiles.windows'"
+    return 'SETTINGS'
+  }
+  elseif (($SettingsContent.'terminal.integrated.shell.windows' -ne 'C:\WINDOWS\System32\cmd.exe') -or ($SettingsContent.'update.mode' -ne 'manual')) {
+    invoke-WriteCheckLogs "Valore di Shell $SettingsContent.'terminal.integrated.shell.windows'"
+    invoke-WriteCheckLogs "Valore di Update Mode $SettingsContent.'update.mode'"
+    return 'SETTINGS'
+  }
+
+  return ''
+}
+
+function checkExtentions {
+  $ListExtensions = invoke-executeCommand("code --list-extensions")
+  if (!$ListExtensions) { 
+    invoke-WriteCheckLogs "Nessuna estensione di visual studio code rilevata"
+    return 'EXTENTIONS'
+  }
+
+  $missingExtentions = @()
+
+  foreach ($extension in $requirements[$name]["Extentions"]) {
+    if (-not $ListExtensions.Contains($extension)) { $missingExtentions += $extension }
+  }
+
+  $requirements[$name]["Extentions"] = $missingExtentions
+
+  if ($missingExtentions.Count ) {
+    $message = "Non sono state rilevate le seguenti estensioni: "
+    foreach ($ext in $missingExtentions) {
+      $message += "$ext, "
     }
-    else { 
-      Invoke-CreateRow $gridInstallation $name $red
-      $success = $false 
-    }
-    $env:PATH = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+    invoke-WriteCheckLogs $message
+    return 'EXTENTIONS' 
+   
   }
 
-  ($installLogs  | ConvertTo-Json) > $installRequirementsLogfile
-  return $success
-}
-
-function gridInstallation_VisibleChanged {
-  $gridInstallation.ClearSelection()
-}
-
-function closeButton_Click {
-  <#
-  .SYNOPSIS
-  Actions to clean the computer before closing the installer
-  .DESCRIPTION
-  Actions needed to be run before cloging the installer, such as:
-  kill the client's side process, removing the startup command, update the scarface.config.json and send the installation's results
-  #>
-  try {
-    $NetStat4200 = (netstat -ano | findstr :4200).split(" ") | Select-Object -Unique
-    $ClientPID = $NetStat4200[5]
-    taskkill /PID $ClientPID /F
-  }
-  catch {
-    Write-Host "No process running on port 4200"
-  }
-
-  Update-ScarfaceConfigJson
-  Send-InstallationLogs
-  logoff.exe #per docker
-}
-
-function Update-ScarfaceConfigJson {
-  <#
-  .SYNOPSIS
-  Update the scarface.config.json
-  .DESCRIPTION
-  Removes some of the elements inside the file, such as:
-  application, domain, scenario, author and prefix
-  So that the next time the user execute the command "ca scar" those fields will be asked to them
-  #>
-  $ScarfaceConfigJsonPath = "C:\dev\scarface\scarface.config.json"
-  $ScarfaceConfigJson = Get-Content -Path $ScarfaceConfigJsonPath -Raw | ConvertFrom-Json
-  foreach ($element in @("application", "domain", "scenario", "author", "prefix")) {
-    $ScarfaceConfigJson.PSObject.Properties.Remove($element)
-  }
-  $ScarfaceConfigJson | ConvertTo-Json -Depth 5 | Out-File -Encoding "ASCII" $ScarfaceConfigJsonPath -Force
-}
-
-function Send-InstallationLogs {
-  <#
-  .SYNOPSIS
-  Send all the logfiles to the private blob
-  .DESCRIPTION
-  Archive the .ca folder and sends it to the private blob
-  #>
-  $MaxDate = 0
-  $UserLogin = ""
-
-  # Transcript started in caep-installer.ps1
-  Stop-Transcript
-
-  foreach ($t in (Get-Content "~\.token.json" | ConvertFrom-Json)) {
-    $TokenDate = $t.date.Replace("-", "")
-    if ($MaxDate -lt $TokenDate) {
-      $MaxDate = $TokenDate;
-      $UserLogin = $t.user
-    }
-  } 
-
-  $HelperPath = Join-Path -Path $startLocation -ChildPath "helper\"
-  $HelperZipPath = Join-Path -Path $startLocation -ChildPath "helper.zip"
-  $connectPath = Join-Path -Path $startLocation -ChildPath "connect.sh"
-  $caZipPath = Join-Path -Path $startLocation -ChildPath "$UserLogin-$currentDate.zip"
-  $destination = "$HOME\.ssh\"
-
-  if (!(Test-Path $destination)) {
-    New-Item -Path $destination -ItemType Directory -Force 
-  }
-
-  Expand-Archive -Path $HelperZipPath -DestinationPath $startLocation -Force
-
-  Get-ChildItem -Path $HelperPath -File | Move-Item -Destination $destination -Force
-  $compress = @{
-    Path             = "$HOME\.ca\"
-    CompressionLevel = "Fastest"
-    DestinationPath  = $caZipPath
-  }
-  
-  Compress-Archive @Compress -Force
-  &"C:\Program Files\Git\usr\bin\bash.exe" $connectPath $caZipPath
+  invoke-WriteCheckLogs "Tutte le estensioni sono gia' installate"
+  return ''
 }
 
 
-. .\components\Tabs\Installation\Form.ps1
-
+$output = checkApp
+if ($output -eq "KO") { return $output } 
+$output = checkExtentions
+$output += checkSettings
+return $(if($output) {$output} else {"OK"})
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU/kAqW47RUlzZ2qO+kFzIubV1
-# azCggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUJfWBlcrzb+5GCk41wNKI+qkh
+# qx+ggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -300,31 +268,30 @@ function Send-InstallationLogs {
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUi2NORcss8a2UjDz1Pc92
-# cszNezgwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQBsimHfU2Zs+oFQYFjUucgtQ2r5ctfzRbmMApWoD6xp4moV
-# XE+aEnoj1Rjplq05fyKkSBnhAdKt1XCiOLj2qsyi1ViuA4qZ7jbBNFLydmiewOm8
-# ZcFb4/NHnSrg7Vm3hEeDTt9i0JkcOFZw7dGCbKetnWwmr7Rai1jpO3QXjZ6PhDRK
-# zx/nN68a1yhWPN3xC4Vxa+suc0oupk0TUlQBw2OUmmnN8mo5yl9XUgAPdDkdhs60
-# pQjLimGCZpHpkYvAPruaywXgFJZxogLkIZ7gxcsZLoFXIHCKN1lGZgeTgv2fyLLE
-# HKOVFZw+dOeH+jfvdETIGnQkYaVsQW56RHPEJjDHoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUCQQgn38jVe+2Nhx7MLz2
+# C4abzTMwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQCvEtBrbvzkcupWEb/GVgCKt8IP4mfB0ixgI/4YeIsFx64j
+# Wp2fRkYMqyNK2Bicz+siPf3P7e4Cl0gmyfZ9shjrvkKX4jHfHUdYZby16u/qcIhL
+# 8ODAszTUEAN7IiukVOq0mu534jITPJ7KAIuLGo7TcgDLZhy64O8jLEkFVTHNIoTZ
+# M8s1AqBbSOi69uKaVCQ+FF8THZYiZ3dTfZoL5uBxIB20nMfF8IDsI0Lt3MPMF2iL
+# nHXwi9ExzyXMMwrJe4oSsQ8Bducvyh6DNEFCfd2NRoJFuycCG4/SSM3+NxRq2CAE
+# EYB6zQuZFgq12lv09aQhQxoQhYGSkT1ALxQBQe2soYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMjkxMzQyMTlaMD8GCSqG
-# SIb3DQEJBDEyBDANbnWJ6coYfTffPW2XAHKf4xHXTgbzPNYzObLesrft/U6+Uvda
-# UBLFPgNluCe0tqkwDQYJKoZIhvcNAQEBBQAEggIAfyLSDt2zkGQ44p29yAyhDj53
-# 7Bypfxu30YXxPHKTRYn4S40DREGkjyMJospBBrsi/y4fZSPu6gPH8mk5EkfZbFcw
-# hycOsO6pIwu0meY/FRdNDVPOfo7TYCKUQ5WgrdFqbUD53L5VCjoHL+vYZ2QPW74M
-# vAq6h1CjWp0wGbEBPJ8niVbfmjKkGZhQwpOd1VYg7AcWeQHECHtlLg+XsbImX7JT
-# PUCC4qxS2HZ8I4T+M9ann+wlaIlQSBxZ7guCMiYYukn2N8yHSBFYeujRhWzz60Hr
-# 5YQ1FWeue+LMQCMPh79un52FnUayNNLOIMYjIdwBe0+TQIdgx/f2jpg+teSMUW5k
-# 696jYnFGLmPwIH4JpzO2ZB5w6ElTfWwEhphjMeVzgPT60JXE9AtMhwllm/MacqRC
-# Ckz3rcVd+0ZejmI70FqudxfXeOy3bcrbwCjXMvF8A1r0H6HrGCxV0jckNtAwWEBJ
-# TyBjheoa5bUkjaB0vxD22iM+S79P3nj49FvgOBN4HpgxwMBNYe/i3qBzV76tKydN
-# f2AxLJYR3l/j8R2+bKyy16zQW/VHLyxo5y9l7yk4HE31blgXqEp6XCkN+RQ7G3Tq
-# k4FcIF+18OsnpD945JO6q7ndFMia89Dvndn+EYjCjzR+Uqze0tTT51tuu42swR66
-# C7El7SzmlpayQn8RPts=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMjkxMzQxNDVaMD8GCSqG
+# SIb3DQEJBDEyBDC/a7srLaDZWmC5RBwC2SMgg4Uio9n2aIOLQ/HyFUgt/oBnPMlj
+# oC/7N7IjR8zU4FUwDQYJKoZIhvcNAQEBBQAEggIAEJ8uS6l1G2eX+b+w0P9yyYRy
+# +Vi+uVTiNTi5xtr/kO667UigP3rFR9tyoeB6l987IelvN0oVk1OZIYoEWylFWicq
+# KU3idnOEyamhGxnFvbNUWlmIkmGOaqs5B8LwRMdtveSMD2ZMR3k2LJQhvY+7bgA0
+# R7Ie9RjnphDcWVga1f0Sl+5LDkHZ1Nc8rGYsSw2+4MwmH6+tg41iVhp+GBQbaoPN
+# KP1He50nloCHCu2m+JAHv5vjCmpAKq9HDHlz4ODgxyXhTHX+9DQYsqVvZaAiwPfD
+# 4WvlHRGB5O7uSzWKPm/npbeydEoVqhUNdyXj3mFwChj3hhQYWJrwxvdAq+H+4Y6u
+# lLJJDxBHFbVVhlUILlbebkPjkkL1F5eEdP0vlWJreTJzjpa0tirorJ2t5oAEmNtx
+# ghUSiC4kbcOyDR0VXZPidR1+tyHA++T+V/xs4A2/bz6ftzWFgqvNC79gkOR/FeE2
+# uwADMJVqabSBiJWweMllivjdSI5YPXMa0BEDcsKz/0U2ilThQszNYYtoNcFwkMB3
+# /rKTbUjvXO2lhHDNtFvn/Rp5pYDRDhS4L4ruK7E6cbTCtLPpb0M2DV+9B/mhUpLr
+# I2Yqkwfrlq3WkQ8wZ3W0AUcksFb2ckWo23XzLXzL3MJ69BlEOHfwKw2RgUEAP3is
+# ylxglDl9AKgmsTpmnaE=
 # SIG # End signature block
-  

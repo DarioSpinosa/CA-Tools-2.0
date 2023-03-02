@@ -1,138 +1,28 @@
-#--------------------------------------------------------[FUNCTIONS]--------------------------------------------------------
-function Invoke-installRequirements {
-  if (installRequirements) { . .\requirements\install\ca-scarface.ps1 }
-  $closeButton.Enabled = $true
+$gitVersion = invoke-executeCommand("git --version")
+if (!$gitVersion) { 
+    invoke-WriteCheckLogs "Si e' verificato un problema durante l'esecuzione del comando (git --version).\r\nGit potrebbe non essere presente sulla macchina"
+    return 'KO' 
 }
 
-function installRequirements {
-  <#
-    .SYNOPSIS
-    Execute a specific Action based on the type of Requirement
-    .DESCRIPTION
-    Once the user press the Accept button it will execute the Action specific to that Requirement
-    #>
-  $success = $true 
-  if (-not $requirements.Count) { return $success }
+$gitVersion = $gitVersion.split(' ')[2].split(".")
+$gitVersion = [Version]::new($gitVersion[0], $gitVersion[1], $gitVersion[2])
 
-  invoke-CreateLogs $installLogs
-  # It will execute a determinatedd function based on the type of the current requirement
-  foreach ($name in $sortedRequirements) {
-    #per mantenere un ordinamento  basato sulle dipendenze anche durante la fase di installazione
-    if (-not $requirements.Contains($name)) { continue }
-    $requirement = $requirements[$name]
-    $result = $requirement["Install"] | Invoke-Expression
-    $installLogs[$name]["Result"] = $result
+$minVersion = $requirements[$name]["MinVersion"].split(".")
+$minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
 
-    if ($result -eq 'OK') { 
-      Invoke-CreateRow $gridInstallation $name $green
-    }
-    else { 
-      Invoke-CreateRow $gridInstallation $name $red
-      $success = $false 
-    }
-    $env:PATH = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
-  }
-
-  ($installLogs  | ConvertTo-Json) > $installRequirementsLogfile
-  return $success
+if ($gitVersion -lt $minVersion){
+    invoke-WriteCheckLogs "La versione rilevata di git $gitVersion non rispetta i requisiti.\r\nMin Version: $minVersion"
+    return "VER"
 }
 
-function gridInstallation_VisibleChanged {
-  $gridInstallation.ClearSelection()
-}
-
-function closeButton_Click {
-  <#
-  .SYNOPSIS
-  Actions to clean the computer before closing the installer
-  .DESCRIPTION
-  Actions needed to be run before cloging the installer, such as:
-  kill the client's side process, removing the startup command, update the scarface.config.json and send the installation's results
-  #>
-  try {
-    $NetStat4200 = (netstat -ano | findstr :4200).split(" ") | Select-Object -Unique
-    $ClientPID = $NetStat4200[5]
-    taskkill /PID $ClientPID /F
-  }
-  catch {
-    Write-Host "No process running on port 4200"
-  }
-
-  Update-ScarfaceConfigJson
-  Send-InstallationLogs
-  logoff.exe #per docker
-}
-
-function Update-ScarfaceConfigJson {
-  <#
-  .SYNOPSIS
-  Update the scarface.config.json
-  .DESCRIPTION
-  Removes some of the elements inside the file, such as:
-  application, domain, scenario, author and prefix
-  So that the next time the user execute the command "ca scar" those fields will be asked to them
-  #>
-  $ScarfaceConfigJsonPath = "C:\dev\scarface\scarface.config.json"
-  $ScarfaceConfigJson = Get-Content -Path $ScarfaceConfigJsonPath -Raw | ConvertFrom-Json
-  foreach ($element in @("application", "domain", "scenario", "author", "prefix")) {
-    $ScarfaceConfigJson.PSObject.Properties.Remove($element)
-  }
-  $ScarfaceConfigJson | ConvertTo-Json -Depth 5 | Out-File -Encoding "ASCII" $ScarfaceConfigJsonPath -Force
-}
-
-function Send-InstallationLogs {
-  <#
-  .SYNOPSIS
-  Send all the logfiles to the private blob
-  .DESCRIPTION
-  Archive the .ca folder and sends it to the private blob
-  #>
-  $MaxDate = 0
-  $UserLogin = ""
-
-  # Transcript started in caep-installer.ps1
-  Stop-Transcript
-
-  foreach ($t in (Get-Content "~\.token.json" | ConvertFrom-Json)) {
-    $TokenDate = $t.date.Replace("-", "")
-    if ($MaxDate -lt $TokenDate) {
-      $MaxDate = $TokenDate;
-      $UserLogin = $t.user
-    }
-  } 
-
-  $HelperPath = Join-Path -Path $startLocation -ChildPath "helper\"
-  $HelperZipPath = Join-Path -Path $startLocation -ChildPath "helper.zip"
-  $connectPath = Join-Path -Path $startLocation -ChildPath "connect.sh"
-  $caZipPath = Join-Path -Path $startLocation -ChildPath "$UserLogin-$currentDate.zip"
-  $destination = "$HOME\.ssh\"
-
-  if (!(Test-Path $destination)) {
-    New-Item -Path $destination -ItemType Directory -Force 
-  }
-
-  Expand-Archive -Path $HelperZipPath -DestinationPath $startLocation -Force
-
-  Get-ChildItem -Path $HelperPath -File | Move-Item -Destination $destination -Force
-  $compress = @{
-    Path             = "$HOME\.ca\"
-    CompressionLevel = "Fastest"
-    DestinationPath  = $caZipPath
-  }
-  
-  Compress-Archive @Compress -Force
-  &"C:\Program Files\Git\usr\bin\bash.exe" $connectPath $caZipPath
-}
-
-
-. .\components\Tabs\Installation\Form.ps1
-
+invoke-WriteCheckLogs "La versione rilevata di git $gitVersion rispetta i requisiti.\r\nMin Version: $minVersion."
+return "OK"
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU/kAqW47RUlzZ2qO+kFzIubV1
-# azCggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUgSlByue5i8DE74NN2HtnMhap
+# ke+ggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -300,31 +190,30 @@ function Send-InstallationLogs {
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUi2NORcss8a2UjDz1Pc92
-# cszNezgwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQBsimHfU2Zs+oFQYFjUucgtQ2r5ctfzRbmMApWoD6xp4moV
-# XE+aEnoj1Rjplq05fyKkSBnhAdKt1XCiOLj2qsyi1ViuA4qZ7jbBNFLydmiewOm8
-# ZcFb4/NHnSrg7Vm3hEeDTt9i0JkcOFZw7dGCbKetnWwmr7Rai1jpO3QXjZ6PhDRK
-# zx/nN68a1yhWPN3xC4Vxa+suc0oupk0TUlQBw2OUmmnN8mo5yl9XUgAPdDkdhs60
-# pQjLimGCZpHpkYvAPruaywXgFJZxogLkIZ7gxcsZLoFXIHCKN1lGZgeTgv2fyLLE
-# HKOVFZw+dOeH+jfvdETIGnQkYaVsQW56RHPEJjDHoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUxuSvSljhrEb2EOemSRGO
+# iMrh5jwwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQAR/I5mtRUU2dMgK/zd2qaKxYOLM19c1lxsrlpTAYHnZ2af
+# zs6PgkArVJIzlN13X+yE3+f65LdUsaAR+5sgS7YUykg6+TRklGZulZF0a1Js40Qv
+# Wq0k6LH2TP/M/xcBvYm8Sf39lRxoVsZ2WJ+xpfTSr5GhhNy7f4bhq7Cmh6B10GnN
+# QsUJ7heNEQewGS9yzSTVwul4/tPW+ERYYKCQhFsAhH4OR9xGrz5yQsYtKpSoLkZx
+# u8e3rGFQnzM55I/qfKii68tkogeMiBvD2k/TKd118f5UME5SFPj6VK6HLFYLX7zJ
+# B5DC6dmgMxhvYTJU1B8kqcC1V038nOPm3UDP4/hioYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMjkxMzQyMTlaMD8GCSqG
-# SIb3DQEJBDEyBDANbnWJ6coYfTffPW2XAHKf4xHXTgbzPNYzObLesrft/U6+Uvda
-# UBLFPgNluCe0tqkwDQYJKoZIhvcNAQEBBQAEggIAfyLSDt2zkGQ44p29yAyhDj53
-# 7Bypfxu30YXxPHKTRYn4S40DREGkjyMJospBBrsi/y4fZSPu6gPH8mk5EkfZbFcw
-# hycOsO6pIwu0meY/FRdNDVPOfo7TYCKUQ5WgrdFqbUD53L5VCjoHL+vYZ2QPW74M
-# vAq6h1CjWp0wGbEBPJ8niVbfmjKkGZhQwpOd1VYg7AcWeQHECHtlLg+XsbImX7JT
-# PUCC4qxS2HZ8I4T+M9ann+wlaIlQSBxZ7guCMiYYukn2N8yHSBFYeujRhWzz60Hr
-# 5YQ1FWeue+LMQCMPh79un52FnUayNNLOIMYjIdwBe0+TQIdgx/f2jpg+teSMUW5k
-# 696jYnFGLmPwIH4JpzO2ZB5w6ElTfWwEhphjMeVzgPT60JXE9AtMhwllm/MacqRC
-# Ckz3rcVd+0ZejmI70FqudxfXeOy3bcrbwCjXMvF8A1r0H6HrGCxV0jckNtAwWEBJ
-# TyBjheoa5bUkjaB0vxD22iM+S79P3nj49FvgOBN4HpgxwMBNYe/i3qBzV76tKydN
-# f2AxLJYR3l/j8R2+bKyy16zQW/VHLyxo5y9l7yk4HE31blgXqEp6XCkN+RQ7G3Tq
-# k4FcIF+18OsnpD945JO6q7ndFMia89Dvndn+EYjCjzR+Uqze0tTT51tuu42swR66
-# C7El7SzmlpayQn8RPts=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMjkxMzQwNTRaMD8GCSqG
+# SIb3DQEJBDEyBDDmdanBZJKDhCnkcDYPgea7unITnB1Jrn3ri5LAYnqHTO8dQkP0
+# /P0S9Cry4PnFCGgwDQYJKoZIhvcNAQEBBQAEggIAdQADA84NGhiuhIhQxvFO8eeI
+# vAQM6uBfbqUr2XogzBO9yNObbNtnbBfZcZmx1bybYkXgz63gEFeHIXvh8bbVIUnq
+# jyzaHnGm1GNdTXX0Ca+xR90/suDtGNsnPUWQ+C+RvXUnU7Iu5DQnCIlAFmcN/93b
+# iFN9oqZBuDkfLIc6ldswgeU75vCEhgDUGHfZDggz8FO0fgmPRzXRMCnxHPv1Bk6j
+# V8Pd9F0blXCcNQPIjHAWVO4agoMyjpdjcdMm1mjQLdxcxlwlYtAzfjRasRfrNdts
+# u8Bk3sBJFpXPmm4FaQFKkNzeKalRMFWFi8IzEA7X+S0cIvAOBUuxRXfQhz0G0Hd5
+# xs0bCCwFhuSnA0ok9jCK4s2M92W08XGJA6Yo7Ve2krJ3JyXC2BWMth8XugYxfMTM
+# MoTV9eukhaOiD27zCpcyBxosdq6viV4huShtPbN+NG/a/qen52GRX7+zPprfilp/
+# pQ8hp7vHoMXYhoTAd9PMaPZQJagRqSfpd5pbBBtglezDA1k9p1ZTBpyxqb3EwQ/H
+# mQZ2zzmZOPbwo1d1nl0Rg6asns0pgsSQ2NXbd4Tw+2ug2CBqi3lS+nRB+62r+J9x
+# Pi+C+y4jjhLDFqE6+v5WjMwkhdtFTfvsCm33AGFRSl2zBt9KfmmdS7Lu0YSVYnEO
+# cSzoX95Tpf9kWHTMSIk=
 # SIG # End signature block
-  

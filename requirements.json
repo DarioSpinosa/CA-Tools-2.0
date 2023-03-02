@@ -2,43 +2,39 @@
   "WSL": {
     "MinVersion": "18.04",
     "MaxVersion": "22.04",
-    "DeclineMessage": "return `\"You have declined to automatically download setup windows subsytem for Linux.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-    "CheckRequirement": "return ./scripts/requirements/wsl.ps1",
-    "InstallCommand": "wsl --install -d Ubuntu-$($requirement['MaxVersion'])",
-    "PostInstallCommand": "./scripts/postInstall/wsl-distribution.ps1"
+    "Check": "return ./requirements/check/wsl.ps1",
+    "Install": "./requirements/install/wsl.ps1"
   },
-  "Node.js": {
+  "Node": {
     "MaxVersion": "16.13.1",
-    "MajorVersion": "16",
+    "Check": "return ./requirements/check/nodejs.ps1",
     "DownloadLink": "https://nodejs.org/dist/v$($requirement['MaxVersion'])/node-v$($requirement['MaxVersion'])-x64.msi",
-    "DownloadOutfile": "C:\\dev\\scarface\\download\\$RandomCode-Nodejs-x64.msi",
-    "InstallCommand": "./scripts/install/nodejs.ps1",
-    "CheckRequirement": "return ./scripts/requirements/nodejs.ps1"
+    "DownloadOutfile": "C:\\dev\\scarface\\download\\Nodejs-x64.msi",
+    "Install": "./requirements/install/nodejs.ps1"
   },
   "DotNet": {
     "MinVersion": "5.0.0",
     "MaxVersion": "6.0.101",
-    "MajorVersion": "6",
+    "Check": "return ./requirements/check/dotnet-core.ps1",
     "DownloadLink": "https://download.visualstudio.microsoft.com/download/pr/343dc654-80b0-4f2d-b172-8536ba8ef63b/93cc3ab526c198e567f75169d9184d57/dotnet-sdk-6.0.101-win-x64.exe",
-    "DownloadOutfile": "C:\\dev\\scarface\\download\\$RandomCode-Dotnet-x64.exe",
-    "InstallCommand": "./scripts/install/dotnet-core.ps1",
-    "CheckRequirement": "return ./scripts/requirements/dotnet-core.ps1"
+    "DownloadOutfile": "C:\\dev\\scarface\\download\\Dotnet-x64.exe",
+    "Install": "./requirements/install/dotnet-core.ps1"
   },
   "Visual Studio": {
     "MinVersion": "16",
-    "MaxVersion": "17",
+    "MaxVersion": "22",
+    "Check": "return ./requirements/check/visual-studio.ps1",
     "DownloadLink": "https://aka.ms/vs/17/release/vs_community.exe",
-    "DownloadOutfile": "C:\\dev\\scarface\\download\\$RandomCode-VisualStudio-$($requirement['MaxVersion']).exe",
-    "InstallCommand": "./scripts/install/visual-studio.ps1",
-    "CheckRequirement": "return ./scripts/requirements/visual-studio.ps1"
+    "DownloadOutfile": "C:\\dev\\scarface\\download\\VisualStudio-$($requirement['MaxVersion']).exe",
+    "Install": "./requirements/install/visual-studio.ps1"
   },
   "Visual Studio Code": {
     "MinVersion": "1.60.0",
-    "MaxVersion": "1.62.3",
-    "CheckRequirement": "return ./scripts/requirements/vscode.ps1",
+    "MaxVersion": "1.75",
+    "Check": "return ./requirements/check/vscode.ps1",
     "DownloadLink": "https://update.code.visualstudio.com/$($requirement['MaxVersion'])/win32-x64-user/stable",
-    "DownloadOutfile": "C:\\dev\\scarface\\download\\$RandomCode-VSCode-User-x64.exe",
-    "InstallScript": "./scripts/install/vscode.ps1",
+    "DownloadOutfile": "C:\\dev\\scarface\\download\\VSCode-User-x64.exe",
+    "Install": "./requirements/install/vscode.ps1",
     "Extentions": [
       "Mikael.Angular-BeastCode",
       "steoates.autoimport",
@@ -56,53 +52,39 @@
   },
   "Git": {
     "MinVersion": "2.27.0",
-    "MaxVersion": "2.34.0",
-    "MajorVersion": "2",
+    "MaxVersion": "2.39.2",
+    "Check": "return ./requirements/check/git.ps1",
     "DownloadLink": "https://github.com/git-for-windows/git/releases/download/v$($requirement['MaxVersion']).windows.1/Git-$($requirement['MaxVersion'])-64-bit.exe",
-    "DownloadOutfile": "C:\\dev\\scarface\\download\\$RandomCode-Git-x64.exe",
-    "InstallCommand": "./scripts/install/git.ps1",
-    "CheckRequirement": "return ./scripts/requirements/git.ps1"
+    "DownloadOutfile": "C:\\dev\\scarface\\download\\Git-x64.exe",
+    "Install": "./requirements/install/git.ps1"
   },
   "NPM": {
+    "Dependencies": ["Node"],
     "MinVersion": "8.0.0",
     "MaxVersion": "8.1.2",
-    "MajorVersion": "8",
-    "InstallCommand": "./scripts/install/npm.ps1",
-    "CheckRequirement": "return ./scripts/requirements/npm.ps1",
+    "Check": "return ./requirements/check/npm.ps1",
+    "Install": "./requirements/install/npm.ps1",
     "Proxy": "KO"
   },
   "Docker": {
+    "Dependencies": ["WSL"],
     "MinVersion": "20.0.0",
     "MaxVersion": "20.10.8",
+    "Check": "return ./requirements/check/docker.ps1",
     "DownloadLink": "https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe",
-    "DownloadOutfile": "C:\\dev\\scarface\\download\\$RandomCode-Docker-x64.exe",
-    "InstallCommand": "./scripts/install/docker.ps1",
-    "CheckRequirement": "return ./scripts/requirements/docker.ps1",
-    "PostAction": "Logout",
+    "DownloadOutfile": "C:\\dev\\scarface\\download\\Docker-x64.exe",
+    "Install": "./requirements/install/docker.ps1",
     "Proxy": "KO"
   },
-  "Setup CATools": {
-    "MaxVersion": "latest",
-    "DownloadLink": "https://api.github.com/repos/codearchitects/Ca-Tools/releases/$($requirement['MaxVersion'])",
-    "DownloadOutfile": "C:\\dev\\scarface\\download\\$RandomCode-Setup-CaTools.msi",
-    "InstallCommand": "./scripts/install/setup-catools.ps1",
-    "CheckRequirement": "return ./scripts/requirements/setup-catools.ps1"
-  },
   "Npm Login": {
-    "InstallCommand": "./scripts/install/npm-login.ps1",
-    "CheckRequirement": "return ./scripts/requirements/npm-login.ps1",
-    "PostAction": "Login"
+    "Dependencies": ["NPM"],
+    "Check": "return ./requirements/check/npm-login.ps1",
+    "Install": "./components/login/Login.ps1 -type 'LOGIN'"
   },
-  "Install CAEP": {
-    "PathFile": "C:\\Program Files\\Ca-Tools\\setup-ca-platform.exe",
-    "ArgumentList": "-s",
-    "InstallCommand": "./scripts/install/install-CAEP.ps1",
-    "CheckRequirement": "return ./scripts/requirements/install-CAEP.ps1"
-  },
-  "Execute Scarface": {
-    "PathFile": "~\\AppData\\Roaming\\npm\\ca.cmd",
-    "ArgumentList": "scar -c C:\\dev\\scarface\\scarface.config.json",
-    "InstallCommand": "./scripts/install/ca-scar.ps1 -reqName $($Name) -reqPathFile $($requirement['PathFile']) -reqArgList $($requirement['ArgumentList'])",
-    "CheckRequirement": "return ./scripts/requirements/ca-scar.ps1"
+  "CAEP": {
+    "Dependencies": ["DotNet", "Visual Studio", "Visual Studio Code", "Git", "NPM", "Docker", "Npm Login"],
+    "PluginVersion": "0.2.25",
+    "Check": "return ./requirements/check/caep.ps1",
+    "Install": "./requirements/install/caep.ps1"
   }
-}
+} 

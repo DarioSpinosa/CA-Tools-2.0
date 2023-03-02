@@ -27,23 +27,25 @@ $gridInstallation.Name = "Grid"
 $gridInstallation.BorderStyle = 0
 $gridInstallation.RowHeadersVisible = $false
 $gridInstallation.EnableHeadersVisualStyles = $false
-$gridInstallation.BackgroundColor = "#ffffff"
+$gridInstallation.BackgroundColor = "#ededed"
 $gridInstallation.DefaultCellStyle.Font = "Century Gothic, 13"
-$gridInstallation.DefaultCellStyle.BackColor = "#ffffff"
-# $gridInstallation.DefaultCellStyle.SelectionBackColor = "Transparent"
-# $gridInstallation.DefaultCellStyle.SelectionForeColor = "Transparent"
+$gridInstallation.DefaultCellStyle.BackColor = "#bfbfbf"
+$gridInstallation.DefaultCellStyle.SelectionBackColor = "Transparent"
+$gridInstallation.DefaultCellStyle.SelectionForeColor = "Transparent"
 $gridInstallation.DefaultCellStyle.Alignment = "MiddleCenter"
 $gridInstallation.AdvancedCellBorderStyle.All = "None"
 $gridInstallation.AllowUserToResizeRows = $false
 $gridInstallation.AutoSizeRowsMode = "AllCells";
 $gridInstallation.ColumnCount = 1
-$gridInstallation.Columns[0].Name = "Installation";
+$gridInstallation.Columns[0].Name = "Requisito";
 $gridInstallation.Columns[0].Width = 240;
 $gridInstallation.Columns[0].SortMode = "NotSortable";
+$gridInstallation.AllowUserToResizeColumns = $false;
 $gridInstallation.ColumnHeadersBorderStyle = 4
 $gridInstallation.ColumnHeadersDefaultCellStyle.Font = "Century Gothic, 15"
 $gridInstallation.ColumnHeadersDefaultCellStyle.ForeColor = "#ffffff"
 $gridInstallation.ColumnHeadersDefaultCellStyle.BackColor = "#555555"
+$gridInstallation.ColumnHeadersDefaultCellStyle.Alignment = "MiddleCenter"
 $gridInstallation.ColumnHeadersHeightSizeMode = "DisableResizing"
 $gridInstallation.Size = "240, 500"
 $gridInstallation.Location = "25, 25"
@@ -52,7 +54,7 @@ $gridInstallation.AllowUserToAddRows = $false
 $gridInstallation.ReadOnly = $true
 
 $closeButton = New-Object System.Windows.Forms.Button
-$closeButton.BackColor = "#555555"
+$closeButton.BackColor = "#19c5ff"
 $closeButton.Text = "Finish"
 $closeButton.Size = "90, 30"
 $closeButton.Location = "735, 505"
@@ -60,12 +62,11 @@ $closeButton.Font = 'Century Gothic, 15'
 $closeButton.ForeColor = "#ffffff"
 $closeButton.FlatStyle = "Flat"
 $closeButton.FlatAppearance.BorderSize = 0;
-$closeButton.FlatAppearance.MouseOverBackColor = "#2daae1"
-$closeButton.Region = [System.Drawing.Region]::FromHrgn($roundObject::CreateRoundRectRgn(0, 0, $closeButton.Width, $closeButton.Height, 8, 8))
+$closeButton.FlatAppearance.MouseOverBackColor = "#0463ca"
 $closeButton.Enabled = $false
 
 $tabInstallation.Controls.AddRange(@($selectedInstallation, $outputInstallationLabel, $gridInstallation, $closeButton))
 
+$tabInstallation.Add_VisibleChanged({ gridInstallation_VisibleChanged })
+
 $closeButton.Add_Click({ closeButton_Click })
-# $gridInstallation.Add_Click({ gridInstallation_Click })
-# $selectedInstallation.Add_SizeChanged({ selectedInstallation_SizeChanged })

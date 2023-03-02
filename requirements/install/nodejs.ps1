@@ -1,11 +1,31 @@
-$outputInstallationLabel.Text += 'Installing the CAEP... (It will take a few minutes)'
-npm install -g @ca/cli
-ca plugins:install @ca/cli-plugin-scarface
+function invoke-installation($name, $requirement) {
+	$subMessage = "$($name) version: $($requirement["MaxVersion"])"
+	invoke-WriteInstallLogs "Installing $subMessage..."
+
+	invoke-WriteInstallLogs $addNodeBuildTools
+	
+	$argumentList = @('/I', $requirement["DownloadOutFile"])
+	
+	if (-not $addNodeBuildTools) {
+		$argumentList += '/passive'
+	}
+	else {
+		invoke-WriteInstallLogs "Starting manual Node install..."
+	}
+	Start-Process msiexec.exe -ArgumentList $argumentList -Wait
+	
+	invoke-WriteInstallLogs "Install of $subMessage complete."
+}
+
+if (-not (invoke-download $name $requirement)) {return "KO"}
+invoke-installation $name $requirement
+invoke-deleteDownload $name, $requirement
+return "OK"
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUBPPoHTzNpxc7rmOPj7CmFyV3
-# Mqmggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUj59XEeryb9Epo+VKtaH5ifpP
+# i4uggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -173,30 +193,30 @@ ca plugins:install @ca/cli-plugin-scarface
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUxCG6FK1Nu5+Ikg6OvG0I
-# CFKVyAYwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQBh3nfX3UJkv+Icsai6fc1u5LTMmB9Q4QpqD9V3I6dVX3af
-# s2vauVUa6KYx/a6ltDnB5FXp8M8QQVTMxgPQxDLyz4tXclTV/onpAaoG9XgJsBnG
-# 9dTSwKcWzeyS1L+74nenSTRb+0jaWVIGKHsrp5l9iB/85/NefRKkc7Ppj4PoK5/l
-# eEKuUAzGkRvvdXhAZ85qijjGu+EMBMRknLAhGUbYgMqtxeBw2p3VdHfmKzaoz6d5
-# BPtlnkHM1Q6gfm0RuzgGj0nOICb5J3A9HW0FwwAJTc3nxpXQa4L0ECE9+YX0CX3k
-# vqf+/zQH2ZBtc0ABO2vDnOwnWtuRNVwfa/epPOFBoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU46VckTQX82dmd9EPTwRf
+# AmiWLB4wJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQCEw02x46a/wqHYVUKfDebwnCo75zPIa+2bd7p2Q+PGnb5h
+# oKHhx/H8EGyvkvlftfX1G6Kk2m4Sey0zTNb1bp4zPediSjKx/D/jH0EfkwX81kOV
+# EaSV8uDlVmxwsJglhIiGUdfeG7uOy+0Yccv+LfB941ohZVhssiXVxodk2WEGMRUy
+# sxmJxD0w3+SYBKzZ0tSyAVHmOtfHCzjWVAp4ZJCK1bTSDbI9xl75ZBXca7AzAUeo
+# Jj+WM2GAd8eQZW0lcWZiAhw7sMR7JqNhy7Gaa5754CxNF4GV2ykbm2SNKUw09CBg
+# uU7AoAVL9gwNgh1YP9wNCA6n3tBvA8AeDHTo3Y4foYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMjkxMzM5NDBaMD8GCSqG
-# SIb3DQEJBDEyBDDTJVSe2ZZDPGCwuZCylvixESW2JzTjMPBVmeqWw5L+/WKpXs2c
-# saRnlGkIebz/6YowDQYJKoZIhvcNAQEBBQAEggIAj3VqIpdXLpu37AjZPOOxHPYj
-# NpkyN/tjzeDEszwvDr1jayaEmyElZULieYSQGYjc+iVWoyyEhfP37m4O7LlG9BJq
-# ipC5GM9wor2VQEloo4uW2PvfhUyYNHfzEaqborRoKodad5PrUGrIQyMqAeUANHD+
-# H+nSJc5mC2O36HH2WeLSbePqX3bYi/pj7oBidbSZP9XynRBP27rQyQeDtZ2EfPDI
-# hYeakdDNg+DfTrYIGAWQZ/PUn+q5Ka30E0bco08LdLsYgAQgJBZiFSjF9UXoJp95
-# DECyw1wqPW4iqLntAEmPsLxLRyLwqnWF1khGU0OQ62CHd8R7wcO4I7JmelHiFtfB
-# TeU/yR1ZASIn08nMRiSHb1dZqbT4wjWYrVUZD0/Z4NTKkCLCwyZgiPjIgAo2xfD0
-# vJX/wqUxSSodY5RKvGzizOPFcAhjhWWCxwP+PB3Y4l8cSHOJG31vVwWZg9wE4i5i
-# ALH1lely54YSusfJND6TjVvSi2vUT3uP+FwQlY7VC0OJZK0dJnVGkUhplxgNJZei
-# NvIe1P3Of6p4gMGW5PJqxyP2AWoDQQ90mo0VxZfoEGGN07AkQ5pGG4ikVuvpGJc2
-# Z2ji9QZMITwWyxLKZX/ankTwZL0CFzyT2Ktdi/6bCX/axVL79cKnz5za+RBzuroY
-# LywNsHsChZQrmTeyH58=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMjkxMzM5NTdaMD8GCSqG
+# SIb3DQEJBDEyBDBJHeOr9ULckCnsVl36mZ4+anEfkhjiOmkIWnyWVvpiZawQ1kDh
+# eHWbo7FnYH0pNtkwDQYJKoZIhvcNAQEBBQAEggIAZc130Zo5njhTKZCF2oNHvglx
+# sj2vk4myaEmRRMP5VgwK/Lhx46e29D3GEfz386URqweSXap2fc8VhWbv4ovp+5Io
+# t7JAtyV6Sh9PGKye9HzFqaCYInC1nW22sNSwuN8hqhttSgwt7nezbTdlDMClnhxW
+# YINTnjppD13xp64mDBwdz7ABmoDkaE6n8PJC4spq4Oiy84JUbLIn+WKi8nP23PZR
+# tNwYg6LMHA2ijE8ttUgwj4hWQ/Vr7QS53jidMMio7eqTWNfA/xuwVOGLuSPgkrEM
+# qiweekv0YfmilJySJzFPgFeuhMT50rwfGnNO7ycSm9xnBPuzBUF4DZMaCnlUnJMO
+# Hqod7qkMdksvELvXr4bbQutAmGxeAzlPElU2OaWtAf/+s2rcRcGqYrIhGoxpv9U0
+# 7tBqZ7duI1FfbtuwPfD3xouZwPSfrKCyGnAeR/Wl2nemuTYLurzh3pE0DvSKg8Rk
+# epU3Wo6mBfqfqULT/qDdyqzLEOpcRx/PyKMo5JraVIVDdOnvGBl2HxddcWr9Sg4R
+# Go8k7PAtee8vA1VXkZs0YuQnh5pF5u9RDr0IhaIPuxQFZkSyJtC206Zb5nL2PBuV
+# isQgVPtEhrjbIMD2/z7jqndB7ivpwrSFMU0NbCGsyCDpcdVlLmIw9u1c1NNSuzz2
+# Yh1+Rn4mdYAjdo7YWkY=
 # SIG # End signature block

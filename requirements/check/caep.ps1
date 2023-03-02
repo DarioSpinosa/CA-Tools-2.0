@@ -1,138 +1,47 @@
-#--------------------------------------------------------[FUNCTIONS]--------------------------------------------------------
-function Invoke-installRequirements {
-  if (installRequirements) { . .\requirements\install\ca-scarface.ps1 }
-  $closeButton.Enabled = $true
+$output = ""
+
+if (-not (Test-Path "$env:PROGRAMFILES\Ca-Tools")) {
+  invoke-WriteCheckLogs "Ca Tools Folder non presente nella macchina"
+  $output = "FOLDER"
+}
+else {
+  invoke-WriteCheckLogs "Ca Tools Folder presente nella macchina"
 }
 
-function installRequirements {
-  <#
-    .SYNOPSIS
-    Execute a specific Action based on the type of Requirement
-    .DESCRIPTION
-    Once the user press the Accept button it will execute the Action specific to that Requirement
-    #>
-  $success = $true 
-  if (-not $requirements.Count) { return $success }
-
-  invoke-CreateLogs $installLogs
-  # It will execute a determinatedd function based on the type of the current requirement
-  foreach ($name in $sortedRequirements) {
-    #per mantenere un ordinamento  basato sulle dipendenze anche durante la fase di installazione
-    if (-not $requirements.Contains($name)) { continue }
-    $requirement = $requirements[$name]
-    $result = $requirement["Install"] | Invoke-Expression
-    $installLogs[$name]["Result"] = $result
-
-    if ($result -eq 'OK') { 
-      Invoke-CreateRow $gridInstallation $name $green
-    }
-    else { 
-      Invoke-CreateRow $gridInstallation $name $red
-      $success = $false 
-    }
-    $env:PATH = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
-  }
-
-  ($installLogs  | ConvertTo-Json) > $installRequirementsLogfile
-  return $success
+if (-not (Test-Path "$env:PROGRAMFILES\Ca-Tools\npm-login.ps1")) {
+  invoke-WriteCheckLogs "npm-login.ps1 non presente nella macchina"
+  $output += "FILE"
+}
+else {
+  invoke-WriteCheckLogs "npm-login.ps1 presente nella macchina"
 }
 
-function gridInstallation_VisibleChanged {
-  $gridInstallation.ClearSelection()
+$npmList = (npm list -g --depth=0).split(' ').split('@')
+if ($npmList.Contains("empty")) { return $output + "CLI PLUGIN"} #Caso in cui si ha appena installato node+npm e non ci sono pacchetti
+
+if ($npmList.Contains('ca/cli')) {
+  invoke-WriteCheckLogs '@ca/cli presente nella macchina'
+}
+else {
+	 invoke-WriteCheckLogs ' @ca/cli non presente nella macchina'
+   return $output + 'CLI'
 }
 
-function closeButton_Click {
-  <#
-  .SYNOPSIS
-  Actions to clean the computer before closing the installer
-  .DESCRIPTION
-  Actions needed to be run before cloging the installer, such as:
-  kill the client's side process, removing the startup command, update the scarface.config.json and send the installation's results
-  #>
-  try {
-    $NetStat4200 = (netstat -ano | findstr :4200).split(" ") | Select-Object -Unique
-    $ClientPID = $NetStat4200[5]
-    taskkill /PID $ClientPID /F
-  }
-  catch {
-    Write-Host "No process running on port 4200"
-  }
-
-  Update-ScarfaceConfigJson
-  Send-InstallationLogs
-  logoff.exe #per docker
+$npmPlugin = (ca plugins).split(' ').split('@')
+if ($npmPlugin.Contains('ca/cli-plugin-scarface')) {
+	 invoke-WriteCheckLogs '@ca/cli-plugin-scarface presente nella macchina'
+}
+else {
+  invoke-WriteCheckLogs '@ca/cli-plugin-scarface non presente nella macchina'
+  return $output + 'PLUGIN'
 }
 
-function Update-ScarfaceConfigJson {
-  <#
-  .SYNOPSIS
-  Update the scarface.config.json
-  .DESCRIPTION
-  Removes some of the elements inside the file, such as:
-  application, domain, scenario, author and prefix
-  So that the next time the user execute the command "ca scar" those fields will be asked to them
-  #>
-  $ScarfaceConfigJsonPath = "C:\dev\scarface\scarface.config.json"
-  $ScarfaceConfigJson = Get-Content -Path $ScarfaceConfigJsonPath -Raw | ConvertFrom-Json
-  foreach ($element in @("application", "domain", "scenario", "author", "prefix")) {
-    $ScarfaceConfigJson.PSObject.Properties.Remove($element)
-  }
-  $ScarfaceConfigJson | ConvertTo-Json -Depth 5 | Out-File -Encoding "ASCII" $ScarfaceConfigJsonPath -Force
-}
-
-function Send-InstallationLogs {
-  <#
-  .SYNOPSIS
-  Send all the logfiles to the private blob
-  .DESCRIPTION
-  Archive the .ca folder and sends it to the private blob
-  #>
-  $MaxDate = 0
-  $UserLogin = ""
-
-  # Transcript started in caep-installer.ps1
-  Stop-Transcript
-
-  foreach ($t in (Get-Content "~\.token.json" | ConvertFrom-Json)) {
-    $TokenDate = $t.date.Replace("-", "")
-    if ($MaxDate -lt $TokenDate) {
-      $MaxDate = $TokenDate;
-      $UserLogin = $t.user
-    }
-  } 
-
-  $HelperPath = Join-Path -Path $startLocation -ChildPath "helper\"
-  $HelperZipPath = Join-Path -Path $startLocation -ChildPath "helper.zip"
-  $connectPath = Join-Path -Path $startLocation -ChildPath "connect.sh"
-  $caZipPath = Join-Path -Path $startLocation -ChildPath "$UserLogin-$currentDate.zip"
-  $destination = "$HOME\.ssh\"
-
-  if (!(Test-Path $destination)) {
-    New-Item -Path $destination -ItemType Directory -Force 
-  }
-
-  Expand-Archive -Path $HelperZipPath -DestinationPath $startLocation -Force
-
-  Get-ChildItem -Path $HelperPath -File | Move-Item -Destination $destination -Force
-  $compress = @{
-    Path             = "$HOME\.ca\"
-    CompressionLevel = "Fastest"
-    DestinationPath  = $caZipPath
-  }
-  
-  Compress-Archive @Compress -Force
-  &"C:\Program Files\Git\usr\bin\bash.exe" $connectPath $caZipPath
-}
-
-
-. .\components\Tabs\Installation\Form.ps1
-
-
+return "OK"
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU/kAqW47RUlzZ2qO+kFzIubV1
-# azCggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUbDPFnyh7P87b9KmSgVx7jYES
+# Mh2ggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -300,31 +209,30 @@ function Send-InstallationLogs {
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUi2NORcss8a2UjDz1Pc92
-# cszNezgwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQBsimHfU2Zs+oFQYFjUucgtQ2r5ctfzRbmMApWoD6xp4moV
-# XE+aEnoj1Rjplq05fyKkSBnhAdKt1XCiOLj2qsyi1ViuA4qZ7jbBNFLydmiewOm8
-# ZcFb4/NHnSrg7Vm3hEeDTt9i0JkcOFZw7dGCbKetnWwmr7Rai1jpO3QXjZ6PhDRK
-# zx/nN68a1yhWPN3xC4Vxa+suc0oupk0TUlQBw2OUmmnN8mo5yl9XUgAPdDkdhs60
-# pQjLimGCZpHpkYvAPruaywXgFJZxogLkIZ7gxcsZLoFXIHCKN1lGZgeTgv2fyLLE
-# HKOVFZw+dOeH+jfvdETIGnQkYaVsQW56RHPEJjDHoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUZcJzosKTpdIyIKdUal/F
+# 0lxiWO4wJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQCAnL1yx7JpnxJGH9Y4BUxndRQGIhaePqiWzhIizJTkG6E2
+# CIkt/3mW515c9s+nMprJQkyP/4si/Kfi7XaE7yCFjOUGmi2NNFDrSNJ1jlZ9zt6z
+# jX+nY3KPjXlUs6xjoj36j+nGmBjjs+KCmIyMubb6OJUEh0C5VW86iLLdDB5Suah3
+# jBIpjFhHByYdiFMqzLJyQNX5XN31chNKh3eL3pmsrVzlEaYHPJXx/Gjfef9Dft2m
+# nrEoln4fNOaRJx0CI2H5Zrn7MG8T1qqWb9K3OojFNQRrVNFfncZmOOF/ZXpp7kao
+# PUV+NOeW2czcayIpHAUqqadn4/L63ZkcxjmbgietoYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMjkxMzQyMTlaMD8GCSqG
-# SIb3DQEJBDEyBDANbnWJ6coYfTffPW2XAHKf4xHXTgbzPNYzObLesrft/U6+Uvda
-# UBLFPgNluCe0tqkwDQYJKoZIhvcNAQEBBQAEggIAfyLSDt2zkGQ44p29yAyhDj53
-# 7Bypfxu30YXxPHKTRYn4S40DREGkjyMJospBBrsi/y4fZSPu6gPH8mk5EkfZbFcw
-# hycOsO6pIwu0meY/FRdNDVPOfo7TYCKUQ5WgrdFqbUD53L5VCjoHL+vYZ2QPW74M
-# vAq6h1CjWp0wGbEBPJ8niVbfmjKkGZhQwpOd1VYg7AcWeQHECHtlLg+XsbImX7JT
-# PUCC4qxS2HZ8I4T+M9ann+wlaIlQSBxZ7guCMiYYukn2N8yHSBFYeujRhWzz60Hr
-# 5YQ1FWeue+LMQCMPh79un52FnUayNNLOIMYjIdwBe0+TQIdgx/f2jpg+teSMUW5k
-# 696jYnFGLmPwIH4JpzO2ZB5w6ElTfWwEhphjMeVzgPT60JXE9AtMhwllm/MacqRC
-# Ckz3rcVd+0ZejmI70FqudxfXeOy3bcrbwCjXMvF8A1r0H6HrGCxV0jckNtAwWEBJ
-# TyBjheoa5bUkjaB0vxD22iM+S79P3nj49FvgOBN4HpgxwMBNYe/i3qBzV76tKydN
-# f2AxLJYR3l/j8R2+bKyy16zQW/VHLyxo5y9l7yk4HE31blgXqEp6XCkN+RQ7G3Tq
-# k4FcIF+18OsnpD945JO6q7ndFMia89Dvndn+EYjCjzR+Uqze0tTT51tuu42swR66
-# C7El7SzmlpayQn8RPts=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMjkxMzQwNTdaMD8GCSqG
+# SIb3DQEJBDEyBDA23JmDGJwGNofigcdC+Isq7ADOQlWZvTHoej3Sxmq9XHryRs13
+# K3o2z21g6K5XCYcwDQYJKoZIhvcNAQEBBQAEggIAXJquiU46VM4spuZE9GmXokgl
+# ZHWLv7ats6RgKxqP1IxHXemq2yrrqlHgfAa06pEUB5mO/q/1BoLQ+ZZYFGajlDfF
+# SwYXSYWNQ4DRE/NTVzrlSe4NMQVx4H3zYlWyF63Nx5yQJd0RT5zeK1nF+8mqb7PT
+# 7b6dU0j7gYxa8bV60V8nrKKfKghM6RYlr1E8yDOxC2bn6En81CK41Pwo7l8+rEyg
+# 1PU/G67KYZUQsfymLOy/cQrg40aIUVgssyfjgYKBpE5QLd50NRtWNF8H3lfHm5QY
+# yK15Ty1JdBi71kLRCNxwAlVoEpiymtNvgh4LUGNlOOVDgL3oyuTK/zNHm/MtqXK3
+# hgC+r1qQok8U3LzHP3bIti3a8ii5kGoErYvibaLMyAZ/GhMISCPw6z22E78k9RGc
+# EHjk6p583SrCxvXUp38cs0QmIuqvgrjeOSxgrSdUdGyltgXl0C1HtXfyv4aPjSz3
+# A57JGzpy6Dm6IoU89rVKA3yMGHj4Xq3D4CJCVUULRZCDpwT3g26w4Pfdu3uzKmR/
+# ZCVBrbnhr5IQ9qbdUOLXsZ/UWpm4+7LqWdoxHjvGMUZyylYFQmFV3dVxQO/EzQOi
+# uXj//B+/GVWMvOvYXULQTSB6Lfjpo0NtUubMwf2HKxYna+9nmSxXCKOYDY9o+rmg
+# uAWB1hWvGi6SIxxHvjw=
 # SIG # End signature block
-  

@@ -37,7 +37,7 @@ $startTabButton.FlatAppearance.BorderSize = 0
 
 $requirementsTabButton = New-Object System.Windows.Forms.Button
 $requirementsTabButton.BackColor = "#00ffffff"
-$requirementsTabButton.Text = "Requirements"
+$requirementsTabButton.Text = "Check Requisiti"
 $requirementsTabButton.Size = "150, 75"
 $requirementsTabButton.Location = "0, 175"
 $requirementsTabButton.Font = 'Roboto,10'
@@ -47,7 +47,7 @@ $requirementsTabButton.FlatAppearance.BorderSize = 0
 
 $installationTabButton = New-Object System.Windows.Forms.Button
 $installationTabButton.BackColor = "#00ffffff"
-$installationTabButton.Text = "Installation"
+$installationTabButton.Text = "Installazione`nrequisiti mancanti"
 $installationTabButton.Size = "150, 75"
 $installationTabButton.Location = "0, 250"
 $installationTabButton.Font = 'Roboto,10'

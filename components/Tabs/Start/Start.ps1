@@ -5,20 +5,20 @@ function startButton_Click {
   
   # Check if the user opened PowerShell as Admin, if not then stop the installation, otherwise check the requirements
   if (-not ((invoke-executeCommand "Get-LocalGroupMember -Group Administrators") -like "*$(whoami)*")) {
-    Invoke-Modal "L'UTENTE ATTUALE NON E' L'AMMINISTRATORE DELLA MACCHINA" "CLOSE"
-    $startButton.Enabled = $true
+    Invoke-Modal "L'utente attuale non risulta essere l'amministratore della macchina"
+    $mainForm.Close()
     return
   }
   
   if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Invoke-Modal "L'APPLICAZIONE NON E' STATA APERTA COME AMMINISTRATORE!!!" "CLOSE"
-    $startButton.Enabled = $true
+    Invoke-Modal "L'applicazione non e' stata aperta come amministratore"
+    $mainForm.Close()
     return
   }
-      
+    
   if (-not (Get-NetAdapter | Where-Object { ($_.Name -like "*Ethernet*" -or $_.Name -like "*Wi-Fi*") -and ($_.Status -eq "Up") })) {
-    Invoke-Modal "NESSUNA CONNESSIONE AD INTERNET RILEVATA" "CLOSE"
-    $startButton.Enabled = $true
+    Invoke-Modal "Nessuna connessione ad internet rilevata"
+    $mainForm.Close()
     return
   }
 
@@ -27,13 +27,18 @@ function startButton_Click {
   $gridConnections.Rows.Clear()
 
   $results = @{}
-  $results.Add('CA Azure Devops', $(if ((Test-NetConnection devops.codearchitects.com -port 444).TcpTestSucceeded) { $green } else { $red }))
-  $results.Add('Npm Registry', $(if (((Invoke-WebRequest -Uri https://registry.npmjs.org -UseBasicParsing -DisableKeepAlive).StatusCode -eq 200)) { $green } else { $red }))
-  $results.Add('Nuget Registry', $(if ((((Invoke-WebRequest -Uri https://api.nuget.org/v3/index.json -UseBasicParsing -DisableKeepAlive).StatusCode) -eq 200 )) { $green } else { $red }))
-  $results.Add('Log Repo(Opzionale)', $(if ((Test-NetConnection casftp.blob.core.windows.net -port 22).TcpTestSucceeded) { $green } else { $red }))
+  $results.Add('CA Azure Devops', $(if ((Test-NetConnection devops.codearchitects.com -port 444).TcpTestSucceeded) { $true } else { $false }))
+  $results.Add('Npm Registry', $(if (((Invoke-WebRequest -Uri https://registry.npmjs.org -UseBasicParsing -DisableKeepAlive).StatusCode -eq 200)) { $true } else { $false }))
+  $results.Add('Nuget Registry', $(if ((((Invoke-WebRequest -Uri https://api.nuget.org/v3/index.json -UseBasicParsing -DisableKeepAlive).StatusCode) -eq 200 )) { $true } else { $false }))
+  $results.Add('Log Repo(Opzionale)', $(if ((Test-NetConnection casftp.blob.core.windows.net -port 22).TcpTestSucceeded) { $true } else { $false }))
    
-  foreach ($row in $results.Keys) { Invoke-CreateRow $gridConnections @($row,[System.Drawing.Image]::Fromfile('./assets/V.png')) $results[$row] }
+  foreach ($row in $results.Keys) { 
+    Invoke-CreateRow $gridConnections @($row, $(if($results[$row]) { [System.Drawing.Image]::Fromfile('./assets/IconV.png')} else {[System.Drawing.Image]::Fromfile('./assets/IconX.png')})) $white
+    $gridConnections.ClearSelection()
+  }
+
   if (-not ($results['CA Azure Devops'] -and $results['Npm Registry'] -and $results['Nuget Registry'])) { 
+    Invoke-Modal "Una o piu connessioni ai server sono fallite"
     $startButton.Enabled = $true
     return 
   }
@@ -44,9 +49,13 @@ function startButton_Click {
   $envVar.Add("C:\Windows\System32", "Gia' presente")
   $envVar.Add("C:\Windows\System32\Wbem", "Gia' presente")
   $envVar.Add("C:\Windows\System32\WindowsPowerShell\v1.0\", "Gia' presente")
+  $envVar.Add("$env:PROGRAMFILES\Git\Users\bin\", "Gia' presente")
+  $envVar.Add("$env:PROGRAMFILES\Git\cmd", "Gia' presente")
+  $envVar.Add("$env:PROGRAMFILES\Nodejs", "Gia' presente")
+  $envVar.Add("$env:PROGRAMFILES\Ca-Tools", "Gia' presente")
 
   $envInPath = $env:PATH.ToLower().Split(';')
-  foreach ($var in $envVar.Keys){
+  foreach ($var in $envVar.Keys) {
     if (-not ($envInPath.Contains($var.ToLower()))) {
       [System.Environment]::SetEnvironmentVariable("PATH", (("$Env:PATH;$var") -replace ";;", ";"), "Machine")
       $envVar[$var] = "Aggiunta"
@@ -55,43 +64,59 @@ function startButton_Click {
 
   $gridEnvVar.DataSource = $null
   $gridEnvVar.Rows.Clear()
-  foreach ($env in $envVar.Keys){ Invoke-CreateRow $gridEnvVar @($env, $envVar[$env]) $green }
+  foreach ($env in $envVar.Keys) { 
+    Invoke-CreateRow $gridEnvVar @($env, $envVar[$env]) $white
+  }
 
   #Check presenza di un proxy
-  $proxyCheck.Image = $(if(invoke-checkProxy)  {[System.Drawing.Image]::Fromfile(".\assets\V.png")} else {[System.Drawing.Image]::Fromfile(".\assets\X.png")})
+  $proxyCheck.Image = $(if (invoke-checkProxy) { [System.Drawing.Image]::Fromfile(".\assets\V.png") } else { [System.Drawing.Image]::Fromfile(".\assets\X.png") })
   
   #Check se l'ambiente di running è una Virtual machine
-  $vmCheck.Image = $(if(invoke-checkVM)  {[System.Drawing.Image]::Fromfile(".\assets\V.png")} else {[System.Drawing.Image]::Fromfile(".\assets\X.png")})
+  $vmCheck.Image = $(if (invoke-checkVM) { [System.Drawing.Image]::Fromfile(".\assets\V.png") } else { [System.Drawing.Image]::Fromfile(".\assets\X.png") })
 
-   # Check Abilitazione Windows Features
-   if (-not ($scarConfig.Contains('terranova'))) {
+  # Check Abilitazione Windows Features
+  if (-not ($scarConfig.Contains('terranova'))) {
     $message = ""
     $state = (Get-WindowsOptionalFeature -Online -FeatureName *Windows-Subsystem-Linux*).State
-    if (($state -like '*Disabled*') -or ($state -like '*Disattivata*')) {
+    if (($state -eq 'Disabled') -or ($state -eq 'Disattivata')) {
       $message = "Microsoft Windows Feature"
       invoke-executeCommand "& dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart"
     }
   
     $state = (Get-WindowsOptionalFeature -Online -FeatureName *VirtualMachinePlatform*).State
-    if (($state -like '*Disabled*') -or ($state -like '*Disattivata*')) {
+    if (($state -eq 'Disabled') -or ($state -eq 'Disattivata')) {
       if ($message) { $message += " e " }
-      $message = "Virtual Machine Platform "
+      $message += "Virtual Machine Platform "
       invoke-executeCommand "& dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart"
     }
   
     if ($message) {
-      $message += "non risultava/risultavano abilitata/e. Il sistema procedera all'attivazione e il sistema verra riavviato. Premere OK per procedere"
-      Invoke-Modal $message "RESTART"
+      $message += "non risulta/risultano abilitata/e. Il sistema procedera all'attivazione e il sistema verra riavviato. Premere OK per procedere"
+      Invoke-Modal $message
+      Restart-Computer -Force
       return
     }
   }
+
+  #inserimento Credenziali login npm
+  . .\components\login\Login.ps1
   
-  
-. .\components\login\Login.ps1
+  New-Item -Path "~\.ca\$currentDate" -ItemType Directory
+  tabButton_Click($requirementsTabButton)
+  Invoke-CheckRequirements
+}
+
+function tabStart_VisibleChanged {
+  $gridConnections.ClearSelection()
+  $gridEnvVar.ClearSelection()
 }
 
 function infoVmButton_Click {
-  Invoke-Modal "ISTRUZIONI PER LA VIRTUALIZATION"
+  Invoke-Modal "In caso affermativo accertarsi che sia abilitata la nested virtualization prima di proseguire"
+}
+
+function infoProxyButton_Click {
+  Invoke-Modal "Notifica se e' stato rilevato un proxy o meno"
 }
 
 . .\components\Tabs\Start\Form.ps1

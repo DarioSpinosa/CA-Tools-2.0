@@ -1,11 +1,24 @@
-$outputInstallationLabel.Text = 'We have not found any Azure DevOps account.'
-$outputInstallationLabel.Text = 'Please enter the Azure DevOps Username and the Token.'
-$outputInstallationLabel.Text = 'PS: Insert the Username without the COLLABORATION\.'
+$nodeVersion = invoke-executeCommand("node --version")
+if (!$nodeVersion) { 
+    invoke-WriteCheckLogs "Si e' verificato un errore durante l'esecuzione del comando ('node --version').\r\nNode potrebbe non essere presente sulla macchina"
+    return 'KO'
+}
+
+$nodeVersion = $nodeVersion.split('v')[1]
+$maxVersion =  $requirements[$name]["MaxVersion"]
+if ($nodeVersion -ne $maxVersion){
+    invoke-WriteCheckLogs "La Max Version rilevata di Node $nodeVersion non rispetta i requisiti.\r\nMax Version: $maxVersion."
+    return 'VER'
+}
+
+invoke-WriteCheckLogs "La Max Version rilevata di Node $nodeVersion rispetta i requisiti.\r\nMax Version: $maxVersion."
+return 'OK'
+
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUUgYF78T2hBdMOsLCEa4qXuuI
-# 6ueggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUEKedK4qT1lDpBDBXsSF/TMD9
+# NY+ggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -173,30 +186,30 @@ $outputInstallationLabel.Text = 'PS: Insert the Username without the COLLABORATI
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUBAhUNandvJn70oJyhKts
-# UUyVDsMwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQB4uRSyp0xwW2z94vVZKDjmkoHPZfjpfsgzN1cwqFAh/V0j
-# pXbuKNZLGogS0oGT6a8o5jIXjNStIbXg2YLBct3A4h2k5HmwecP5ULLTtya+wxz7
-# BDnWkMd8OFGjmfD7bMMI/m9ssiAAQ5JFkVCmLLbKyEo7Sjn2vZG9LfmodAiIkNn+
-# JYANJPlBIWC2ehSXwgFTLW3r9nxMIYq5I63M1yikMHOHJgY12Xbm3xA9FUvEI6gx
-# IUFV9UZBXb9bAhsM8yTmKqyn+zIac7wR8OjaeMrGovqnQqQf6sMplnk5MCFl0AZ5
-# tOTOJpKCIgMchBE+CP9efqtmreWwb76gwpwewXpNoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUCcMRleYwZRgVeAn76phc
+# 0yRAqP8wJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQA2nAb0I0Wnrbf0rA52F6GpOB5Yaba+zqfSy/yCGkzoS7IC
+# iPeEqq2gZDAPd+/zP/Wjsd3YYBXWnFssMrhyZ6wNZ4Ark+KUHYnIBZeT3LNcbNxG
+# 0lwRIZpPZ/tbnsWA9x3GD3ax/4dIvTdtX1qerus0ON/NMgOUOUfrWmTBIRJTKUbz
+# m1o9x900Db8Oy8oa/LL8Tya8/vkoMvwz2QTqgi6z4oESwZhxAbQGetnmCSyqZlp6
+# UAemza1oi97b54wf/rm8Xv3vXxf8Urdk2XrVzoLpIWeAbWs82rBHoVnFvLBecmAE
+# uvWr+wUgw3S9DJeO0TxV9/w0tNF3ttsToCmXTBGToYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMjkxMzM5NDNaMD8GCSqG
-# SIb3DQEJBDEyBDB7JhGYdXP4oO9x5hZZMH2fJA55Fv/14JTkce2YxhJQckEsnX7g
-# n1T2OLkPhVJpA0UwDQYJKoZIhvcNAQEBBQAEggIAiRej2bqpvODebTrOatv07976
-# Rs1zp5cUQiZhjJy5BhCA4ddrW2wAZL7Ky3koyEbJhC75wBuzntr7tHL5RF4WWKxw
-# l1QA5w/bgFa1pv/gxME7TBD11tpQTJTYAebRhVZy5siGZqz+3+XtXxU8IB7dqCIu
-# cBpyTFlsmK83M4Gk8uI3oWIeNbhwbygxZc5vFM/mAE4axUJ/A/iR6Hs161AZ9VRo
-# Rlk+98VEgVb2JZWEJrJRnsj16AgZHWQpUBw1NbmYAnIPpE/Wm6F2wLM7+JNgUkJ4
-# N1lLqQKnEQtJy0Odz4KWRPs6rNz9JC9Lc0/EsGakjQ2bYnXzeylbDRXKbERb171J
-# vSWXjxaPVcB1Tygc774Kr3wkV96yvgTbrgXSiB4bemj73Ke82LrXFRHUojuiy7Rp
-# Ld1qaQq29WOOXwrNOj019kXHQliAoqKRBlLuyFIAXioDuFWQ98OFLbjf6eid/Jvt
-# G0NXiq/j8OCuY6tylyRUNk63tUAeQb2IG/7XQTQtawbQOc7JAfV4L4n1TClniVgJ
-# v8WsFlozhr4iXLu8p2vkNGfwqqWIjLugOo+5BGvvoBXRCFWxujMXk8kCeca2GTr+
-# JmZGxIIYkekkRzxAK8xURygPFGp7tmTzVDJMJRBbKDLB8JwG2VDPIFQ1XRpwQyOx
-# h1K7MoNY55atPDFjmJ0=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMjkxMzQxMDZaMD8GCSqG
+# SIb3DQEJBDEyBDC30RcpHwx+16RVrdTSh0ma5fgBwA03LY8Ug/luoI6yYoqfBTKz
+# +g5XfIQD8BRBFrUwDQYJKoZIhvcNAQEBBQAEggIAfxPemrU3YMS0XrkRlq3MOaMx
+# MY3BtdA8TH6u1i2GYBgD9OWlUyZEFm1pnqfX6yBBpnx+nrfQPH87LrTNujbNB36S
+# +hxEFT311tUiRpeqrQlzKB+0cMANpaaAprOz+I5hBdwlrexdRstCrq3pKcmoPL4J
+# 1X6GQ+9Qlvj/35sL7biEd147/Tk4kCtSeL6eER6X97XSpnECl5Lbx23AbX0Tua7F
+# FO4RVL4S8fh49V+xandkSFXYY+e1izjRzSp0uIaP7UzdGO3JeN3EBR97tmIyt6QB
+# ENIVZXM2/+f2sXifmHov2fJXujjOzWSzPIJTv6/I3/w0WypIyievjFBjoqUt8wuF
+# 2vx6zHSQjKsd4KNQjEp37twCamV8X9gmgtngCgWKuUy5HNjmxaD0/VtH1LPZTCId
+# iDoEvmVhC93S6qpTnJ66BoMzppCEc9R/iOQtaB4BrWRTrPBOuRC9pmLzZ2quziMe
+# ZXH/W3R2+sanjjZB4l00vNjwLB99JDiEfJyORD+gQM48sJiMyUGsOc+9sN6H7e4A
+# wSCb2xj+x1JO8XZWMPfgMDwFBYPLPpYqWqbZHSgYBggexw4yQkDF8dZhV5Ub41CG
+# v6RqdJYJCmenilRVyynQnOid9WsVke6GDvnHi8sKpmE1bcUE8HE0ynCi+NJ9rj16
+# aGnKpL30pBFFCoz77QY=
 # SIG # End signature block

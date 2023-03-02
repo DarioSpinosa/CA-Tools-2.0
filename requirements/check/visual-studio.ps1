@@ -1,138 +1,31 @@
-#--------------------------------------------------------[FUNCTIONS]--------------------------------------------------------
-function Invoke-installRequirements {
-  if (installRequirements) { . .\requirements\install\ca-scarface.ps1 }
-  $closeButton.Enabled = $true
+$vsVersion = invoke-executeCommand("&'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe' -property catalog_productDisplayVersion")
+if (!$vsVersion) { 
+    invoke-WriteCheckLogs "Si e' verificato un problema durante l'esecuzione del comando di controllo di versione di visual studio.\r\nVisual Studio potrebbe non essere presente sulla macchina"
+    return 'KO'     
 }
 
-function installRequirements {
-  <#
-    .SYNOPSIS
-    Execute a specific Action based on the type of Requirement
-    .DESCRIPTION
-    Once the user press the Accept button it will execute the Action specific to that Requirement
-    #>
-  $success = $true 
-  if (-not $requirements.Count) { return $success }
+$vsVersion = $vsVersion.split(".")
+$vsVersion = [Version]::new($vsVersion[0], $vsVersion[1], $vsVersion[2])
 
-  invoke-CreateLogs $installLogs
-  # It will execute a determinatedd function based on the type of the current requirement
-  foreach ($name in $sortedRequirements) {
-    #per mantenere un ordinamento  basato sulle dipendenze anche durante la fase di installazione
-    if (-not $requirements.Contains($name)) { continue }
-    $requirement = $requirements[$name]
-    $result = $requirement["Install"] | Invoke-Expression
-    $installLogs[$name]["Result"] = $result
+$minVersion = $requirements[$name]["MinVersion"].split(".")
+$minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
 
-    if ($result -eq 'OK') { 
-      Invoke-CreateRow $gridInstallation $name $green
-    }
-    else { 
-      Invoke-CreateRow $gridInstallation $name $red
-      $success = $false 
-    }
-    $env:PATH = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
-  }
+$maxVersion = $requirements[$name]["MaxVersion"].split(".")
+$maxVersion = [Version]::new($maxVersion[0], $maxVersion[1], $maxVersion[2])
 
-  ($installLogs  | ConvertTo-Json) > $installRequirementsLogfile
-  return $success
+
+if (($vsVersion -lt $minVersion) -or ($vsVersion -gt $maxVersion)){
+    invoke-WriteCheckLogs "La versione rilevata di Visual Studio $vsVersion non rispetta i requisiti\r\nMin Version: $minVersion. Max Version: $maxVersion"
+    return "VER"
 }
 
-function gridInstallation_VisibleChanged {
-  $gridInstallation.ClearSelection()
-}
-
-function closeButton_Click {
-  <#
-  .SYNOPSIS
-  Actions to clean the computer before closing the installer
-  .DESCRIPTION
-  Actions needed to be run before cloging the installer, such as:
-  kill the client's side process, removing the startup command, update the scarface.config.json and send the installation's results
-  #>
-  try {
-    $NetStat4200 = (netstat -ano | findstr :4200).split(" ") | Select-Object -Unique
-    $ClientPID = $NetStat4200[5]
-    taskkill /PID $ClientPID /F
-  }
-  catch {
-    Write-Host "No process running on port 4200"
-  }
-
-  Update-ScarfaceConfigJson
-  Send-InstallationLogs
-  logoff.exe #per docker
-}
-
-function Update-ScarfaceConfigJson {
-  <#
-  .SYNOPSIS
-  Update the scarface.config.json
-  .DESCRIPTION
-  Removes some of the elements inside the file, such as:
-  application, domain, scenario, author and prefix
-  So that the next time the user execute the command "ca scar" those fields will be asked to them
-  #>
-  $ScarfaceConfigJsonPath = "C:\dev\scarface\scarface.config.json"
-  $ScarfaceConfigJson = Get-Content -Path $ScarfaceConfigJsonPath -Raw | ConvertFrom-Json
-  foreach ($element in @("application", "domain", "scenario", "author", "prefix")) {
-    $ScarfaceConfigJson.PSObject.Properties.Remove($element)
-  }
-  $ScarfaceConfigJson | ConvertTo-Json -Depth 5 | Out-File -Encoding "ASCII" $ScarfaceConfigJsonPath -Force
-}
-
-function Send-InstallationLogs {
-  <#
-  .SYNOPSIS
-  Send all the logfiles to the private blob
-  .DESCRIPTION
-  Archive the .ca folder and sends it to the private blob
-  #>
-  $MaxDate = 0
-  $UserLogin = ""
-
-  # Transcript started in caep-installer.ps1
-  Stop-Transcript
-
-  foreach ($t in (Get-Content "~\.token.json" | ConvertFrom-Json)) {
-    $TokenDate = $t.date.Replace("-", "")
-    if ($MaxDate -lt $TokenDate) {
-      $MaxDate = $TokenDate;
-      $UserLogin = $t.user
-    }
-  } 
-
-  $HelperPath = Join-Path -Path $startLocation -ChildPath "helper\"
-  $HelperZipPath = Join-Path -Path $startLocation -ChildPath "helper.zip"
-  $connectPath = Join-Path -Path $startLocation -ChildPath "connect.sh"
-  $caZipPath = Join-Path -Path $startLocation -ChildPath "$UserLogin-$currentDate.zip"
-  $destination = "$HOME\.ssh\"
-
-  if (!(Test-Path $destination)) {
-    New-Item -Path $destination -ItemType Directory -Force 
-  }
-
-  Expand-Archive -Path $HelperZipPath -DestinationPath $startLocation -Force
-
-  Get-ChildItem -Path $HelperPath -File | Move-Item -Destination $destination -Force
-  $compress = @{
-    Path             = "$HOME\.ca\"
-    CompressionLevel = "Fastest"
-    DestinationPath  = $caZipPath
-  }
-  
-  Compress-Archive @Compress -Force
-  &"C:\Program Files\Git\usr\bin\bash.exe" $connectPath $caZipPath
-}
-
-
-. .\components\Tabs\Installation\Form.ps1
-
-
+invoke-WriteCheckLogs "La versione rilevata di Visual Studio $vsVersion rispetta i requisiti.\r\nMin Version: $minVersion. Max Version: $maxVersion"
+return "OK"
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU/kAqW47RUlzZ2qO+kFzIubV1
-# azCggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUx4/UbSnwei5cvBOyGBNdidJp
+# SJ+ggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -300,31 +193,30 @@ function Send-InstallationLogs {
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUi2NORcss8a2UjDz1Pc92
-# cszNezgwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQBsimHfU2Zs+oFQYFjUucgtQ2r5ctfzRbmMApWoD6xp4moV
-# XE+aEnoj1Rjplq05fyKkSBnhAdKt1XCiOLj2qsyi1ViuA4qZ7jbBNFLydmiewOm8
-# ZcFb4/NHnSrg7Vm3hEeDTt9i0JkcOFZw7dGCbKetnWwmr7Rai1jpO3QXjZ6PhDRK
-# zx/nN68a1yhWPN3xC4Vxa+suc0oupk0TUlQBw2OUmmnN8mo5yl9XUgAPdDkdhs60
-# pQjLimGCZpHpkYvAPruaywXgFJZxogLkIZ7gxcsZLoFXIHCKN1lGZgeTgv2fyLLE
-# HKOVFZw+dOeH+jfvdETIGnQkYaVsQW56RHPEJjDHoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUSPMJ1zfSevDk0VnONPNc
+# LkolnD0wJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQBCiAGsEWdFBMb3iaN34ToiNrl4r370vbpG20S70cp2xftI
+# fhS0mLqq3BZoXEKgi1s4DMs2PcqTr67bCs/4GXLU8DogGMdTNdjN7m7Aomvg8Kkp
+# snU6oElP14Oqu90VuZLryaJ2e5IoPChWEHgQCRB9vORAeH0y5UMgGp12e65VdMKL
+# MZyylrgPUovb6iPuyyhfYjle6MvjqE9VsnXqISDETNEBIHvZNGdkFAn5em5vhKYZ
+# muiMwOsGGximf2IZsl2+dQbgHL9iOY2BVm446agX3bxt5gMnyvDL+e0sy7VWKEAB
+# oMXQyklsQIbgPQ8TmezJAWhP0i/swY+qDcNtwlAnoYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMjkxMzQyMTlaMD8GCSqG
-# SIb3DQEJBDEyBDANbnWJ6coYfTffPW2XAHKf4xHXTgbzPNYzObLesrft/U6+Uvda
-# UBLFPgNluCe0tqkwDQYJKoZIhvcNAQEBBQAEggIAfyLSDt2zkGQ44p29yAyhDj53
-# 7Bypfxu30YXxPHKTRYn4S40DREGkjyMJospBBrsi/y4fZSPu6gPH8mk5EkfZbFcw
-# hycOsO6pIwu0meY/FRdNDVPOfo7TYCKUQ5WgrdFqbUD53L5VCjoHL+vYZ2QPW74M
-# vAq6h1CjWp0wGbEBPJ8niVbfmjKkGZhQwpOd1VYg7AcWeQHECHtlLg+XsbImX7JT
-# PUCC4qxS2HZ8I4T+M9ann+wlaIlQSBxZ7guCMiYYukn2N8yHSBFYeujRhWzz60Hr
-# 5YQ1FWeue+LMQCMPh79un52FnUayNNLOIMYjIdwBe0+TQIdgx/f2jpg+teSMUW5k
-# 696jYnFGLmPwIH4JpzO2ZB5w6ElTfWwEhphjMeVzgPT60JXE9AtMhwllm/MacqRC
-# Ckz3rcVd+0ZejmI70FqudxfXeOy3bcrbwCjXMvF8A1r0H6HrGCxV0jckNtAwWEBJ
-# TyBjheoa5bUkjaB0vxD22iM+S79P3nj49FvgOBN4HpgxwMBNYe/i3qBzV76tKydN
-# f2AxLJYR3l/j8R2+bKyy16zQW/VHLyxo5y9l7yk4HE31blgXqEp6XCkN+RQ7G3Tq
-# k4FcIF+18OsnpD945JO6q7ndFMia89Dvndn+EYjCjzR+Uqze0tTT51tuu42swR66
-# C7El7SzmlpayQn8RPts=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMjkxMzQxMzRaMD8GCSqG
+# SIb3DQEJBDEyBDDmhu3GH2vaAzUBK7iwzC6YzEbhO1tqfmeR9U545GV7WsfdlGeJ
+# /cqnGSfNeIwztiUwDQYJKoZIhvcNAQEBBQAEggIAcfZvE/xFguvh8H0UhRnkNgMg
+# nCfp5mCFtaLAayd3ut6VNg5u8FbDbVevWlDKfHZlKm4fZnAxMpGE7RDXnXamZzj6
+# CLW1k5QRYHqZB+EzV3qKNptPotinAxuGwEndEQPh7zqlgCQdgcBPRWJ3TfyFVET5
+# tYIcb3t7V0L81wPt06PhMO2OQLKsvFEX+QHbpdRo1yF+Mnd28N95OoebgW/9ihOS
+# mgn9HvBQl3BxJF2SmTW9gg38FvzDS2I0LnZkbypSrxlNjr5ULypNkEuMT+yYAptW
+# YZjaOu2nOiX2oiWkciU1Pnj7ZQqg+Uux+tLoxLMHpCnnOl3skmL47KYil2BfnY/B
+# XhmZC+gPrGuZoO75xZ72XurXfTIvd4/6XI6Vy4Jlsqpxyr6TSX9PgO/9oZ4b8S0K
+# LQGLLh/Ff3ZStlduocEyKDEwZfd/G1815dUDcKmPc8rF4fAL1SZu+2fU7HffIPsR
+# FIabMp0M/zeZoqNG+6f6YlZ5sKF7nO2XV2+jaLbEb7VfmQlNWvihUzb9PF9dZp8I
+# BxNFxvva+Jx7m6IfWvmAdpLaOfzzvVtf9/qBDeO6+45faYixe+E44GHVdvrjx1Oz
+# kvi5Zcr0jrBH3Z/px7OTTNIOTfZUtJVNLTlB58uimkwGqxqWM28gdObrTMRIZ+ZD
+# dJxps9NnAY/mzXMxGHY=
 # SIG # End signature block
-  

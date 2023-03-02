@@ -1,138 +1,142 @@
-#--------------------------------------------------------[FUNCTIONS]--------------------------------------------------------
-function Invoke-installRequirements {
-  if (installRequirements) { . .\requirements\install\ca-scarface.ps1 }
-  $closeButton.Enabled = $true
+function ConvertPSObjectToHashtable { 
+  param (
+    [Parameter(ValueFromPipeline)]
+    $InputObject
+  )
+
+  process {
+    if ($null -eq $InputObject) { return $null }
+
+    if ($InputObject -is [System.Collections.IEnumerable] -and $InputObject -isnot [string]) {
+      $collection = @(
+        foreach ($object in $InputObject) { ConvertPSObjectToHashtable $object }
+      )
+
+      Write-Output -NoEnumerate $collection
+    }
+    elseif ($InputObject -is [psobject]) {
+      $hash = @{}
+
+      foreach ($property in $InputObject.PSObject.Properties) {
+        $hash[$property.Name] = ConvertPSObjectToHashtable $property.Value
+      }
+
+      $hash
+    }
+    else {
+      $InputObject
+    }
+  }
 }
 
-function installRequirements {
-  <#
-    .SYNOPSIS
-    Execute a specific Action based on the type of Requirement
-    .DESCRIPTION
-    Once the user press the Accept button it will execute the Action specific to that Requirement
-    #>
-  $success = $true 
-  if (-not $requirements.Count) { return $success }
+function invoke-CreateLogs($hashLogs) {
+  foreach ($name in $requirements.Keys) {
+    $hashLogs.Add($name, @{})
+    $hashLogs[$name].Add("Result", "")
+    $hashLogs[$name].Add("Logs", "")
+  }
+}
 
-  invoke-CreateLogs $installLogs
-  # It will execute a determinatedd function based on the type of the current requirement
-  foreach ($name in $sortedRequirements) {
-    #per mantenere un ordinamento  basato sulle dipendenze anche durante la fase di installazione
-    if (-not $requirements.Contains($name)) { continue }
-    $requirement = $requirements[$name]
-    $result = $requirement["Install"] | Invoke-Expression
-    $installLogs[$name]["Result"] = $result
+function invoke-WriteCheckLogs($log) {
+  invoke-WriteLogs $checkLogs $log
+}
 
-    if ($result -eq 'OK') { 
-      Invoke-CreateRow $gridInstallation $name $green
-    }
-    else { 
-      Invoke-CreateRow $gridInstallation $name $red
-      $success = $false 
-    }
-    $env:PATH = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+function invoke-WriteInstallLogs($log) {
+  invoke-WriteLogs $installLogs $log
+}
+
+function invoke-WriteLogs($hashLogs, $log) {
+  $log += ";"
+  $hashLogs[$name]["Logs"] += $log 
+}
+
+function invoke-checkProxy {
+  $ProxyData = Get-ItemProperty -Path 'Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings';
+
+  if ($ProxyData.ProxyEnable -eq 0 ) { return }
+
+  $ProxyDataSplit = $ProxyData.ProxyServer -split ':'
+
+  if ($ProxyDataSplit.Count -eq 2) {
+    $ProxyAddress = $ProxyDataSplit[0]
+    $ProxyPort = $ProxyDataSplit[1]
+  }
+  else {
+    $ProxyAddress = $ProxyDataSplit[1].replace('/', '')
+    $ProxyPort = $ProxyDataSplit[2]
   }
 
-  ($installLogs  | ConvertTo-Json) > $installRequirementsLogfile
-  return $success
+  $requirements["NPM"]["Proxy"] = $requirements["Docker"]["Proxy"] = $(if ((Test-NetConnection -ComputerName $ProxyAddress -Port $ProxyPort).TcpTestSucceeded) { "OK" } else { 'TCP' })
+  return $requirements["NPM"]["Proxy"]
 }
 
-function gridInstallation_VisibleChanged {
-  $gridInstallation.ClearSelection()
+function invoke-checkVM {
+  return @('VMware Virtual Platform', 'Virtual Machine', 'Macchina Virtuale').Contains((Get-CimInstance win32_computersystem).model)
 }
 
-function closeButton_Click {
-  <#
-  .SYNOPSIS
-  Actions to clean the computer before closing the installer
-  .DESCRIPTION
-  Actions needed to be run before cloging the installer, such as:
-  kill the client's side process, removing the startup command, update the scarface.config.json and send the installation's results
-  #>
+function invoke-executeCommand($command) {
   try {
-    $NetStat4200 = (netstat -ano | findstr :4200).split(" ") | Select-Object -Unique
-    $ClientPID = $NetStat4200[5]
-    taskkill /PID $ClientPID /F
+    return (Invoke-Expression $command) 
   }
   catch {
-    Write-Host "No process running on port 4200"
+    return $false
   }
-
-  Update-ScarfaceConfigJson
-  Send-InstallationLogs
-  logoff.exe #per docker
 }
 
-function Update-ScarfaceConfigJson {
+function New-CommandString($String) {
   <#
   .SYNOPSIS
-  Update the scarface.config.json
+  Resolve the Requirement's command, subsituting the variables inside the string with his concrete value
   .DESCRIPTION
-  Removes some of the elements inside the file, such as:
-  application, domain, scenario, author and prefix
-  So that the next time the user execute the command "ca scar" those fields will be asked to them
+  Resolves the Requirement's command, subsituting the variables inside the string with his concrete value
   #>
-  $ScarfaceConfigJsonPath = "C:\dev\scarface\scarface.config.json"
-  $ScarfaceConfigJson = Get-Content -Path $ScarfaceConfigJsonPath -Raw | ConvertFrom-Json
-  foreach ($element in @("application", "domain", "scenario", "author", "prefix")) {
-    $ScarfaceConfigJson.PSObject.Properties.Remove($element)
-  }
-  $ScarfaceConfigJson | ConvertTo-Json -Depth 5 | Out-File -Encoding "ASCII" $ScarfaceConfigJsonPath -Force
-}
+  $StringWithValue = $String
+  do {
+    Invoke-Expression("Set-Variable -name StringWithValue -Value `"$StringWithValue`"")
 
-function Send-InstallationLogs {
-  <#
-  .SYNOPSIS
-  Send all the logfiles to the private blob
-  .DESCRIPTION
-  Archive the .ca folder and sends it to the private blob
-  #>
-  $MaxDate = 0
-  $UserLogin = ""
+    Write-Host "$StringWithValue"
 
-  # Transcript started in caep-installer.ps1
-  Stop-Transcript
-
-  foreach ($t in (Get-Content "~\.token.json" | ConvertFrom-Json)) {
-    $TokenDate = $t.date.Replace("-", "")
-    if ($MaxDate -lt $TokenDate) {
-      $MaxDate = $TokenDate;
-      $UserLogin = $t.user
-    }
-  } 
-
-  $HelperPath = Join-Path -Path $startLocation -ChildPath "helper\"
-  $HelperZipPath = Join-Path -Path $startLocation -ChildPath "helper.zip"
-  $connectPath = Join-Path -Path $startLocation -ChildPath "connect.sh"
-  $caZipPath = Join-Path -Path $startLocation -ChildPath "$UserLogin-$currentDate.zip"
-  $destination = "$HOME\.ssh\"
-
-  if (!(Test-Path $destination)) {
-    New-Item -Path $destination -ItemType Directory -Force 
-  }
-
-  Expand-Archive -Path $HelperZipPath -DestinationPath $startLocation -Force
-
-  Get-ChildItem -Path $HelperPath -File | Move-Item -Destination $destination -Force
-  $compress = @{
-    Path             = "$HOME\.ca\"
-    CompressionLevel = "Fastest"
-    DestinationPath  = $caZipPath
-  }
-  
-  Compress-Archive @Compress -Force
-  &"C:\Program Files\Git\usr\bin\bash.exe" $connectPath $caZipPath
+  } while ($StringWithValue -like '*$(*)*')
+  return $StringWithValue
 }
 
 
-. .\components\Tabs\Installation\Form.ps1
+function invoke-download($name, $requirement) {
+  try {
+    $subMessage = "$($name) version: $($requirement["MaxVersion"])"
+    invoke-WriteInstallLogs "Downloading $subMessage..." 
+    Invoke-RestMethod (New-CommandString $requirement["DownloadLink"]) -OutFile $requirement["DownloadOutfile"]
+    invoke-WriteInstallLogs "Download of $subMessage complete."
+    return $true
+  }
+  catch {
+    invoke-WriteInstallLogs "Download failed"
+    return $false
+  }
+}
 
+function invoke-deleteDownload($name, $requirement) {
+  invoke-WriteInstallLogs "Deleting the file $($requirement["DownloadOutfile"])..."
+  if (Test-Path $requirement["DownloadOutFile"]) { Remove-Item ($requirement["DownloadOutFile"].replace('"', '')) }
+  invoke-WriteInstallLogs "Delete of the file $($requirement["DownloadOutfile"]) complete."
+}
 
+function invoke-executeInstallCommand ($command) {
+  $result = invoke-executeCommand $command
+  if ($result) {
+    invoke-WriteInstallLogs "($command) eseguito correttamente: Output $result"
+  }
+  else {
+    invoke-WriteInstallLogs "Si è verificato il seguente errore durante l'esecuzione del comando ($command): $result"
+  }
+
+  return $result
+}
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU/kAqW47RUlzZ2qO+kFzIubV1
-# azCggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUzmHIlQvqeMkYdbUwxWcSGkai
+# O1+ggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -300,31 +304,30 @@ function Send-InstallationLogs {
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUi2NORcss8a2UjDz1Pc92
-# cszNezgwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQBsimHfU2Zs+oFQYFjUucgtQ2r5ctfzRbmMApWoD6xp4moV
-# XE+aEnoj1Rjplq05fyKkSBnhAdKt1XCiOLj2qsyi1ViuA4qZ7jbBNFLydmiewOm8
-# ZcFb4/NHnSrg7Vm3hEeDTt9i0JkcOFZw7dGCbKetnWwmr7Rai1jpO3QXjZ6PhDRK
-# zx/nN68a1yhWPN3xC4Vxa+suc0oupk0TUlQBw2OUmmnN8mo5yl9XUgAPdDkdhs60
-# pQjLimGCZpHpkYvAPruaywXgFJZxogLkIZ7gxcsZLoFXIHCKN1lGZgeTgv2fyLLE
-# HKOVFZw+dOeH+jfvdETIGnQkYaVsQW56RHPEJjDHoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU/BKmnjuAFGvmIKQiRMSF
+# zwNBvzkwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQCUC+229Qlu7KQcp+CqA8QoXtgMYb3vCds+K6vu4pEz6cX9
+# wXsGzi+Omaiwic0qq0P1faEJyacCyNd+ATQr8nm6TnIGoIgIAhpZh5JNnI6POmIx
+# nRHJskFZWROpYihH+n0iY1FOnP0UW0SNgvQqtQ7J3cq2SEM3EqIEwuvQSLa+1qKK
+# QgVylQZT7WmzNNdv8fAfoMZpPOGsNvTYtNswrWUErp2ZofvpUkYprA7tiognGOcx
+# 5/FqJovzBpoPGJEFDqqiJHxkH5lo2Nh4tlrCQ9GxSOcv7Zb2wm4fiULCDlS44uiN
+# Hl7j9HJrb+2M9iwlqWlLnBBY+oRt+gsUo52V9aoGoYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMjkxMzQyMTlaMD8GCSqG
-# SIb3DQEJBDEyBDANbnWJ6coYfTffPW2XAHKf4xHXTgbzPNYzObLesrft/U6+Uvda
-# UBLFPgNluCe0tqkwDQYJKoZIhvcNAQEBBQAEggIAfyLSDt2zkGQ44p29yAyhDj53
-# 7Bypfxu30YXxPHKTRYn4S40DREGkjyMJospBBrsi/y4fZSPu6gPH8mk5EkfZbFcw
-# hycOsO6pIwu0meY/FRdNDVPOfo7TYCKUQ5WgrdFqbUD53L5VCjoHL+vYZ2QPW74M
-# vAq6h1CjWp0wGbEBPJ8niVbfmjKkGZhQwpOd1VYg7AcWeQHECHtlLg+XsbImX7JT
-# PUCC4qxS2HZ8I4T+M9ann+wlaIlQSBxZ7guCMiYYukn2N8yHSBFYeujRhWzz60Hr
-# 5YQ1FWeue+LMQCMPh79un52FnUayNNLOIMYjIdwBe0+TQIdgx/f2jpg+teSMUW5k
-# 696jYnFGLmPwIH4JpzO2ZB5w6ElTfWwEhphjMeVzgPT60JXE9AtMhwllm/MacqRC
-# Ckz3rcVd+0ZejmI70FqudxfXeOy3bcrbwCjXMvF8A1r0H6HrGCxV0jckNtAwWEBJ
-# TyBjheoa5bUkjaB0vxD22iM+S79P3nj49FvgOBN4HpgxwMBNYe/i3qBzV76tKydN
-# f2AxLJYR3l/j8R2+bKyy16zQW/VHLyxo5y9l7yk4HE31blgXqEp6XCkN+RQ7G3Tq
-# k4FcIF+18OsnpD945JO6q7ndFMia89Dvndn+EYjCjzR+Uqze0tTT51tuu42swR66
-# C7El7SzmlpayQn8RPts=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMjkxMzQyMDBaMD8GCSqG
+# SIb3DQEJBDEyBDCSwEgClKvUZHdjitOIclEWcrrjPm/M+UTEkuywRwtkX9erzRi/
+# WpIU9776GrDJTdAwDQYJKoZIhvcNAQEBBQAEggIAVVdDk5y8A9D+dQlK+at6tb3k
+# I4n/iWAR75tfXuPn8Cozs4gikWwtiT6Xz0Me2C7bMpPJEJgWG7rKXX0LeNFTsMe6
+# S0E/s1sjKdT0E3HxHbkjQHhimDYvoSZa0hWFridacikZOd7S1YGvUTGiVpl+4Fqe
+# FBiyopRSAgyH8benWzylANQYH0esAjYNFbb12gZoM8jwF7hxz4w2HM3n+qaFD3Sb
+# UQPI2PAXphlH7OZORaRmPXTnH/M2n7Qgo04BBFpie1IYLsHExPoqzJhqk/TKj5q8
+# gOBy7NTKZLf9FLGwsDJbLagqwjd//+VOGFA2hAV7prLOPkB0vbwfZwz2ff13MSZ+
+# FtZxJ4LMsmE0Tx/ZFfMD99XtTmeadUXmisaazifXip84T5C0F4xiyHghrV3H5CGt
+# 8N5E9gYQ8a7YZ3MV7aoGYeg6TjKzINpaFoTzeZ3xqtvZypnIkLWeVFMEd/Fxtyhk
+# cyBtDFHZug00Uy81XJVwrgLGErfvokNscPwNG58KVlI9OsF9jRfctKHk/t0jy64q
+# FnT+Qjxqh3mOHtPbdngUvqvhNNeBmNKVPPtrXYXKJRuClBalQ9i1LrQhIF7EoAny
+# 0FgPfdsSKZSJKkBKn/BOXP0VdGsoybYz/Upy8VBB+ctRAmfQQzEmrsDhOW48mUOV
+# IQibBUPsrlJmPIFDZv8=
 # SIG # End signature block
-  

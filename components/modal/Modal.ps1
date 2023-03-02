@@ -1,24 +1,20 @@
-. .\components\modal\Form.ps1
-function Invoke-Modal($message, $action){
-    $messageLabel.Text = $message
-    $postAction = $action
+function Invoke-Modal($message){
+    $newString = ""
+    for ($i = 0; $i -lt $message.length; $i++){
+        $newString += $message[$i]
+        if ((($i + 1) % 40 -eq 0)) { $newString += "`n"}
+    }
+    $messageLabel.Text = $newString
+    $messageLabel.Location = "10, 10"
     $modalForm.ShowDialog()
 }
 
 function ExitButton_Click() {
     $modalForm.Close()
-    switch ($postAction){
-        "CLOSE" {
-            $mainForm.Close()
-        }
-        "RESTART" {
-            Restart-Computer -Force
-        }
-    }
 }
 
 function MessageLabel_SizeChanged(){
     $messageLabel.Left = ($modalForm.Width - $messageLabel.Width) / 2;
 }
 
- $postAction = ""
+ . .\components\modal\Form.ps1

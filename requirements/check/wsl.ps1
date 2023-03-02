@@ -1,138 +1,95 @@
-#--------------------------------------------------------[FUNCTIONS]--------------------------------------------------------
-function Invoke-installRequirements {
-  if (installRequirements) { . .\requirements\install\ca-scarface.ps1 }
-  $closeButton.Enabled = $true
+if ($scarConfig.Contains('terranova')) { return 'OK' }
+
+#Controlli Molto Complessi
+#KO = Esecuzione del comando fallito
+#VERSION = La defualt version di wsl non è la 2
+#UBUNTU = Non è stata rilevata alcuna distribuzione di ubuntu
+#MAIN + UBUNTU = Ubuntu non è settato come distribuzione principale e nessuna delle versioni rilevate rispetta i requisiti min e max, si procede al download della max
+#VER MAIN + UBUNTU = Ubuntu è settato come distribuzione principale ma non rispetta i requisiti min e max, e non c'è alcun'altra versione installa che li rispetti. Si procede al download della ma
+#MAIN + VER AVAILABLE = Ubuntu non è settato come distribuzione principale e esiste una versione chPne rispetta i requisiti min e max, si procede al settaggio
+#VER MAIN + VER AVAILABLE = Ubuntu è settato come distribuzione principale ma non rispetta i requisiti min e max, e esiste una versione che rispetta i requisiti min e max, si procede al settaggio
+#OK La distribuzione principale è ubuntu e rispetta i requisiti min e max
+$wslStatus = invoke-executeCommand("wsl --status")
+if (!$wslStatus) { 
+  invoke-WriteCheckLogs "Errore nell'esecuzione del comando wsl --status"
+  return "KO" 
 }
 
-function installRequirements {
-  <#
-    .SYNOPSIS
-    Execute a specific Action based on the type of Requirement
-    .DESCRIPTION
-    Once the user press the Accept button it will execute the Action specific to that Requirement
-    #>
-  $success = $true 
-  if (-not $requirements.Count) { return $success }
-
-  invoke-CreateLogs $installLogs
-  # It will execute a determinatedd function based on the type of the current requirement
-  foreach ($name in $sortedRequirements) {
-    #per mantenere un ordinamento  basato sulle dipendenze anche durante la fase di installazione
-    if (-not $requirements.Contains($name)) { continue }
-    $requirement = $requirements[$name]
-    $result = $requirement["Install"] | Invoke-Expression
-    $installLogs[$name]["Result"] = $result
-
-    if ($result -eq 'OK') { 
-      Invoke-CreateRow $gridInstallation $name $green
-    }
-    else { 
-      Invoke-CreateRow $gridInstallation $name $red
-      $success = $false 
-    }
-    $env:PATH = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
-  }
-
-  ($installLogs  | ConvertTo-Json) > $installRequirementsLogfile
-  return $success
-}
-
-function gridInstallation_VisibleChanged {
-  $gridInstallation.ClearSelection()
-}
-
-function closeButton_Click {
-  <#
-  .SYNOPSIS
-  Actions to clean the computer before closing the installer
-  .DESCRIPTION
-  Actions needed to be run before cloging the installer, such as:
-  kill the client's side process, removing the startup command, update the scarface.config.json and send the installation's results
-  #>
-  try {
-    $NetStat4200 = (netstat -ano | findstr :4200).split(" ") | Select-Object -Unique
-    $ClientPID = $NetStat4200[5]
-    taskkill /PID $ClientPID /F
-  }
-  catch {
-    Write-Host "No process running on port 4200"
-  }
-
-  Update-ScarfaceConfigJson
-  Send-InstallationLogs
-  logoff.exe #per docker
-}
-
-function Update-ScarfaceConfigJson {
-  <#
-  .SYNOPSIS
-  Update the scarface.config.json
-  .DESCRIPTION
-  Removes some of the elements inside the file, such as:
-  application, domain, scenario, author and prefix
-  So that the next time the user execute the command "ca scar" those fields will be asked to them
-  #>
-  $ScarfaceConfigJsonPath = "C:\dev\scarface\scarface.config.json"
-  $ScarfaceConfigJson = Get-Content -Path $ScarfaceConfigJsonPath -Raw | ConvertFrom-Json
-  foreach ($element in @("application", "domain", "scenario", "author", "prefix")) {
-    $ScarfaceConfigJson.PSObject.Properties.Remove($element)
-  }
-  $ScarfaceConfigJson | ConvertTo-Json -Depth 5 | Out-File -Encoding "ASCII" $ScarfaceConfigJsonPath -Force
-}
-
-function Send-InstallationLogs {
-  <#
-  .SYNOPSIS
-  Send all the logfiles to the private blob
-  .DESCRIPTION
-  Archive the .ca folder and sends it to the private blob
-  #>
-  $MaxDate = 0
-  $UserLogin = ""
-
-  # Transcript started in caep-installer.ps1
-  Stop-Transcript
-
-  foreach ($t in (Get-Content "~\.token.json" | ConvertFrom-Json)) {
-    $TokenDate = $t.date.Replace("-", "")
-    if ($MaxDate -lt $TokenDate) {
-      $MaxDate = $TokenDate;
-      $UserLogin = $t.user
-    }
-  } 
-
-  $HelperPath = Join-Path -Path $startLocation -ChildPath "helper\"
-  $HelperZipPath = Join-Path -Path $startLocation -ChildPath "helper.zip"
-  $connectPath = Join-Path -Path $startLocation -ChildPath "connect.sh"
-  $caZipPath = Join-Path -Path $startLocation -ChildPath "$UserLogin-$currentDate.zip"
-  $destination = "$HOME\.ssh\"
-
-  if (!(Test-Path $destination)) {
-    New-Item -Path $destination -ItemType Directory -Force 
-  }
-
-  Expand-Archive -Path $HelperZipPath -DestinationPath $startLocation -Force
-
-  Get-ChildItem -Path $HelperPath -File | Move-Item -Destination $destination -Force
-  $compress = @{
-    Path             = "$HOME\.ca\"
-    CompressionLevel = "Fastest"
-    DestinationPath  = $caZipPath
-  }
+$wslStatus = ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes($wslStatus))).split(' '); 
   
-  Compress-Archive @Compress -Force
-  &"C:\Program Files\Git\usr\bin\bash.exe" $connectPath $caZipPath
+ #can't check if wsl has just been downloaded
+ $wslUpdate = invoke-executeCommand("wsl --update")
+if (!$wslUpdate) { 
+  invoke-WriteCheckLogs "Errore nell'esecuzione del comando wsl --update"
+  return "KO" 
 }
 
+if (-not $wslStatus.Contains("2")) {
+  invoke-WriteCheckLogs "La versione di default non e' la 2"
+  return "VERSION"
+}
 
-. .\components\Tabs\Installation\Form.ps1
+$wslVersions = invoke-executeCommand("wsl -l -v")
+if (!$wslVersions) { 
+  invoke-WriteCheckLogs "Errore nell'esecuzione dle comando wsl -l -v"
+  return "KO" 
+}
 
+$wslVersions = ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes($wslVersions))).split(' '); 
+if (-not $wslVersions.split("-").Contains("Ubuntu")) {
+  invoke-WriteCheckLogs "Non risulta installata alcuna distribuzione di UBUNTU nella macchina"
+  return "UBUNTU"
+}
+
+$output = ""
+$wslStatus = $wslStatus.split("-")
+
+
+$minVersion = $requirements[$name]["MinVersion"].split(".")
+$minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
+
+$maxVersion = $requirements[$name]["MaxVersion"].split(".")
+$maxVersion = [Version]::new($maxVersion[0], $maxVersion[1], $maxVersion[2])
+
+if (-not $wslStatus.Contains("Ubuntu")) {
+  invoke-WriteCheckLogs "Ubuntu non e' impostato come distribuzione principale"
+  $output += "MAIN" 
+}
+else{
+  $mainDistroVersion = $wslStatus[($wslStatus.IndexOf("Ubuntu") + 1)]
+  if (($mainDistroVersion -ge $minVersion) -or ($mainDistroVersion -le $maxVersion)){ 
+    invoke-WriteCheckLogs "E' stata impostata come distribuzione principale una versione corretta di ubuntu: $mainDistroVersion, Tollerabilita compresa da $($requirements[$name]['MinVersion']) a $($requirements[$name]['MaxVersion'])"
+    return "OK"
+  } #Caso Positivo
+  invoke-WriteCheckLogs "E' stata impostata come distribuzione principale una versione errata di ubuntu: $mainDistroVersion, Tollerabilita compresa da $($requirements[$name]['MinVersion']) a $($requirements[$name]['MaxVersion'])"
+  $output += "VER MAIN"
+}
+
+$versions = @()
+$wslVersions = $wslVersions.split("-")
+for ($i = 0; $i -lt $wslVersions.Count; $i++) {
+  if ($wslVersions[$i] -like "Ubuntu") { $versions += $wslVersions[++$i] }
+}
+
+foreach ($version in $versions) {
+  if (($version -le $minVersion) -or ($version -ge $maxVersion)) { 
+    invoke-WriteCheckLogs "E' stata rilevata una versione di ubuntu che soddisfa i requisiti"
+    return "VER AVAILABLE"
+  }
+}
+
+$message = "Nessuna delle seguenti versioni di ubuntu presente nella macchina soddisfa i requisiti. Versioni rilevate: "
+foreach ($version in $versions) {
+  $message += "$version "
+}
+invoke-WriteCheckLogs  "$message. Requisiti da $($requirements[$name]['MinVersion']) a $($requirements[$name]['MaxVersion'])"
+return $output + "UBUNTU"
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU/kAqW47RUlzZ2qO+kFzIubV1
-# azCggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUjFcslb7KNsT8BG14s5tsfD+t
+# A5aggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -300,31 +257,30 @@ function Send-InstallationLogs {
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUi2NORcss8a2UjDz1Pc92
-# cszNezgwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQBsimHfU2Zs+oFQYFjUucgtQ2r5ctfzRbmMApWoD6xp4moV
-# XE+aEnoj1Rjplq05fyKkSBnhAdKt1XCiOLj2qsyi1ViuA4qZ7jbBNFLydmiewOm8
-# ZcFb4/NHnSrg7Vm3hEeDTt9i0JkcOFZw7dGCbKetnWwmr7Rai1jpO3QXjZ6PhDRK
-# zx/nN68a1yhWPN3xC4Vxa+suc0oupk0TUlQBw2OUmmnN8mo5yl9XUgAPdDkdhs60
-# pQjLimGCZpHpkYvAPruaywXgFJZxogLkIZ7gxcsZLoFXIHCKN1lGZgeTgv2fyLLE
-# HKOVFZw+dOeH+jfvdETIGnQkYaVsQW56RHPEJjDHoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUWJGmA6ipoOwDW9emqugr
+# AbcphWIwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQBQ+DCqw/yAaR0rPF8r99Q0qHFLRGSQmrPoLLsHTGN5avi/
+# NVo/Q0bg5Tq+VO7QgBpoGWoQB9uNEr9RzoyVmW3Ys+j3FhED+CsQzCOOTS1+Mpoy
+# Dc9OVGH8EFJZPFGHPzxnyovH/foA38lsSThDlGjBH6rXcw3vMpdAxBaqhB8qbpbw
+# m7JjSO4GcQsC3qmVxeGYe/PjEC/+rskAq4/pfaasXJUVCSX8taF4cU4E8v6EC01A
+# STjTVbr+7e9Gm3JuRwRja3zpHpINvwczH7jVcrvI3gxfhOayJFE76p3tQRlqAyZt
+# wllUqilq5Ee9KUunpiZKs7AU+R5AEygbogizuYBToYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMjkxMzQyMTlaMD8GCSqG
-# SIb3DQEJBDEyBDANbnWJ6coYfTffPW2XAHKf4xHXTgbzPNYzObLesrft/U6+Uvda
-# UBLFPgNluCe0tqkwDQYJKoZIhvcNAQEBBQAEggIAfyLSDt2zkGQ44p29yAyhDj53
-# 7Bypfxu30YXxPHKTRYn4S40DREGkjyMJospBBrsi/y4fZSPu6gPH8mk5EkfZbFcw
-# hycOsO6pIwu0meY/FRdNDVPOfo7TYCKUQ5WgrdFqbUD53L5VCjoHL+vYZ2QPW74M
-# vAq6h1CjWp0wGbEBPJ8niVbfmjKkGZhQwpOd1VYg7AcWeQHECHtlLg+XsbImX7JT
-# PUCC4qxS2HZ8I4T+M9ann+wlaIlQSBxZ7guCMiYYukn2N8yHSBFYeujRhWzz60Hr
-# 5YQ1FWeue+LMQCMPh79un52FnUayNNLOIMYjIdwBe0+TQIdgx/f2jpg+teSMUW5k
-# 696jYnFGLmPwIH4JpzO2ZB5w6ElTfWwEhphjMeVzgPT60JXE9AtMhwllm/MacqRC
-# Ckz3rcVd+0ZejmI70FqudxfXeOy3bcrbwCjXMvF8A1r0H6HrGCxV0jckNtAwWEBJ
-# TyBjheoa5bUkjaB0vxD22iM+S79P3nj49FvgOBN4HpgxwMBNYe/i3qBzV76tKydN
-# f2AxLJYR3l/j8R2+bKyy16zQW/VHLyxo5y9l7yk4HE31blgXqEp6XCkN+RQ7G3Tq
-# k4FcIF+18OsnpD945JO6q7ndFMia89Dvndn+EYjCjzR+Uqze0tTT51tuu42swR66
-# C7El7SzmlpayQn8RPts=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMjkxMzQxNTFaMD8GCSqG
+# SIb3DQEJBDEyBDAmTEV/TOyKcp+M0/UmFmZ4XngMdwu5uTi+FuSS5Hm182lYIacu
+# Fb8AwWnQLCDAOY8wDQYJKoZIhvcNAQEBBQAEggIAVfQ5FYEnyABEAg//2gfrshn6
+# SlJJpnTAFZ+x3irlfkkM1xM+3Nuwb24qin/wWN41HDYe0RcOde2Bz5szNfIWLpVO
+# AAVoh/3bZMND2541jI99CahiIxR1t1+EazF3OO6tAgctXJy/gMz0zVVSQaH5TxPD
+# yxQsWbtyX48cjQUGL3pI3OaSFr9pFAiGF1kh3AP1wOMxHLQwcArtqHD+3HX7yR7b
+# 1i+7ra1jHB/3C8Jh6HPIpsAT1eDXPu0YjCX2A2gW7gG5MSBEGO4or4pN9e5/Sbgx
+# Fcf/9Kzo1WbI6suh+UUSvZMid/8vDbi1wByq1wYcNT2437NDZtKIKCrTlcOA9Nm/
+# T1ZtfztIOzO/jI3dTtmUYMmysV7BkEDZS858aUGKMvPgbfJj+GtfqiUjJYbon5Kb
+# ifgwgfDEUFZfIq+fmjlolHFq889IrL7SCThi7ZIILaWJ04HQ2joCFaxt5zIDdpCa
+# drWO3kYM/dmIgPdNuDilY7Phkalwcc/GRk02LVlr1LUC3tIrCZoAAB2r+BF88UYa
+# D6dnx6XcIZK0wApyEXc0B1jxiDcMGoP97Hf/E3FN7/b5eu2pTAnKRBasMz65bBM+
+# gXxfTCzCEQgF+43iqdZz3EmhZOPXjCBRr2+W01pLOXzTASSvfObaU9rAk0ZTZNOq
+# Yxq2CR0LTz2Mk5ei0/s=
 # SIG # End signature block
-  

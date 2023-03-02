@@ -27,23 +27,25 @@ $gridRequirements.Name = "Grid"
 $gridRequirements.BorderStyle = 0
 $gridRequirements.RowHeadersVisible = $false
 $gridRequirements.EnableHeadersVisualStyles = $false
-$gridRequirements.BackgroundColor = "#ffffff"
+$gridRequirements.BackgroundColor = "#ededed"
 $gridRequirements.DefaultCellStyle.Font = "Century Gothic, 13"
 $gridRequirements.DefaultCellStyle.BackColor = "#ffffff"
-# $gridRequirements.DefaultCellStyle.SelectionBackColor = "Transparent"
-# $gridRequirements.DefaultCellStyle.SelectionForeColor = "Transparent"
+$gridRequirements.DefaultCellStyle.SelectionBackColor = "Transparent"
+$gridRequirements.DefaultCellStyle.SelectionForeColor = "Transparent"
 $gridRequirements.DefaultCellStyle.Alignment = "MiddleCenter"
 $gridRequirements.AdvancedCellBorderStyle.All = "None"
 $gridRequirements.AllowUserToResizeRows = $false
 $gridRequirements.AutoSizeRowsMode = "AllCells";
 $gridRequirements.ColumnCount = 1
-$gridRequirements.Columns[0].Name = "Requirement";
+$gridRequirements.Columns[0].Name = "Requisito";
 $gridRequirements.Columns[0].Width = 240;
 $gridRequirements.Columns[0].SortMode = "NotSortable";
+$gridRequirements.AllowUserToResizeColumns = $false;
 $gridRequirements.ColumnHeadersBorderStyle = 4
 $gridRequirements.ColumnHeadersDefaultCellStyle.Font = "Century Gothic, 15"
 $gridRequirements.ColumnHeadersDefaultCellStyle.ForeColor = "#ffffff"
 $gridRequirements.ColumnHeadersDefaultCellStyle.BackColor = "#555555"
+$gridRequirements.ColumnHeadersDefaultCellStyle.Alignment = "MiddleCenter"
 $gridRequirements.ColumnHeadersHeightSizeMode = "DisableResizing"
 $gridRequirements.Size = "240, 500"
 $gridRequirements.Location = "25, 25"
@@ -52,7 +54,7 @@ $gridRequirements.AllowUserToAddRows = $false
 $gridRequirements.ReadOnly = $true
 
 $installButton = New-Object System.Windows.Forms.Button
-$installButton.BackColor = "#555555"
+$installButton.BackColor = "#19c5ff"
 $installButton.Text = "Install"
 $installButton.Size = "90, 30"
 $installButton.Location = "735, 505"
@@ -60,12 +62,12 @@ $installButton.Font = 'Century Gothic, 15'
 $installButton.ForeColor = "#ffffff"
 $installButton.FlatStyle = "Flat"
 $installButton.FlatAppearance.BorderSize = 0;
-$installButton.FlatAppearance.MouseOverBackColor = "#2daae1"
-$installButton.Region = [System.Drawing.Region]::FromHrgn($roundObject::CreateRoundRectRgn(0, 0, $installButton.Width, $installButton.Height, 8, 8))
+$installButton.FlatAppearance.MouseOverBackColor = "#0463ca"
 $installButton.Enabled = $false
 
 $tabRequirements.Controls.AddRange(@($selectedRequirement, $outputRequirementsLabel, $gridRequirements, $installButton))
 
+$tabRequirements.Add_VisibleChanged({ tabRequirements_VisibleChanged })
 $gridRequirements.Add_Click({ gridRequirements_Click })
 $installButton.Add_Click({ installButton_Click })
 $selectedRequirement.Add_SizeChanged({ selectedRequirement_SizeChanged })

@@ -59,12 +59,13 @@ Download scarface.config.json
 Download scarface.config.json
 #>
 
-  $scarConfigPath = "C:\dev\scarface\scarface.config.json"
   if ( Test-Path $scarConfigPath) { Remove-Item -Path $scarConfigPath -Force }
   New-Item -Path $scarConfigPath -Force | Out-Null
 
   Write-Host "downloading $scarConfig"
-  $overrideRequirement = (((Invoke-WebRequest -Uri $scarConfig -UseBasicParsing).Content) | ConvertFrom-Json).overrideRequirement
+  $ScarConfigObj = (Invoke-WebRequest -Uri $ScarConfig -UseBasicParsing).Content
+  Set-Content -Path $scarConfigPath -Value $scarConfigObj 
+  $overrideRequirement = $scarConfigObj.overrideRequirement
   if (!$overrideRequirement) { return $false }
   Write-Host "downloading " + $overrideRequirement
   return ((Invoke-WebRequest -Uri $overrideRequirement -UseBasicParsing).Content | ConvertFrom-Json | ConvertPSObjectToHashtable)
@@ -78,13 +79,19 @@ Check if the Requirement was satisfied or not
 For each Requirement it will check if it's satisfied or not,
 if the Requirement isn't satisfied then add it to the list of Requirements that have to be satisfied through the installer
 #>
-  invoke-CreateLogs
+  invoke-CreateLogs $checkLogs
   $red = [System.Drawing.Color]::FromArgb(255, 236, 84, 84)
   $green = [System.Drawing.Color]::FromArgb(255, 13, 173, 141)
 
   foreach ($name in $sortedRequirements) {
-    Write-Host $requirements[$name]["CheckRequirement"]
-    $result = $requirements[$name]["CheckRequirement"] | Invoke-Expression
+    if (invoke-checkDependencies) {
+      Write-Host $requirements[$name]["Check"]
+      $result = $requirements[$name]["Check"] | Invoke-Expression
+    }
+    else {
+      $result = "KO"
+    }
+
     $checkLogs[$name]["Result"] = $result
     if ($result -eq 'OK') { 
       $requirements.Remove($name)
@@ -96,6 +103,26 @@ if the Requirement isn't satisfied then add it to the list of Requirements that 
   }
   
   ($checkLogs  | ConvertTo-Json) > $checkRequirementsLogFile
+}
+
+function invoke-checkDependencies {
+  $dependenciesFailed = ""
+  if (-not ($requirements[$name].Contains("Dependencies"))) { return $true }
+
+  foreach ($dependency in $requirements[$name]["Dependencies"]) {
+    if (($checkLogs[$dependency]["Result"] -ne "OK") -and ($checkLogs[$dependency]["Result"] -ne "VER")) {
+      $dependenciesFailed += "$dependency, "
+    }
+  }
+  
+
+  if ($dependenciesFailed) {
+    $checkLogs[$name]["Logs"] = "KO A causa di $dependenciesFailed"
+    return $false
+  }
+
+  return $true
+
 }
 
 function New-StartupCmd() {
@@ -119,6 +146,10 @@ Creates a .cmd that will execute the CAEP installer at startup until they won't 
 
 function selectedRequirement_SizeChanged() {
   $selectedRequirement.Left = 552 - ($selectedRequirement.Width / 2)
+}
+
+function tabRequirements_VisibleChanged {
+  $gridRequirements.ClearSelection()
 }
 
 function gridRequirements_Click {

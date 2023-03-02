@@ -1,138 +1,52 @@
-#--------------------------------------------------------[FUNCTIONS]--------------------------------------------------------
-function Invoke-installRequirements {
-  if (installRequirements) { . .\requirements\install\ca-scarface.ps1 }
-  $closeButton.Enabled = $true
+if ($scarConfig.Contains('terranova')) { return 'OK' }
+
+$dockerVersion = Invoke-executeCommand("docker --version")
+if (!$dockerVersion) { 
+  invoke-WriteCheckLogs "Si e' verificato un errore durante l'esecuzione del comando ('docker --version').\r\nDocker potrebbe non essere presente sulla macchina"
+  return 'KO'
 }
 
-function installRequirements {
-  <#
-    .SYNOPSIS
-    Execute a specific Action based on the type of Requirement
-    .DESCRIPTION
-    Once the user press the Accept button it will execute the Action specific to that Requirement
-    #>
-  $success = $true 
-  if (-not $requirements.Count) { return $success }
+$dockerVersion = $dockerVersion.split(' ').split(',')[2].split(".")
+$dockerVersion = [Version]::new($dockerVersion[0], $dockerVersion[1], $dockerVersion[2])
 
-  invoke-CreateLogs $installLogs
-  # It will execute a determinatedd function based on the type of the current requirement
-  foreach ($name in $sortedRequirements) {
-    #per mantenere un ordinamento  basato sulle dipendenze anche durante la fase di installazione
-    if (-not $requirements.Contains($name)) { continue }
-    $requirement = $requirements[$name]
-    $result = $requirement["Install"] | Invoke-Expression
-    $installLogs[$name]["Result"] = $result
+$minVersion = $requirements[$name]["MinVersion"].split(".")
+$minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
 
-    if ($result -eq 'OK') { 
-      Invoke-CreateRow $gridInstallation $name $green
+$maxVersion = $requirements[$name]["MaxVersion"].split(".")
+$maxVersion = [Version]::new($maxVersion[0], $maxVersion[1], $maxVersion[2])
+
+$output = ""
+if (($dockerVersion -lt $minVersion) -or ($dockerVersion -gt $maxVersion)) {
+  invoke-WriteCheckLogs "La versione rilevata di docker $dockerVersion non rispetta i requisiti.\r\nMin Version: $minVersion. Max Version: $maxVersion"
+  $output = "VER"
+}
+
+if ($requirements[$name]["Proxy"] -ne "KO") {
+  if (Test-Path $dockerConfigPath) {
+    $dockerConfigJson = Get-Content $dockerConfigPath | ConvertFrom-Json | ConvertPSObjectToHashtabl
+    if (-not $dockerConfigJson.Contains("proxies")) {
+      $output += "PROXY"
     }
-    else { 
-      Invoke-CreateRow $gridInstallation $name $red
-      $success = $false 
+    else {
+      $proxy = $dockerConfigJson["proxies"]
+      if (-not $proxy.Contains("proxies") -or -not ($proxy.Contains("proxies"))) {
+        $output += "PROXY"
+      }
     }
-    $env:PATH = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
   }
-
-  ($installLogs  | ConvertTo-Json) > $installRequirementsLogfile
-  return $success
+  if ($requirements[$name]["Proxy"] -eq "TCP") { $output += "TCP" }
 }
 
-function gridInstallation_VisibleChanged {
-  $gridInstallation.ClearSelection()
-}
-
-function closeButton_Click {
-  <#
-  .SYNOPSIS
-  Actions to clean the computer before closing the installer
-  .DESCRIPTION
-  Actions needed to be run before cloging the installer, such as:
-  kill the client's side process, removing the startup command, update the scarface.config.json and send the installation's results
-  #>
-  try {
-    $NetStat4200 = (netstat -ano | findstr :4200).split(" ") | Select-Object -Unique
-    $ClientPID = $NetStat4200[5]
-    taskkill /PID $ClientPID /F
-  }
-  catch {
-    Write-Host "No process running on port 4200"
-  }
-
-  Update-ScarfaceConfigJson
-  Send-InstallationLogs
-  logoff.exe #per docker
-}
-
-function Update-ScarfaceConfigJson {
-  <#
-  .SYNOPSIS
-  Update the scarface.config.json
-  .DESCRIPTION
-  Removes some of the elements inside the file, such as:
-  application, domain, scenario, author and prefix
-  So that the next time the user execute the command "ca scar" those fields will be asked to them
-  #>
-  $ScarfaceConfigJsonPath = "C:\dev\scarface\scarface.config.json"
-  $ScarfaceConfigJson = Get-Content -Path $ScarfaceConfigJsonPath -Raw | ConvertFrom-Json
-  foreach ($element in @("application", "domain", "scenario", "author", "prefix")) {
-    $ScarfaceConfigJson.PSObject.Properties.Remove($element)
-  }
-  $ScarfaceConfigJson | ConvertTo-Json -Depth 5 | Out-File -Encoding "ASCII" $ScarfaceConfigJsonPath -Force
-}
-
-function Send-InstallationLogs {
-  <#
-  .SYNOPSIS
-  Send all the logfiles to the private blob
-  .DESCRIPTION
-  Archive the .ca folder and sends it to the private blob
-  #>
-  $MaxDate = 0
-  $UserLogin = ""
-
-  # Transcript started in caep-installer.ps1
-  Stop-Transcript
-
-  foreach ($t in (Get-Content "~\.token.json" | ConvertFrom-Json)) {
-    $TokenDate = $t.date.Replace("-", "")
-    if ($MaxDate -lt $TokenDate) {
-      $MaxDate = $TokenDate;
-      $UserLogin = $t.user
-    }
-  } 
-
-  $HelperPath = Join-Path -Path $startLocation -ChildPath "helper\"
-  $HelperZipPath = Join-Path -Path $startLocation -ChildPath "helper.zip"
-  $connectPath = Join-Path -Path $startLocation -ChildPath "connect.sh"
-  $caZipPath = Join-Path -Path $startLocation -ChildPath "$UserLogin-$currentDate.zip"
-  $destination = "$HOME\.ssh\"
-
-  if (!(Test-Path $destination)) {
-    New-Item -Path $destination -ItemType Directory -Force 
-  }
-
-  Expand-Archive -Path $HelperZipPath -DestinationPath $startLocation -Force
-
-  Get-ChildItem -Path $HelperPath -File | Move-Item -Destination $destination -Force
-  $compress = @{
-    Path             = "$HOME\.ca\"
-    CompressionLevel = "Fastest"
-    DestinationPath  = $caZipPath
-  }
-  
-  Compress-Archive @Compress -Force
-  &"C:\Program Files\Git\usr\bin\bash.exe" $connectPath $caZipPath
-}
-
-
-. .\components\Tabs\Installation\Form.ps1
+if ($output) { return $output }
+invoke-WriteCheckLogs "La versione rilevata di docker $dockerVersion rispetta i requisiti.\r\nMin Version: $minVersion. Max Version: $maxVersion"
+return "OK"
 
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU/kAqW47RUlzZ2qO+kFzIubV1
-# azCggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUepUtWyYkRr54jLz2zs/Xmj8A
+# zGKggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -300,31 +214,30 @@ function Send-InstallationLogs {
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUi2NORcss8a2UjDz1Pc92
-# cszNezgwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQBsimHfU2Zs+oFQYFjUucgtQ2r5ctfzRbmMApWoD6xp4moV
-# XE+aEnoj1Rjplq05fyKkSBnhAdKt1XCiOLj2qsyi1ViuA4qZ7jbBNFLydmiewOm8
-# ZcFb4/NHnSrg7Vm3hEeDTt9i0JkcOFZw7dGCbKetnWwmr7Rai1jpO3QXjZ6PhDRK
-# zx/nN68a1yhWPN3xC4Vxa+suc0oupk0TUlQBw2OUmmnN8mo5yl9XUgAPdDkdhs60
-# pQjLimGCZpHpkYvAPruaywXgFJZxogLkIZ7gxcsZLoFXIHCKN1lGZgeTgv2fyLLE
-# HKOVFZw+dOeH+jfvdETIGnQkYaVsQW56RHPEJjDHoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUrN1GJMNli1nwfouzt/N+
+# 4DO+uSgwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQA5RfGD+YM1KWrBktWNuiZuMLirJZjtTVB0UrHNd/mEThlX
+# tMVaNB1zMsDhXPNzN+WGgHoitPHEhABJDJYjOKyS7pk3qsoBCNvq+di/yzc0SzKH
+# 0u/j0w9dy5j3QENqj2GztI1jgaPmU14tD//18++bTzS1vzk1TIkZcpkkR2wl3TYp
+# RHq9iaim5DD2svW3Y6IUibpG9SmE6Br35ouAQNd7+vci2vEsCPBSX5nexo3FNyFY
+# 39G+L3c0wA3aD+2FaXOcgSLj5a90nl14Ywu5A0TXCxmc7vHxd8wf5v8aIX9KjBzJ
+# xH466BeZ0LMQFzeQkFuKTeehQQDlhtNELMlGhbUdoYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMjkxMzQyMTlaMD8GCSqG
-# SIb3DQEJBDEyBDANbnWJ6coYfTffPW2XAHKf4xHXTgbzPNYzObLesrft/U6+Uvda
-# UBLFPgNluCe0tqkwDQYJKoZIhvcNAQEBBQAEggIAfyLSDt2zkGQ44p29yAyhDj53
-# 7Bypfxu30YXxPHKTRYn4S40DREGkjyMJospBBrsi/y4fZSPu6gPH8mk5EkfZbFcw
-# hycOsO6pIwu0meY/FRdNDVPOfo7TYCKUQ5WgrdFqbUD53L5VCjoHL+vYZ2QPW74M
-# vAq6h1CjWp0wGbEBPJ8niVbfmjKkGZhQwpOd1VYg7AcWeQHECHtlLg+XsbImX7JT
-# PUCC4qxS2HZ8I4T+M9ann+wlaIlQSBxZ7guCMiYYukn2N8yHSBFYeujRhWzz60Hr
-# 5YQ1FWeue+LMQCMPh79un52FnUayNNLOIMYjIdwBe0+TQIdgx/f2jpg+teSMUW5k
-# 696jYnFGLmPwIH4JpzO2ZB5w6ElTfWwEhphjMeVzgPT60JXE9AtMhwllm/MacqRC
-# Ckz3rcVd+0ZejmI70FqudxfXeOy3bcrbwCjXMvF8A1r0H6HrGCxV0jckNtAwWEBJ
-# TyBjheoa5bUkjaB0vxD22iM+S79P3nj49FvgOBN4HpgxwMBNYe/i3qBzV76tKydN
-# f2AxLJYR3l/j8R2+bKyy16zQW/VHLyxo5y9l7yk4HE31blgXqEp6XCkN+RQ7G3Tq
-# k4FcIF+18OsnpD945JO6q7ndFMia89Dvndn+EYjCjzR+Uqze0tTT51tuu42swR66
-# C7El7SzmlpayQn8RPts=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMjkxMzQwNDVaMD8GCSqG
+# SIb3DQEJBDEyBDDNXaeXytZ7aOgIKuantQy1c1VJfXjP1i8yHtlQzCGoDrdODSbK
+# 8d+Liu+jUOFvdSowDQYJKoZIhvcNAQEBBQAEggIAYHvJeH/TM4OAV0M5SWIizFBZ
+# /h07E3ttBeyOpr0hm6QuNwjNtLWVC9jAaNaelusrChgFbv4IyLmPVMDgSkFPdyHl
+# VbFCUkYc/jB8NZYuhClI1WJ6bMF1FAq+osnTwJOur/c2q+FZWSRB1Wcf25tF1qIs
+# MJ8/i+3ZawGNv8CIbGkSxytp7TFnQh/jrmOrmG0cECHmrj1l8fBGTal1dyGyX2P5
+# bYxUJc4S/bWE+Bu0AU9YAVBO1qFI+I4pXHzoUp+tdg3w9bzCXu4/xfxH2ZuMqEPz
+# rlYYCD6HeT7VVA+tA10+WOAD0JT52MKFXOZajMGMYU42p68CxFEEmECDojOJFRYa
+# xSFRB5qAz93JDoo3WZtHcp/ebnHR8+TADlUc2g/TO/pJnt2ZrPP/88LV5dSKLx1b
+# 8KV2qsehaq0kgwvpgVnmldoH4gecIpiF5viEhfC9KDxWcCsIA5fyZWlDatnjvjGI
+# DbjNGcy62TxOv7bVRF/+NgiCi2yWp+ATFOB9m1t4n1Ohvq3yLW6Q+wgRC2OdEf49
+# rbVtQNcdV8Pel27jpMs+UQRM/BTxjYOU1YRZTbqukVAM3fbCqA4oEco0i5URTJ3P
+# FP0obiE/B7fYj25mimp9AiA4hLGc5VgL+N0RXLGyaYOeH7XjCtISZCytUM/SY3Y2
+# p0KReqc0chxAjiaDXeY=
 # SIG # End signature block
-  

@@ -3,6 +3,7 @@ param(
 )
 
 function tabButton_Click($button) {
+  if ($buttonTabs[$button].visible) { return }
   foreach ($element in $buttonTabs.Keys) {
     $buttonTabs[$element].visible = $false
     Button_MouseLeave $element
@@ -10,6 +11,8 @@ function tabButton_Click($button) {
 
   Button_MouseEnter $button
   $buttonTabs[$button].visible = $true
+  $gridInstallation.ClearSelection()
+  $gridRequirements.ClearSelection()
 }
 
 function Button_MouseEnter($button) {
@@ -28,6 +31,7 @@ function Invoke-CreateRow($grid, $name, $color) {
   $row.CreateCells($grid, $name)
   $row.DefaultCellStyle.BackColor = $color
   $grid.Rows.Add($row);
+  $grid.ClearSelection()
 }
 #---------------------------------------------------------------------------------------------------------[LOGIC]---------------------------------------------------------------------------------------------------------
 
