@@ -3,9 +3,9 @@ function invoke-installing($name, $requirement) {
     #per cui non è stato ancora deciso il comportamento
     if (-not $checkLogs[$name]["Result"].Contains("KO")) { return }
     $subMessage = "$($name) version: $($requirement["MaxVersion"])"
-    invoke-WriteInstallLogs "Installing $subMessage..."
+    invoke-WriteInstallLogs "Installazione $subMessage in corso..."
     Start-Process npm -ArgumentList @('i', '-g', "npm@$($requirement['MaxVersion'])") -NoNewWindow -Wait
-    invoke-WriteInstallLogs "Install of $subMessage complete."
+    invoke-WriteInstallLogs "Installazione di $subMessage completata."
 }
 
 function invoke-proxy ($name, $requirement) {

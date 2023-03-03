@@ -68,7 +68,6 @@ function invoke-login {
     }
   }
 
-  #hide dell'interfaccia mancante
   Remove-WrongToken($TokenTextBox.Text)
   return $true
 

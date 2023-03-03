@@ -1,8 +1,8 @@
 function invoke-installing($name, $requirement) {
     $subMessage = "$($name) version: $($requirement["MaxVersion"])"
-    invoke-WriteInstallLogs "Installing $subMessage..."
+    invoke-WriteInstallLogs "Installazione $subMessage in corso..."
     Start-Process $requirement["DownloadOutFile"] -ArgumentList @('/VERYSILENT') -Wait
-    invoke-WriteInstallLogs "Install of $subMessage complete."
+    invoke-WriteInstallLogs "Installazione di $subMessage completata."
 }
 
 #Return temporaneo per impedire l'installazione in caso di errore di versione "VER"

@@ -1,6 +1,6 @@
 function invoke-installation($name, $requirement) {
 	$subMessage = "$($name) version: $($requirement["MaxVersion"])"
-	invoke-WriteInstallLogs "Installing $subMessage..."
+	invoke-WriteInstallLogs "Installazione $subMessage in corso..."
 
 	invoke-WriteInstallLogs $addNodeBuildTools
 	
@@ -14,7 +14,7 @@ function invoke-installation($name, $requirement) {
 	}
 	Start-Process msiexec.exe -ArgumentList $argumentList -Wait
 	
-	invoke-WriteInstallLogs "Install of $subMessage complete."
+	invoke-WriteInstallLogs "Installazione di $subMessage completata."
 }
 
 if (-not (invoke-download $name $requirement)) {return "KO"}

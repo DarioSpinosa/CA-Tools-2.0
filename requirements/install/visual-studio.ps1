@@ -1,6 +1,6 @@
 function invoke-installation($name, $requirement) {
   $subMessage = "$($name) version: $($requirement["MaxVersion"])"
-	invoke-WriteInstallLogs "Installing $subMessage..."
+	invoke-WriteInstallLogs "Installazione $subMessage in corso..."
 
   $argumentList = @(
     '--add Microsoft.VisualStudio.Workload.NetWeb',
@@ -14,7 +14,7 @@ function invoke-installation($name, $requirement) {
   )
     
   Start-Process $requirement["DownloadOutFile"] -ArgumentList $argumentList -Wait
-  invoke-WriteInstallLogs "Install of $subMessage complete."
+  invoke-WriteInstallLogs "Installazione di $subMessage completata."
 }
 
 #Return temporaneo per impedire l'installazione in caso di errore di versione "VER"

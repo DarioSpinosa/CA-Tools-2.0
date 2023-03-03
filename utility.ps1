@@ -104,21 +104,21 @@ function New-CommandString($string) {
 function invoke-download($name, $requirement) {
   try {
     $subMessage = "$($name) version: $($requirement["MaxVersion"])"
-    invoke-WriteInstallLogs "Downloading $subMessage..." 
+    invoke-WriteInstallLogs "Download $subMessage in corso..." 
     Invoke-RestMethod (New-CommandString $requirement["DownloadLink"]) -OutFile $requirement["DownloadOutfile"]
-    invoke-WriteInstallLogs "Download of $subMessage complete."
+    invoke-WriteInstallLogs "Download $subMessage completato."
     return $true
   }
   catch {
-    invoke-WriteInstallLogs "Download failed"
+    invoke-WriteInstallLogs "Download fallito"
     return $false
   }
 }
 
 function invoke-deleteDownload($name, $requirement) {
-  invoke-WriteInstallLogs "Deleting the file $($requirement["DownloadOutfile"])..."
+  invoke-WriteInstallLogs "Cancellazione file $($requirement["DownloadOutfile"]) in corso..."
   if (Test-Path $requirement["DownloadOutFile"]) { Remove-Item ($requirement["DownloadOutFile"].replace('"', '')) }
-  invoke-WriteInstallLogs "Delete of the file $($requirement["DownloadOutfile"]) complete."
+  invoke-WriteInstallLogs "Cancellazione file $($requirement["DownloadOutfile"]) completata."
 }
 
 function invoke-executeInstallCommand ($command) {

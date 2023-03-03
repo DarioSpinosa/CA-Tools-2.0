@@ -24,15 +24,16 @@ $scarConfigObj | ConvertTo-Json | Set-Content -Path $scarConfigPath
 
 # Start-Job $killCheck -Name "killVScode"
 
-Write-Host = 'Avvio plugin-scarface'
-
 Set-Location 'C:\dev\scarface'
 $env:NG_CLI_ANALYTICS = "ci"
 
 Write-Host "Avvio ca scar:setup..."
-Start-Process "~\\AppData\\Roaming\\npm\\ca.cmd" -ArgumentList 'scar:setup' -NoNewWindow -Wait
-Start-Process "~\\AppData\\Roaming\\npm\\ca.cmd" -ArgumentList "scar -c C:\\dev\\scarface\\scarface.config.json" -NoNewWindow -Wait
-Write-Host = 'Il comando ca scar è stato completato'
+invoke-executeCommand 'ca scar:setup'
+Write-Host "Il comando ca scar:setup è stato completato"
+
+Write-Host "Avvio ca scarface"
+invoke-executeCommand "ca scar"
+Write-Host = 'Il comando ca scarface'
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
