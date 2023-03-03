@@ -18,11 +18,13 @@ if (!$wslStatus) {
 $wslStatus = ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes($wslStatus))).split(' '); 
   
  #can't check if wsl has just been downloaded
+ invoke-WriteCheckLogs "Aggiornamento di wsl in corso..."
  $wslUpdate = invoke-executeCommand("wsl --update")
 if (!$wslUpdate) { 
   invoke-WriteCheckLogs "Errore nell'esecuzione del comando wsl --update"
   return "KO" 
 }
+invoke-WriteCheckLogs "Aggiornamento di wsl completato"
 
 if (-not $wslStatus.Contains("2")) {
   invoke-WriteCheckLogs "La versione di default non e' la 2"

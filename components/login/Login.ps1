@@ -47,7 +47,7 @@ function invoke-login {
   }
   
   Remove-Item $npmrcPath
-  Start-Process powershell.exe -ArgumentList "npm-login.ps1 -token $($TokenTextBox.Text) -registry $npmRegistry -scope @ca -user $($usernameTextBox.Text) " -NoNewWindow -Wait
+  ./components/login/npm-login.ps1 -user $($usernameTextBox.Text) -token $($TokenTextBox.Text) -registry $npmRegistry -scope @ca
   npm config set '@ca:registry' $npmRegistry
   npm config set '@ca-codegen:registry' $npmRegistry
   

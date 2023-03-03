@@ -68,8 +68,8 @@ $errorLabel.Visible = $false
 $loginButton = New-Object System.Windows.Forms.Button
 $loginButton.BackColor = "#19c5ff"
 $loginButton.Text = "Login"
-$loginButton.Size = "60, 25"
-$loginButton.Location = "255, 115"
+$loginButton.Size = "70, 35"
+$loginButton.Location = "250, 110"
 $loginButton.Font = 'Century Gothic, 15'
 $loginButton.ForeColor = "#ffffff"
 $loginButton.FlatStyle = "Flat"
@@ -79,4 +79,3 @@ $loginButton.FlatAppearance.MouseOverBackColor = "#0463ca"
 $loginForm.Controls.AddRange(@($usernameLabel, $usernameTextBox, $usernameWarning, $TokenLabel, $TokenTextBox, $errorLabel, $loginButton))
 
 $loginButton.Add_Click({ loginButton_Click })
-

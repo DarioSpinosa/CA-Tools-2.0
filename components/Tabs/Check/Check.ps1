@@ -28,6 +28,7 @@ function Invoke-CheckRequirements {
 
   $gridRequirements.Rows[0].Selected = $true
   gridRequirements_Click
+  $gridRequirements.ClearSelection()
   $installButton.Enabled = $true
 }
 

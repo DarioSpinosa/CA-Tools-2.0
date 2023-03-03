@@ -1,5 +1,4 @@
 #Requires -Version 5.1
-using namespace System.Drawing
 Add-Type -AssemblyName System.Drawing
 . .\utility.ps1
 . .\global-variables.ps1

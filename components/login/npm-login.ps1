@@ -1,8 +1,8 @@
 param(
+  [string]$user,
   [string]$token,
   [string]$registry,
-  [string]$scope,
-  [string]$user
+  [string]$scope
 )
 
 # log

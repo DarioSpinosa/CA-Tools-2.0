@@ -51,7 +51,7 @@ function startButton_Click {
   $envVar.Add("C:\Windows\System32\WindowsPowerShell\v1.0\", "Gia' presente")
   $envVar.Add("$env:PROGRAMFILES\Git\Users\bin\", "Gia' presente")
   $envVar.Add("$env:PROGRAMFILES\Git\cmd", "Gia' presente")
-  $envVar.Add("$env:PROGRAMFILES\Nodejs", "Gia' presente")
+  $envVar.Add("$env:PROGRAMFILES\Nodejs\", "Gia' presente")
   $envVar.Add("$env:PROGRAMFILES\Ca-Tools", "Gia' presente")
 
   $envInPath = $env:PATH.ToLower().Split(';')
