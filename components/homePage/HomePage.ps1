@@ -1,7 +1,3 @@
-param(
-  [Diagnostics.Stopwatch]$timer
-)
-
 function tabButton_Click($button) {
   if ($buttonTabs[$button].visible) { return }
   foreach ($element in $buttonTabs.Keys) {
@@ -33,11 +29,11 @@ function Invoke-CreateRow($grid, $name, $color) {
   $grid.Rows.Add($row);
   $grid.ClearSelection()
 }
-#---------------------------------------------------------------------------------------------------------[LOGIC]---------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------[LOGIC]-------------------------------------------------------
 
-. .\components\Tabs\Start\Start.ps1
-. .\components\Tabs\Check\Check.ps1
-. .\components\Tabs\Installation\Installation.ps1
+. .\components\Tabs\Start\Form.ps1
+. .\components\Tabs\Check\Form.ps1
+. .\components\Tabs\Installation\Form.ps1
 . .\components\homePage\Form.ps1
 
 $buttonTabs = @{}

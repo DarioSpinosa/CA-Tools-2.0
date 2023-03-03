@@ -13,21 +13,21 @@ $loginForm.StartPosition = "CenterScreen"
 $loginForm.FormBorderStyle = "None"
 $loginForm.BackgroundImage = [System.Drawing.Image]::Fromfile(".\assets\background2.png")
 
-$UsernameLabel = New-Object System.Windows.Forms.Label
-$UsernameLabel.Text = "Username:"
-$UsernameLabel.AutoSize = $true
-$UsernameLabel.Size = '25, 20'
-$UsernameLabel.Location = '20, 18'
-$UsernameLabel.Font = 'Century Gothic, 10, style=Bold'
-$UsernameLabel.BackColor = "Transparent"
-$UsernameLabel.ForeColor = "#ffffff"
+$usernameLabel = New-Object System.Windows.Forms.Label
+$usernameLabel.Text = "Username:"
+$usernameLabel.AutoSize = $true
+$usernameLabel.Size = '25, 20'
+$usernameLabel.Location = '20, 18'
+$usernameLabel.Font = 'Century Gothic, 10, style=Bold'
+$usernameLabel.BackColor = "Transparent"
+$usernameLabel.ForeColor = "#ffffff"
 
-$UsernameTextBox = New-Object System.Windows.Forms.TextBox
-$UsernameTextBox.Multiline = $false
-$UsernameTextBox.Size = '100, 20'
-$UsernameTextBox.Location = '20, 40'
-$UsernameTextBox.Font = 'Century Gothic, 10'
-$UsernameTextBox.TabStop = $false
+$usernameTextBox = New-Object System.Windows.Forms.TextBox
+$usernameTextBox.Multiline = $false
+$usernameTextBox.Size = '100, 20'
+$usernameTextBox.Location = '20, 40'
+$usernameTextBox.Font = 'Century Gothic, 10'
+$usernameTextBox.TabStop = $false
 
 $usernameWarning = New-Object System.Windows.Forms.Label
 $usernameWarning.Text = "NON inserire 'COLLABORATION\nomeutente'`no 'nomeutente@domain.com'"
@@ -76,7 +76,7 @@ $loginButton.FlatStyle = "Flat"
 $loginButton.FlatAppearance.BorderSize = 0;
 $loginButton.FlatAppearance.MouseOverBackColor = "#0463ca"
 
-$loginForm.Controls.AddRange(@($UsernameLabel, $UsernameTextBox, $usernameWarning, $TokenLabel, $TokenTextBox, $errorLabel, $loginButton))
+$loginForm.Controls.AddRange(@($usernameLabel, $usernameTextBox, $usernameWarning, $TokenLabel, $TokenTextBox, $errorLabel, $loginButton))
 
 $loginButton.Add_Click({ loginButton_Click })
 

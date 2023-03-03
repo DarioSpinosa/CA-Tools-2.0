@@ -1,22 +1,18 @@
-$ScarConfigObj = Get-Content -Path $scarConfigPath | ConvertFrom-Json
-$MaxDate = 0
-$TokenPath = "~/.token.json"
-$TokenList = Get-Content $TokenPath | ConvertFrom-Json
-foreach ($t in $TokenList) {
+$maxDate = 0
+$tokenList = Get-Content $tokenPath | ConvertFrom-Json
+foreach ($t in $tokenList) {
     $currentDate = $t.date.Replace("-", "")
-    if ($MaxDate -lt $currentDate) { 
-        $MaxDate = $currentDate
-        $TokenObj = $t
+    if ($maxDate -lt $currentDate) { 
+        $maxDate = $currentDate
+        $tokenObj = $t
     }
 }
-$ScarConfigObj.token = $TokenObj.token
-$ScarConfigObj.user = $TokenObj.user
-if ($ScarVersion) {
-    $ScarConfigObj.version = $ScarVersion
+$scarConfigObj.token = $tokenObj.token
+$scarConfigObj.user = $tokenObj.user
+if ($scarVersion) {
+    $scarConfigObj.version = $scarVersion
 }
-$ScarConfigObj | ConvertTo-Json | Set-Content -Path $scarConfigPath
-Write-Host = 'Downloading the file scarface.config.json...'
-Write-Host = 'Download complete.'
+$scarConfigObj | ConvertTo-Json | Set-Content -Path $scarConfigPath
 
 # Execute ca scar
 # $killCheck = {
@@ -28,15 +24,15 @@ Write-Host = 'Download complete.'
 
 # Start-Job $killCheck -Name "killVScode"
 
-Write-Host = 'Executing the command ca scar...'
+Write-Host = 'Avvio plugin-scarface'
 
 Set-Location 'C:\dev\scarface'
 $env:NG_CLI_ANALYTICS = "ci"
 
-Write-Host "Executing ca scar:setup..."
+Write-Host "Avvio ca scar:setup..."
 Start-Process "~\\AppData\\Roaming\\npm\\ca.cmd" -ArgumentList 'scar:setup' -NoNewWindow -Wait
 Start-Process "~\\AppData\\Roaming\\npm\\ca.cmd" -ArgumentList "scar -c C:\\dev\\scarface\\scarface.config.json" -NoNewWindow -Wait
-Write-Host = 'The command ca scar was executed correctly. Press the End button to conclude the installation.'
+Write-Host = 'Il comando ca scar è stato completato'
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

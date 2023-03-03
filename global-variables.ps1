@@ -1,13 +1,13 @@
 $startLocation = (Get-Location)
-$StartupPath = "~\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\caep-startup.cmd"
+$startupPath = "~\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\caep-startup.cmd"
 
-$ScarVersion = ""
-$ScarConfig = "https://castorybookbloblwebsite.blob.core.windows.net/scar-configs/scarface.config.json"
+$scarVersion = ""
+$scarConfig = "https://castorybookbloblwebsite.blob.core.windows.net/scar-configs/scarface.config.json"
 $scarConfigPath = "C:\dev\scarface\scarface.config.json"
 $addNodeBuildTools = ""
 
-$TokenPath = "~\.token.json"
-$npmrcPath = "~/.npmrc"
+$tokenPath = "~\.token.json"
+$npmrcPath = "~\.npmrc"
 $currentDate = (Get-Date -Format yyyyMMdd-HHmmss).ToString()
 $checkLogs = @{}
 $installLogs = @{}

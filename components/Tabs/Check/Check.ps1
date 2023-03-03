@@ -14,7 +14,7 @@ function Invoke-CheckRequirements {
 
   # Create scar folder beforehand with download directory and delete previouses files inside of it
   $downloadExeFolder = "C:\dev\scarface\download"
-  Write-Host "Removing $downloadExeFolder and Creating a new empty folder..."
+  Write-Host "Cancellazione $downloadExeFolder e creazione di una nuova cartella vuota..."
   if (Test-Path -Path $downloadExeFolder) { Remove-Item $downloadExeFolder -Recurse -Force }
   New-Item -Path $downloadExeFolder -ItemType Directory
 
@@ -22,33 +22,13 @@ function Invoke-CheckRequirements {
   if (Test-Path $backofficeProjectPath) { Remove-Item -Path $backofficeProjectPath -Force -Recurse }
   New-StartupCmd
   
-  Invoke-OverrideRequirement
+  $override = invoke-DownloadScarConfigJson
+  Invoke-OverrideRequirement $override
   Invoke-ExecuteChecks
 
   $gridRequirements.Rows[0].Selected = $true
   gridRequirements_Click
   $installButton.Enabled = $true
-}
-
-function Invoke-OverrideRequirement() {
-  <#
-.SYNOPSIS
-Override custom json to Requirements
-.DESCRIPTION
-Override custom json to Requirements
-#>
-
-  $overrideJson = invoke-DownloadScarConfigJson
-  if (!($overrideJson)) {
-    Write-Host "No override found"
-    return
-  }
-
-  foreach ($name in $overrideJson.Keys) {
-    foreach ($Property in $overrideJson[$name].Keys) {
-      $requirements[$name][$Property] = $overrideJson[$name][$Property]
-    }
-  }
 }
 
 function invoke-DownloadScarConfigJson() {
@@ -62,13 +42,35 @@ Download scarface.config.json
   if ( Test-Path $scarConfigPath) { Remove-Item -Path $scarConfigPath -Force }
   New-Item -Path $scarConfigPath -Force | Out-Null
 
-  Write-Host "downloading $scarConfig"
-  $ScarConfigObj = (Invoke-WebRequest -Uri $ScarConfig -UseBasicParsing).Content
-  Set-Content -Path $scarConfigPath -Value $scarConfigObj 
-  $overrideRequirement = $scarConfigObj.overrideRequirement
-  if (!$overrideRequirement) { return $false }
-  Write-Host "downloading " + $overrideRequirement
-  return ((Invoke-WebRequest -Uri $overrideRequirement -UseBasicParsing).Content | ConvertFrom-Json | ConvertPSObjectToHashtable)
+  Write-Host "Download $scarConfig in corso"
+  $scarConfigObj = (Invoke-WebRequest -Uri $scarConfig -UseBasicParsing)
+  Set-Content -Path $scarConfigPath -Value $scarConfigObj
+  Write-Host "Download $scarConfig terminato"
+  return ($scarConfigObj | ConvertFrom-Json).overrideRequirement
+}
+
+function Invoke-OverrideRequirement($override) {
+  <#
+.SYNOPSIS
+Override custom json to Requirements
+.DESCRIPTION
+Override custom json to Requirements
+#>
+
+  if (!$override) { return $false }
+
+  Write-Host "Download di $override in corso..."
+  $overrideJson =  ((Invoke-WebRequest -Uri $override -UseBasicParsing).Content | ConvertFrom-Json | ConvertPSObjectToHashtable)
+  if (!($overrideJson)) {
+    Write-Host "Non è stato trovato alcun override"
+    return
+  }
+
+  foreach ($name in $overrideJson.Keys) {
+    foreach ($property in $overrideJson[$name].Keys) {
+      $requirements[$name][$property] = $overrideJson[$name][$property]
+    }
+  }
 }
 
 function Invoke-ExecuteChecks {
@@ -111,13 +113,13 @@ function invoke-checkDependencies {
 
   foreach ($dependency in $requirements[$name]["Dependencies"]) {
     if (($checkLogs[$dependency]["Result"] -ne "OK") -and ($checkLogs[$dependency]["Result"] -ne "VER")) {
-      $dependenciesFailed += "$dependency, "
+      $dependenciesFailed += "`n$dependency"
     }
   }
   
 
   if ($dependenciesFailed) {
-    $checkLogs[$name]["Logs"] = "KO A causa di $dependenciesFailed"
+    $checkLogs[$name]["Logs"] = "KO A causa di: $dependenciesFailed"
     return $false
   }
 
@@ -166,5 +168,3 @@ function installButton_Click {
   tabButton_Click($installationTabButton)
   Invoke-installRequirements
 }
-
-. .\components\Tabs\Check\Form.ps1

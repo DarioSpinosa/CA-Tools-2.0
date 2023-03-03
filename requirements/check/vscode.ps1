@@ -26,34 +26,34 @@ function checkApp {
 }
 
 function checkSettings {
-  $VSCodeSettingsPath = "~\AppData\Roaming\Code\User"
-  $VSCodeSettingsJsonPath = "~\AppData\Roaming\Code\User\settings.json"
+  $vsCodeSettingsPath = "~\AppData\Roaming\Code\User"
+  $vsCodeSettingsJsonPath = "~\AppData\Roaming\Code\User\settings.json"
 
-  if (!(Test-Path $VSCodeSettingsPath)) { 
-    invoke-WriteCheckLogs "Path $VSCodeSettingsPath non trovato"
+  if (!(Test-Path $vsCodeSettingsPath)) { 
+    invoke-WriteCheckLogs "Path $vsCodeSettingsPath non trovato"
     return 'SETTINGS'
   }
 
-  invoke-WriteCheckLogs "Path $VSCodeSettingsPath trovato"
+  invoke-WriteCheckLogs "Path $vsCodeSettingsPath trovato"
 
-  if (!(Test-Path $VSCodeSettingsJsonPath)) {
-    New-Item -Path $VSCodeSettingsJsonPath -Value '{ }' -Force | Out-Null
-    invoke-WriteCheckLogs "File $VSCodeSettingsJsonPath non trovato"
+  if (!(Test-Path $vsCodeSettingsJsonPath)) {
+    New-Item -Path $vsCodeSettingsJsonPath -Value '{ }' -Force | Out-Null
+    invoke-WriteCheckLogs "File $vsCodeSettingsJsonPath non trovato"
     return 'SETTINGS'
   }
 
-  invoke-WriteCheckLogs "File $VSCodeSettingsJsonPath trovato"
-  $SettingsContent = Get-Content -Path "~\AppData\Roaming\Code\User\settings.json" | ConvertFrom-Json
+  invoke-WriteCheckLogs "File $vsCodeSettingsJsonPath trovato"
+  $settingsContent = Get-Content -Path "~\AppData\Roaming\Code\User\settings.json" | ConvertFrom-Json
 
-  if (($SettingsContent.'terminal.integrated.defaultProfile.windows') -or ($SettingsContent.'terminal.integrated.shellArgs.windows') -or ($SettingsContent.'terminal.integrated.profiles.windows')) {
-    invoke-WriteCheckLogs "Valore di Default Profile $SettingsContent.'terminal.integrated.defaultProfile.windows'"
-    invoke-WriteCheckLogs "Valore di Shell Args $SettingsContent.'terminal.integrated.shellArgs.windows'"
-    invoke-WriteCheckLogs "Valore di Integrated Profile $SettingsContent.'terminal.integrated.profiles.windows'"
+  if (($settingsContent.'terminal.integrated.defaultProfile.windows') -or ($settingsContent.'terminal.integrated.shellArgs.windows') -or ($settingsContent.'terminal.integrated.profiles.windows')) {
+    invoke-WriteCheckLogs "Valore di Default Profile $settingsContent.'terminal.integrated.defaultProfile.windows'"
+    invoke-WriteCheckLogs "Valore di Shell Args $settingsContent.'terminal.integrated.shellArgs.windows'"
+    invoke-WriteCheckLogs "Valore di Integrated Profile $settingsContent.'terminal.integrated.profiles.windows'"
     return 'SETTINGS'
   }
-  elseif (($SettingsContent.'terminal.integrated.shell.windows' -ne 'C:\WINDOWS\System32\cmd.exe') -or ($SettingsContent.'update.mode' -ne 'manual')) {
-    invoke-WriteCheckLogs "Valore di Shell $SettingsContent.'terminal.integrated.shell.windows'"
-    invoke-WriteCheckLogs "Valore di Update Mode $SettingsContent.'update.mode'"
+  elseif (($settingsContent.'terminal.integrated.shell.windows' -ne 'C:\WINDOWS\System32\cmd.exe') -or ($settingsContent.'update.mode' -ne 'manual')) {
+    invoke-WriteCheckLogs "Valore di Shell $settingsContent.'terminal.integrated.shell.windows'"
+    invoke-WriteCheckLogs "Valore di Update Mode $settingsContent.'update.mode'"
     return 'SETTINGS'
   }
 
@@ -61,8 +61,8 @@ function checkSettings {
 }
 
 function checkExtentions {
-  $ListExtensions = invoke-executeCommand("code --list-extensions")
-  if (!$ListExtensions) { 
+  $listExtensions = invoke-executeCommand("code --list-extensions")
+  if (!$listExtensions) { 
     invoke-WriteCheckLogs "Nessuna estensione di visual studio code rilevata"
     return 'EXTENTIONS'
   }
@@ -70,7 +70,7 @@ function checkExtentions {
   $missingExtentions = @()
 
   foreach ($extension in $requirements[$name]["Extentions"]) {
-    if (-not $ListExtensions.Contains($extension)) { $missingExtentions += $extension }
+    if (-not $listExtensions.Contains($extension)) { $missingExtentions += $extension }
   }
 
   $requirements[$name]["Extentions"] = $missingExtentions
@@ -78,7 +78,7 @@ function checkExtentions {
   if ($missingExtentions.Count ) {
     $message = "Non sono state rilevate le seguenti estensioni: "
     foreach ($ext in $missingExtentions) {
-      $message += "$ext, "
+      $message += "`n$ext"
     }
     invoke-WriteCheckLogs $message
     return 'EXTENTIONS' 

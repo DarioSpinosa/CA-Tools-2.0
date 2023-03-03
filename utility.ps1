@@ -1,30 +1,30 @@
 function ConvertPSObjectToHashtable { 
   param (
     [Parameter(ValueFromPipeline)]
-    $InputObject
+    $inputObject
   )
 
   process {
-    if ($null -eq $InputObject) { return $null }
+    if ($null -eq $inputObject) { return $null }
 
-    if ($InputObject -is [System.Collections.IEnumerable] -and $InputObject -isnot [string]) {
+    if ($inputObject -is [System.Collections.IEnumerable] -and $inputObject -isnot [string]) {
       $collection = @(
-        foreach ($object in $InputObject) { ConvertPSObjectToHashtable $object }
+        foreach ($object in $inputObject) { ConvertPSObjectToHashtable $object }
       )
 
       Write-Output -NoEnumerate $collection
     }
-    elseif ($InputObject -is [psobject]) {
+    elseif ($inputObject -is [psobject]) {
       $hash = @{}
 
-      foreach ($property in $InputObject.PSObject.Properties) {
+      foreach ($property in $inputObject.PSObject.Properties) {
         $hash[$property.Name] = ConvertPSObjectToHashtable $property.Value
       }
 
       $hash
     }
     else {
-      $InputObject
+      $inputObject
     }
   }
 }
@@ -51,22 +51,22 @@ function invoke-WriteLogs($hashLogs, $log) {
 }
 
 function invoke-checkProxy {
-  $ProxyData = Get-ItemProperty -Path 'Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings';
+  $proxyData = Get-ItemProperty -Path 'Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings';
 
-  if ($ProxyData.ProxyEnable -eq 0 ) { return }
+  if ($proxyData.ProxyEnable -eq 0 ) { return }
 
-  $ProxyDataSplit = $ProxyData.ProxyServer -split ':'
+  $proxyDataSplit = $proxyData.ProxyServer -split ':'
 
-  if ($ProxyDataSplit.Count -eq 2) {
-    $ProxyAddress = $ProxyDataSplit[0]
-    $ProxyPort = $ProxyDataSplit[1]
+  if ($proxyDataSplit.Count -eq 2) {
+    $proxyAddress = $proxyDataSplit[0]
+    $proxyPort = $proxyDataSplit[1]
   }
   else {
-    $ProxyAddress = $ProxyDataSplit[1].replace('/', '')
-    $ProxyPort = $ProxyDataSplit[2]
+    $proxyAddress = $proxyDataSplit[1].replace('/', '')
+    $proxyPort = $proxyDataSplit[2]
   }
 
-  $requirements["NPM"]["Proxy"] = $requirements["Docker"]["Proxy"] = $(if ((Test-NetConnection -ComputerName $ProxyAddress -Port $ProxyPort).TcpTestSucceeded) { "OK" } else { 'TCP' })
+  $requirements["NPM"]["Proxy"] = $requirements["Docker"]["Proxy"] = $(if ((Test-NetConnection -ComputerName $proxyAddress -Port $proxyPort).TcpTestSucceeded) { "OK" } else { 'TCP' })
   return $requirements["NPM"]["Proxy"]
 }
 
@@ -83,21 +83,21 @@ function invoke-executeCommand($command) {
   }
 }
 
-function New-CommandString($String) {
+function New-CommandString($string) {
   <#
   .SYNOPSIS
   Resolve the Requirement's command, subsituting the variables inside the string with his concrete value
   .DESCRIPTION
   Resolves the Requirement's command, subsituting the variables inside the string with his concrete value
   #>
-  $StringWithValue = $String
+  $stringWithValue = $string
   do {
-    Invoke-Expression("Set-Variable -name StringWithValue -Value `"$StringWithValue`"")
+    Invoke-Expression("Set-Variable -name StringWithValue -Value `"$stringWithValue`"")
 
-    Write-Host "$StringWithValue"
+    Write-Host "$stringWithValue"
 
-  } while ($StringWithValue -like '*$(*)*')
-  return $StringWithValue
+  } while ($stringWithValue -like '*$(*)*')
+  return $stringWithValue
 }
 
 

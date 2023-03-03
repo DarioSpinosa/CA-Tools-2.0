@@ -5,13 +5,13 @@ if ($result.Contains("VERSION")) {
 }
 
 if ($result.Contains("UBUNTU")) {
-  if (-not (invoke-executeInstallCommand "wsl --install -d Ubuntu-$($Requirement['MaxVersion'])")) { return "KO" }
+  if (-not (invoke-executeInstallCommand "wsl --install -d Ubuntu-$($requirement['MaxVersion'])")) { return "KO" }
 }
 
 if ($result.Contains("MAIN")) {
    
   if (-not $result.Contains("VER AVAILABLE")) {
-    if (-not (invoke-executeInstallCommand "wsl --install -d Ubuntu-$($Requirement['MaxVersion'])")) { return "KO" }
+    if (-not (invoke-executeInstallCommand "wsl --install -d Ubuntu-$($requirement['MaxVersion'])")) { return "KO" }
   }
 
   $minVersion = $requirements[$name]["MinVersion"].split(".")

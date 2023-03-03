@@ -1,7 +1,7 @@
 function invoke-installing($name, $requirement) {
     #Return temporaneo per impedire l'installazione in caso di errore di versione "VER"
     #per cui non è stato ancora deciso il comportamento
-    if (-not $checkLogs[$Name]["Result"].Contains("KO")) { return }
+    if (-not $checkLogs[$name]["Result"].Contains("KO")) { return }
     $subMessage = "$($name) version: $($requirement["MaxVersion"])"
     invoke-WriteInstallLogs "Installing $subMessage..."
     Start-Process npm -ArgumentList @('i', '-g', "npm@$($requirement['MaxVersion'])") -NoNewWindow -Wait
@@ -9,10 +9,10 @@ function invoke-installing($name, $requirement) {
 }
 
 function invoke-proxy ($name, $requirement) {
-    if (-not $checkLogs[$Name]["Result"].Contains("PROXY")) { return }
-    $ProxyServer = ($((Get-ItemProperty -Path 'Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings')).ProxyServer)
-    Start-Process powershell.exe -ArgumentList "npm config set proxy $ProxyServer" -NoNewWindow -Wait
-    Start-Process powershell.exe -ArgumentList "npm config set https-proxy $ProxyServer" -NoNewWindow -Wait
+    if (-not $checkLogs[$name]["Result"].Contains("PROXY")) { return }
+    $proxyServer = ($((Get-ItemProperty -Path 'Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings')).ProxyServer)
+    Start-Process powershell.exe -ArgumentList "npm config set proxy $proxyServer" -NoNewWindow -Wait
+    Start-Process powershell.exe -ArgumentList "npm config set https-proxy $proxyServer" -NoNewWindow -Wait
 }
 
 invoke-installing $name $requirement

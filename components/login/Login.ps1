@@ -10,7 +10,7 @@ function loginButton_Click {
     Takes the input inserted by the user and will try to login to npm
     #>
   # Check if the fields are empty it won't login
-  if (!($UsernameTextBox.Text -ne "") -or !($TokenTextBox.Text -ne "")) {
+  if (!($usernameTextBox.Text -ne "") -or !($TokenTextBox.Text -ne "")) {
     Write-Host "Username and Token can't be NULL! Please enter the Username and Password."
     return
   }
@@ -25,18 +25,18 @@ function loginButton_Click {
   
 function invoke-login {
   $errorLabel.Visible = $false
-  $NpmRegistry = "https://devops.codearchitects.com:444/Code%20Architects/_packaging/ca-npm/npm/registry/"
+  $npmRegistry = "https://devops.codearchitects.com:444/Code%20Architects/_packaging/ca-npm/npm/registry/"
   
   # Execute the login
   # http request setting
   $password = ConvertTo-SecureString $($TokenTextBox.Text) -AsPlainText -Force
-  $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $($UsernameTextBox.Text), $($TokenTextBox.Text))))
+  $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $($usernameTextBox.Text), $($TokenTextBox.Text))))
 
   try {
     Invoke-RestMethod -TimeoutSec 1000 `
       -Uri (New-Object System.Uri "https://devops.codearchitects.com:444/Code%20Architects/_apis/packaging/feeds/ca-npm/npm/packages/%40ca%2Fcli/versions/0.1.1/content") `
       -Method "get" `
-      -Credential (New-Object System.Management.Automation.PSCredential($($UsernameTextBox.Text), $password)) `
+      -Credential (New-Object System.Management.Automation.PSCredential($($usernameTextBox.Text), $password)) `
       -Headers @{"Accept" = "*/*"; Authorization = ("Basic {0}" -f $base64AuthInfo) } `
       -ContentType 'application/json'
   }
@@ -47,9 +47,9 @@ function invoke-login {
   }
   
   Remove-Item $npmrcPath
-  Start-Process powershell.exe -ArgumentList "npm-login.ps1 -token $($TokenTextBox.Text) -registry $NpmRegistry -scope @ca -user $($UsernameTextBox.Text) " -NoNewWindow -Wait
-  npm config set '@ca:registry' $NpmRegistry
-  npm config set '@ca-codegen:registry' $NpmRegistry
+  Start-Process powershell.exe -ArgumentList "npm-login.ps1 -token $($TokenTextBox.Text) -registry $npmRegistry -scope @ca -user $($usernameTextBox.Text) " -NoNewWindow -Wait
+  npm config set '@ca:registry' $npmRegistry
+  npm config set '@ca-codegen:registry' $npmRegistry
   
   "npm view @ca/cli 2>&1 > $capturedPath" | Invoke-Expression
   "npm view @ca-codegen/core 2>&1 >> $capturedPath" | Invoke-Expression
@@ -81,14 +81,14 @@ function Remove-WrongToken($correctToken) {
     .DESCRIPTION
     If the login to npm was successful it will remove all the wrong tokens in the .tokens.json file
     #>
-  $TokenList = Get-Content $TokenPath | ConvertFrom-Json
-  $NewTokenList = @()
+  $TokenList = Get-Content $tokenPath | ConvertFrom-Json
+  $newTokenList = @()
   foreach ($t in $TokenList) {
     if ($t.token -eq $correctToken) {
-      $NewTokenList += $t
+      $newTokenList += $t
     }
   }
-  $NewTokenList | ConvertTo-Json | Set-Content -Path $TokenPath -Force
+  $newTokenList | ConvertTo-Json | Set-Content -Path $tokenPath -Force
 }
 
 . .\components\login\Form.ps1
@@ -98,7 +98,7 @@ if ($type -eq "START") {
   $target = "//devops.codearchitects.com:444/Code%20Architects/_packaging/ca-npm/npm/registry/:"
   for ($i = 0; $i -lt $npmrcContent.Count; $i++) {
     if ($npmrcContent[$i].Contains($target)) {
-      $UsernameTextBox.Text = $npmrcContent[$i].Split("=")[1]
+      $usernameTextBox.Text = $npmrcContent[$i].Split("=")[1]
       $TokenTextBox.Text = ([Text.Encoding]::Utf8.GetString([Convert]::FromBase64String((($npmrcContent[$i + 1] -split "password=")[1] -replace '"', ''))))
       loginButton_Click
       return

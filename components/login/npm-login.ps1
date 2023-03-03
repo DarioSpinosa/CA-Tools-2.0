@@ -172,7 +172,7 @@ $npmrcContent = Get-Content -Path $npmrcPath -raw
 # encoding
 LogMessage "Encode Token in base64"
 $bytes = [System.Text.Encoding]::UTF8.GetBytes($token)
-$encodedToken = [Convert]::ToBase64String($Bytes)
+$encodedToken = [Convert]::ToBase64String($bytes)
 
 $npmrcPasswordLine = "$registrySettingLineClean`:_password"
 $npmrcPasswordRegistryLine = "$registrySettingLine`:_password"

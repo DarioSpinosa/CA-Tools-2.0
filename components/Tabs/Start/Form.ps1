@@ -27,13 +27,13 @@ $startButton.FlatStyle = "Flat"
 $startButton.FlatAppearance.BorderSize = 0;
 $startButton.FlatAppearance.MouseOverBackColor = "#0463ca"
 
-$HorizontalLine = New-Object System.Windows.Forms.Label
-$HorizontalLine.Text = ""
-$HorizontalLine.BorderStyle = "Fixed3D"
-$HorizontalLine.AutoSize = $false
-$HorizontalLine.Width = $tabStart.ClientSize.Width
-$HorizontalLine.Height = 3
-$HorizontalLine.Location = "0, 130"
+$horizontalLine = New-Object System.Windows.Forms.Label
+$horizontalLine.Text = ""
+$horizontalLine.BorderStyle = "Fixed3D"
+$horizontalLine.AutoSize = $false
+$horizontalLine.Width = $tabStart.ClientSize.Width
+$horizontalLine.Height = 3
+$horizontalLine.Location = "0, 130"
 
 $gridConnections = New-Object System.Windows.Forms.DataGridView
 $gridConnections.Name = "Grid"
@@ -151,8 +151,8 @@ $vmCheck.Location = "565, 200"
 $vmCheck.SizeMode = "Zoom"
 $vmCheck.BackColor = "Transparent"
 
-$tabStart.controls.AddRange(@($welcomeLabel, $startButton, $HorizontalLine, $gridConnections, $gridEnvVar, $infoProxyButton, $proxyLabel, $proxyCheck, $infoVmButton, $vmLabel, $vmCheck))
-# $welcomeForm.controls.AddRange(@($logo, $panel, $HorizontalLine))
+$tabStart.controls.AddRange(@($welcomeLabel, $startButton, $horizontalLine, $gridConnections, $gridEnvVar, $infoProxyButton, $proxyLabel, $proxyCheck, $infoVmButton, $vmLabel, $vmCheck))
+# $welcomeForm.controls.AddRange(@($logo, $panel, $horizontalLine))
 
 #---------------------------------------------------------[Events]--------------------------------------------------------
 

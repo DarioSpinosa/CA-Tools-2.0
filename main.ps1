@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 . .\utility.ps1
 . .\global-variables.ps1
-. .\components\modal\Modal.ps1
+. .\components\modal\Form.ps1
 . .\components\homePage\HomePage.ps1
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

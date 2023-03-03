@@ -1,7 +1,7 @@
 function invoke-installing($name, $requirement) {
   #Return temporaneo per impedire l'installazione in caso di errore di versione "VER"
 #per cui non è stato ancora deciso il comportamento
-  if (-not $checkLogs[$Name]["Result"].Contains("KO")) { return }
+  if (-not $checkLogs[$name]["Result"].Contains("KO")) { return }
   $subMessage = "$($name) version: $($requirement["MaxVersion"])"
   if (-not (invoke-download $name $requirement)) {return "KO"}
   invoke-WriteInstallLogs "Installing $subMessage..."
@@ -11,16 +11,16 @@ function invoke-installing($name, $requirement) {
 }
 
 function invoke-proxy($name, $requirement) {
-  if (-not $checkLogs[$Name]["Result"].Contains("PROXY")) { return }
+  if (-not $checkLogs[$name]["Result"].Contains("PROXY")) { return }
   $dockerConfigPath = "~\.docker\config.json" #Dovrebbe crearlo docker (?)
   if (-not (Test-Path $dockerConfigPath)) { return }
     
   $dockerConfigJson = Get-Content $dockerConfigPath | ConvertFrom-Json | ConvertPSObjectToHashtable
         
-  $InternetSettings = (Get-ItemProperty -Path "Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings")
+  $internetSettings = (Get-ItemProperty -Path "Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings")
   $proxies = @{ 'default' = @{
-      'httpProxy'  = $InternetSettings.ProxyServer
-      'httpsProxy' = $InternetSettings.ProxyServer
+      'httpProxy'  = $internetSettings.ProxyServer
+      'httpsProxy' = $internetSettings.ProxyServer
     }
   }
     

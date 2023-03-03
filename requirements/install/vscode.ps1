@@ -1,6 +1,6 @@
 function invoke-installing ($requirement) {
   $subMessage = "$($name) version: $($requirement["MaxVersion"])"
-  invoke-WriteInstallLogs "Installing $subMessage..."
+  invoke-WriteInstallLogs "Installazione $subMessage... in corso"
   Start-Process $requirement["DownloadOutFile"] -ArgumentList @( '/VERYSILENT', '/NORESTART', '/mergetasks=!runcode' ) -Wait
 
   $env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path', 'User')
@@ -10,52 +10,52 @@ function invoke-installing ($requirement) {
     $codeProcess.CloseMainWindow()
   }
 
-  invoke-WriteInstallLogs "Install of $subMessage complete."
+  invoke-WriteInstallLogs "Installazione di $subMessage completata."
 }
 
 function invoke-settings ($name) {
   if (-not $checkLogs[$name]["Result"].Contains("SETTINGS")) { return }
-  invoke-WriteInstallLogs "Updating Visual Studio Code Settings:``r``n- Default Integrated Terminal: Command Prompt``r``n- Update Mode: Manual...`\"
-  $VSCodeSettingsJsonPath = "~\AppData\Roaming\Code\User\settings.json"
+  invoke-WriteInstallLogs "Aggiornamento impostazioni in corso:``r``n- Terminale di default: Command Prompt``r``n- Modalita di aggiornamento: Manuale...`\"
+  $vsCodeSettingsJsonPath = "~\AppData\Roaming\Code\User\settings.json"
 
-  if (-not (Get-Content $VSCodeSettingsJsonPath)) {
-    Set-Content -Path $VSCodeSettingsJsonPath -Value '{ }'
+  if (-not (Get-Content $vsCodeSettingsJsonPath)) {
+    Set-Content -Path $vsCodeSettingsJsonPath -Value '{ }'
   }
 
-  $VSCodeSettingObj = Get-Content $VSCodeSettingsJsonPath | ConvertFrom-Json
-  $VSCodeSettingObj = $VSCodeSettingObj | Select-Object * -ExcludeProperty 'terminal.integrated.shell.windows', 'terminal.integrated.defaultProfile.windows', 'terminal.integrated.shellArgs.windows', 'terminal.integrated.profiles.windows'
-  $VSCodeSettingObj | Add-Member -NotePropertyName 'terminal.integrated.shell.windows' -NotePropertyValue 'C:\WINDOWS\System32\cmd.exe' -Force
-  $VSCodeSettingObj | Add-Member -NotePropertyName 'update.mode' -NotePropertyValue 'manual' -Force
-  $VSCodeSettingObj.PsObject.Properties.Remove('*')
-  Set-Content -Path $VSCodeSettingsJsonPath -Value ($VSCodeSettingObj | ConvertTo-Json -Depth 5)
-  invoke-WriteInstallLogs "return 'Update of Visual Studio Code Settings complete.'"
+  $vsCodeSettingObj = Get-Content $vsCodeSettingsJsonPath | ConvertFrom-Json
+  $vsCodeSettingObj = $vsCodeSettingObj | Select-Object * -ExcludeProperty 'terminal.integrated.shell.windows', 'terminal.integrated.defaultProfile.windows', 'terminal.integrated.shellArgs.windows', 'terminal.integrated.profiles.windows'
+  $vsCodeSettingObj | Add-Member -NotePropertyName 'terminal.integrated.shell.windows' -NotePropertyValue 'C:\WINDOWS\System32\cmd.exe' -Force
+  $vsCodeSettingObj | Add-Member -NotePropertyName 'update.mode' -NotePropertyValue 'manual' -Force
+  $vsCodeSettingObj.PsObject.Properties.Remove('*')
+  Set-Content -Path $vsCodeSettingsJsonPath -Value ($vsCodeSettingObj | ConvertTo-Json -Depth 5)
+  invoke-WriteInstallLogs "Aggiornamento impostazioni completato"
 }
 
 function invoke-extentions ($name, $requirement) {
-  if (-not $checkLogs[$Name]["Result"].Contains("EXTENTIONS")) { return }
-  invoke-WriteInstallLogs "Installing Visual Studio Code Extentions..."
+  if (-not $checkLogs[$name]["Result"].Contains("EXTENTIONS")) { return }
+  invoke-WriteInstallLogs "Installazione estensioni in corso"
 
   foreach ($item in $requirement["Extentions"]) {
 
-    invoke-WriteInstallLogs "Installing $item..."
+    invoke-WriteInstallLogs "Installando $item..."
     $resultInstallation = invoke-executeCommand "Start-Process code -ArgumentList '--install-extension $item --force' -NoNewWindow -Wait"
-    $ContentErrLogfile = Get-Content $logFilePath
+    $contentErrLogfile = Get-Content $logFilePath
       
     if (-not $resultInstallation -or $contentErrLogfile -like "*Failed Installing Extensions*") {
-      invoke-WriteInstallLogs "Failed installing extension $item!"
+      invoke-WriteInstallLogs "Installazione di $item fallita!"
     } 
     elseif ($contentErrLogfile -like "*was successfully installed.*") {
-      invoke-WriteInstallLogs "$item was successfully installed."
+      invoke-WriteInstallLogs "$item  installata correttamente."
     }
   }  
 
-  invoke-WriteInstallLogs "Install of Visual Studio Code Extensions complete."
+  invoke-WriteInstallLogs "Installazione estensioni completata"
   
 }
 
 #Return temporaneo per impedire l'installazione in caso di errore di versione "VER"
 #per cui non è stato ancora deciso il comportamento
-if ($checkLogs[$Name]["Result"].Contains("KO")) {
+if ($checkLogs[$name]["Result"].Contains("KO")) {
   if (-not (invoke-download $name $requirement)) {return "KO"}
   invoke-installation $requirement
   invoke-deleteDownload $name $requirement

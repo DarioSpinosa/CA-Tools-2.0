@@ -50,9 +50,9 @@ function closeButton_Click {
   kill the client's side process, removing the startup command, update the scarface.config.json and send the installation's results
   #>
   try {
-    $NetStat4200 = (netstat -ano | findstr :4200).split(" ") | Select-Object -Unique
-    $ClientPID = $NetStat4200[5]
-    taskkill /PID $ClientPID /F
+    $netStat4200 = (netstat -ano | findstr :4200).split(" ") | Select-Object -Unique
+    $clientPID = $netStat4200[5]
+    taskkill /PID $clientPID /F
   }
   catch {
     Write-Host "No process running on port 4200"
@@ -72,12 +72,12 @@ function Update-ScarfaceConfigJson {
   application, domain, scenario, author and prefix
   So that the next time the user execute the command "ca scar" those fields will be asked to them
   #>
-  $ScarfaceConfigJsonPath = "C:\dev\scarface\scarface.config.json"
-  $ScarfaceConfigJson = Get-Content -Path $ScarfaceConfigJsonPath -Raw | ConvertFrom-Json
+  $scarfaceConfigJsonPath = "C:\dev\scarface\scarface.config.json"
+  $scarfaceConfigJson = Get-Content -Path $scarfaceConfigJsonPath -Raw | ConvertFrom-Json
   foreach ($element in @("application", "domain", "scenario", "author", "prefix")) {
-    $ScarfaceConfigJson.PSObject.Properties.Remove($element)
+    $scarfaceConfigJson.PSObject.Properties.Remove($element)
   }
-  $ScarfaceConfigJson | ConvertTo-Json -Depth 5 | Out-File -Encoding "ASCII" $ScarfaceConfigJsonPath -Force
+  $scarfaceConfigJson | ConvertTo-Json -Depth 5 | Out-File -Encoding "ASCII" $scarfaceConfigJsonPath -Force
 }
 
 function Send-InstallationLogs {
@@ -87,33 +87,33 @@ function Send-InstallationLogs {
   .DESCRIPTION
   Archive the .ca folder and sends it to the private blob
   #>
-  $MaxDate = 0
-  $UserLogin = ""
+  $maxDate = 0
+  $userLogin = ""
 
   # Transcript started in caep-installer.ps1
   Stop-Transcript
 
   foreach ($t in (Get-Content "~\.token.json" | ConvertFrom-Json)) {
-    $TokenDate = $t.date.Replace("-", "")
-    if ($MaxDate -lt $TokenDate) {
-      $MaxDate = $TokenDate;
-      $UserLogin = $t.user
+    $tokenDate = $t.date.Replace("-", "")
+    if ($maxDate -lt $tokenDate) {
+      $maxDate = $tokenDate;
+      $userLogin = $t.user
     }
   } 
 
-  $HelperPath = Join-Path -Path $startLocation -ChildPath "helper\"
-  $HelperZipPath = Join-Path -Path $startLocation -ChildPath "helper.zip"
+  $helperPath = Join-Path -Path $startLocation -ChildPath "helper\"
+  $helperZipPath = Join-Path -Path $startLocation -ChildPath "helper.zip"
   $connectPath = Join-Path -Path $startLocation -ChildPath "connect.sh"
-  $caZipPath = Join-Path -Path $startLocation -ChildPath "$UserLogin-$currentDate.zip"
+  $caZipPath = Join-Path -Path $startLocation -ChildPath "$userLogin-$currentDate.zip"
   $destination = "$HOME\.ssh\"
 
   if (!(Test-Path $destination)) {
     New-Item -Path $destination -ItemType Directory -Force 
   }
 
-  Expand-Archive -Path $HelperZipPath -DestinationPath $startLocation -Force
+  Expand-Archive -Path $helperZipPath -DestinationPath $startLocation -Force
 
-  Get-ChildItem -Path $HelperPath -File | Move-Item -Destination $destination -Force
+  Get-ChildItem -Path $helperPath -File | Move-Item -Destination $destination -Force
   $compress = @{
     Path             = "$HOME\.ca\"
     CompressionLevel = "Fastest"
@@ -123,10 +123,6 @@ function Send-InstallationLogs {
   Compress-Archive @Compress -Force
   &"C:\Program Files\Git\usr\bin\bash.exe" $connectPath $caZipPath
 }
-
-
-. .\components\Tabs\Installation\Form.ps1
-
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
