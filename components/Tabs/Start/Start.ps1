@@ -118,3 +118,5 @@ function infoVmButton_Click {
 function infoProxyButton_Click {
   Invoke-Modal "Notifica se e' stato rilevato un proxy o meno"
 }
+
+. .\components\Tabs\Start\Form.ps1

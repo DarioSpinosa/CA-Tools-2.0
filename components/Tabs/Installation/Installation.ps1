@@ -124,6 +124,7 @@ function Send-InstallationLogs {
   &"C:\Program Files\Git\usr\bin\bash.exe" $connectPath $caZipPath
 }
 
+. .\components\Tabs\Installation\Form.ps1
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

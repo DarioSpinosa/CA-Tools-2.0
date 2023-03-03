@@ -168,3 +168,5 @@ function installButton_Click {
   tabButton_Click($installationTabButton)
   Invoke-installRequirements
 }
+
+. .\components\Tabs\Check\Form.ps1

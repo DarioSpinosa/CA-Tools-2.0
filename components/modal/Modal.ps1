@@ -16,3 +16,5 @@ function ExitButton_Click() {
 function MessageLabel_SizeChanged(){
     $messageLabel.Left = ($modalForm.Width - $messageLabel.Width) / 2;
 }
+
+. .\components\modal\Form.ps1

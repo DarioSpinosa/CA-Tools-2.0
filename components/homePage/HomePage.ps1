@@ -31,9 +31,9 @@ function Invoke-CreateRow($grid, $name, $color) {
 }
 #---------------------------------------------------------------------[LOGIC]-------------------------------------------------------
 
-. .\components\Tabs\Start\Form.ps1
-. .\components\Tabs\Check\Form.ps1
-. .\components\Tabs\Installation\Form.ps1
+. .\components\Tabs\Start\Start.ps1
+. .\components\Tabs\Check\Check.ps1
+. .\components\Tabs\Installation\Installation.ps1
 . .\components\homePage\Form.ps1
 
 $buttonTabs = @{}
