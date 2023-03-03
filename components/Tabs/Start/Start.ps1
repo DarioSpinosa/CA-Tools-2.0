@@ -55,10 +55,10 @@ function startButton_Click {
   $envVar.Add("$env:PROGRAMFILES\Ca-Tools", "Gia' presente")
 
   $envInPath = $env:PATH.ToLower().Split(';')
-  foreach ($var in $envVar.Keys) {
+  foreach ($var in @($envVar.Keys)) {
     if (-not ($envInPath.Contains($var.ToLower()))) {
       [System.Environment]::SetEnvironmentVariable("PATH", (("$Env:PATH;$var") -replace ";;", ";"), "Machine")
-      $envVar[$var] = "Aggiunta"
+      $envVar[$var] = "Aggiunta" 
     }
   }
 
