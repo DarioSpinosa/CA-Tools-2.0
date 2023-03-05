@@ -1,4 +1,3 @@
-invoke-WriteCheckLogs "Generate npm log for npm view commands in $capturedPath ..."
 return $(if (invoke-login) {'OK'} else {"KO"})
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

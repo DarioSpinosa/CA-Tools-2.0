@@ -2,8 +2,8 @@
 Add-Type -AssemblyName System.Drawing
 . .\utility.ps1
 . .\global-variables.ps1
-. .\components\modal\Modal.ps1
 . .\components\homePage\HomePage.ps1
+invoke-initialize
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

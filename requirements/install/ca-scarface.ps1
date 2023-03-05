@@ -1,9 +1,9 @@
 $maxDate = 0
 $tokenList = Get-Content $tokenPath | ConvertFrom-Json
 foreach ($t in $tokenList) {
-    $currentDate = $t.date.Replace("-", "")
-    if ($maxDate -lt $currentDate) { 
-        $maxDate = $currentDate
+    $localDate = $t.date.Replace("-", "")
+    if ($maxDate -lt $localDate) { 
+        $maxDate = $localDate
         $tokenObj = $t
     }
 }

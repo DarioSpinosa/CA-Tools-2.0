@@ -1,3 +1,9 @@
+
+function invoke-initialize {
+  tabButton_Click($startTabButton)
+  $mainForm.ShowDialog()
+}
+
 function tabButton_Click($button) {
   if ($buttonTabs[$button].visible) { return }
   foreach ($element in $buttonTabs.Keys) {
@@ -17,7 +23,7 @@ function Button_MouseEnter($button) {
 }
 
 function Button_MouseLeave ($button) {
-  if ($buttonTabs[$button].visible) {return }
+  if ($buttonTabs[$button].visible) { return }
   $button.BackgroundImage = $null
   $button.ForeColor = "#ffffff"
 }
@@ -32,6 +38,8 @@ function Invoke-CreateRow($grid, $name, $color) {
 #---------------------------------------------------------------------[LOGIC]-------------------------------------------------------
 
 . .\components\Tabs\Start\Start.ps1
+. .\components\modal\Modal.ps1
+. .\components\login\Login.ps1
 . .\components\Tabs\Check\Check.ps1
 . .\components\Tabs\Installation\Installation.ps1
 . .\components\homePage\Form.ps1
@@ -40,6 +48,4 @@ $buttonTabs = @{}
 $buttonTabs.Add($startTabButton, $tabStart)
 $buttonTabs.Add($requirementsTabButton, $tabRequirements)
 $buttonTabs.Add($installationTabButton, $tabInstallation)
-tabButton_Click($startTabButton)
-$mainForm.ShowDialog()
 

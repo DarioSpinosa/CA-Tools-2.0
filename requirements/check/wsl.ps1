@@ -3,7 +3,7 @@ if ($scarConfig.Contains('terranova')) { return 'OK' }
 #Controlli Molto Complessi
 #KO = Esecuzione del comando fallito
 #VERSION = La defualt version di wsl non è la 2
-#UBUNTU = Non è stata rilevata alcuna distribuzione di ubuntu
+#UBUNTU = Scaricare ubuntu
 #MAIN + UBUNTU = Ubuntu non è settato come distribuzione principale e nessuna delle versioni rilevate rispetta i requisiti min e max, si procede al download della max
 #VER MAIN + UBUNTU = Ubuntu è settato come distribuzione principale ma non rispetta i requisiti min e max, e non c'è alcun'altra versione installa che li rispetti. Si procede al download della ma
 #MAIN + VER AVAILABLE = Ubuntu non è settato come distribuzione principale e esiste una versione chPne rispetta i requisiti min e max, si procede al settaggio

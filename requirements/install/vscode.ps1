@@ -15,7 +15,7 @@ function invoke-installing ($requirement) {
 
 function invoke-settings ($name) {
   if (-not $checkLogs[$name]["Result"].Contains("SETTINGS")) { return }
-  invoke-WriteInstallLogs "Aggiornamento impostazioni in corso:``r``n- Terminale di default: Command Prompt``r``n- Modalita di aggiornamento: Manuale...`\"
+  invoke-WriteInstallLogs "Aggiornamento impostazioni in corso:"
   $vsCodeSettingsJsonPath = "~\AppData\Roaming\Code\User\settings.json"
 
   if (-not (Get-Content $vsCodeSettingsJsonPath)) {

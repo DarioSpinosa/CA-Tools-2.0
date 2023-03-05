@@ -59,7 +59,7 @@ function closeButton_Click {
   }
 
   Update-ScarfaceConfigJson
-  Send-InstallationLogs
+  Send-Logs
   logoff.exe #per docker
 }
 
@@ -80,7 +80,7 @@ function Update-ScarfaceConfigJson {
   $scarfaceConfigJson | ConvertTo-Json -Depth 5 | Out-File -Encoding "ASCII" $scarfaceConfigJsonPath -Force
 }
 
-function Send-InstallationLogs {
+function Send-Logs {
   <#
   .SYNOPSIS
   Send all the logfiles to the private blob
@@ -93,7 +93,7 @@ function Send-InstallationLogs {
   # Transcript started in caep-installer.ps1
   Stop-Transcript
 
-  foreach ($t in (Get-Content "~\.token.json" | ConvertFrom-Json)) {
+  foreach ($t in (Get-Content $tokenPath | ConvertFrom-Json)) {
     $tokenDate = $t.date.Replace("-", "")
     if ($maxDate -lt $tokenDate) {
       $maxDate = $tokenDate;
@@ -101,27 +101,31 @@ function Send-InstallationLogs {
     }
   } 
 
-  $helperPath = Join-Path -Path $startLocation -ChildPath "helper\"
-  $helperZipPath = Join-Path -Path $startLocation -ChildPath "helper.zip"
-  $connectPath = Join-Path -Path $startLocation -ChildPath "connect.sh"
-  $caZipPath = Join-Path -Path $startLocation -ChildPath "$userLogin-$currentDate.zip"
   $destination = "$HOME\.ssh\"
-
   if (!(Test-Path $destination)) {
     New-Item -Path $destination -ItemType Directory -Force 
   }
 
+  $helperZipPath = new-Path $startLocation "helper.zip"
   Expand-Archive -Path $helperZipPath -DestinationPath $startLocation -Force
 
+  $helperPath = new-Path $startLocation "helper\"
   Get-ChildItem -Path $helperPath -File | Move-Item -Destination $destination -Force
+
+  $caZipPath = new-Path $startLocation "$userLogin-$currentDate.zip"
   $compress = @{
-    Path             = "$HOME\.ca\"
+    Path             = "$HOME\.ca\$currentDate"
     CompressionLevel = "Fastest"
     DestinationPath  = $caZipPath
   }
   
   Compress-Archive @Compress -Force
+  $connectPath = new-Path $startLocation "connect.sh"
   &"C:\Program Files\Git\usr\bin\bash.exe" $connectPath $caZipPath
+}
+
+function new-Path($path, $child){
+  return Join-Path -Path $path -ChildPath $child
 }
 
 . .\components\Tabs\Installation\Form.ps1

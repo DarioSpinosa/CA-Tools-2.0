@@ -5,19 +5,19 @@ function startButton_Click {
   
   # Check if the user opened PowerShell as Admin, if not then stop the installation, otherwise check the requirements
   if (-not ((invoke-executeCommand "Get-LocalGroupMember -Group Administrators") -like "*$(whoami)*")) {
-    Invoke-Modal "L'utente attuale non risulta essere l'amministratore della macchina"
+    invoke-modal  "L'utente attuale non risulta essere l'amministratore della macchina"
     $mainForm.Close()
     return
   }
   
   if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Invoke-Modal "L'applicazione non e' stata aperta come amministratore"
+    invoke-modal  "L'applicazione non e' stata aperta come amministratore"
     $mainForm.Close()
     return
   }
     
   if (-not (Get-NetAdapter | Where-Object { ($_.Name -like "*Ethernet*" -or $_.Name -like "*Wi-Fi*") -and ($_.Status -eq "Up") })) {
-    Invoke-Modal "Nessuna connessione ad internet rilevata"
+    invoke-modal  "Nessuna connessione ad internet rilevata"
     $mainForm.Close()
     return
   }
@@ -38,7 +38,7 @@ function startButton_Click {
   }
 
   if (-not ($results['CA Azure Devops'] -and $results['Npm Registry'] -and $results['Nuget Registry'])) { 
-    Invoke-Modal "Una o piu connessioni ai server sono fallite"
+    invoke-modal  "Una o piu connessioni ai server sono fallite"
     $startButton.Enabled = $true
     return 
   }
@@ -92,14 +92,14 @@ function startButton_Click {
   
     if ($message) {
       $message += "non risulta/risultano abilitata/e. Il sistema procedera all'attivazione e il sistema verra riavviato. Premere OK per procedere"
-      Invoke-Modal $message
+      invoke-modal  $message
       Restart-Computer -Force
       return
     }
   }
 
   #inserimento Credenziali login npm
-  . .\components\login\Login.ps1
+  initialize-login
   
   New-Item -Path "~\.ca\$currentDate" -ItemType Directory
   tabButton_Click($requirementsTabButton)
@@ -112,11 +112,11 @@ function tabStart_VisibleChanged {
 }
 
 function infoVmButton_Click {
-  Invoke-Modal "In caso affermativo accertarsi che sia abilitata la nested virtualization prima di proseguire"
+  invoke-modal  "In caso affermativo accertarsi che sia abilitata la nested virtualization prima di proseguire"
 }
 
 function infoProxyButton_Click {
-  Invoke-Modal "Notifica se e' stato rilevato un proxy o meno"
+  invoke-modal  "Notifica se e' stato rilevato un proxy o meno"
 }
 
 . .\components\Tabs\Start\Form.ps1

@@ -1,4 +1,4 @@
-function Invoke-Modal($message){
+function invoke-modal ($message){
     $newString = ""
     for ($i = 0; $i -lt $message.length; $i++){
         $newString += $message[$i]

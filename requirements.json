@@ -24,15 +24,14 @@
     "MinVersion": "16",
     "MaxVersion": "22",
     "Check": "return ./requirements/check/visual-studio.ps1",
-    "DownloadLink": "https://aka.ms/vs/17/release/vs_community.exe",
-    "DownloadOutfile": "C:\\dev\\scarface\\download\\VisualStudio-$($requirement['MaxVersion']).exe",
+    "DownloadLink": "https://visualstudio.microsoft.com/it/thank-you-downloading-visual-studio/?sku=Community&rel=16&src=myvs&utm_medium=microsoft&utm_source=my.visualstudio.com&utm_campaign=download&utm_content=vs+community+2019",
+    "DownloadOutfile": "C:\\dev\\scarface\\download\\VisualStudio-19.exe",
     "Install": "./requirements/install/visual-studio.ps1"
   },
   "Visual Studio Code": {
     "MinVersion": "1.60.0",
-    "MaxVersion": "1.75",
     "Check": "return ./requirements/check/vscode.ps1",
-    "DownloadLink": "https://update.code.visualstudio.com/$($requirement['MaxVersion'])/win32-x64-user/stable",
+    "DownloadLink": "https://update.code.visualstudio.com/latest/win32-x64-user/stable",
     "DownloadOutfile": "C:\\dev\\scarface\\download\\VSCode-User-x64.exe",
     "Install": "./requirements/install/vscode.ps1",
     "Extentions": [
@@ -79,7 +78,7 @@
   "Npm Login": {
     "Dependencies": ["NPM"],
     "Check": "return ./requirements/check/npm-login.ps1",
-    "Install": "./components/login/Login.ps1 -type 'LOGIN'"
+    "Install": "return ./requirements/install/npm-login.ps1"
   },
   "CAEP": {
     "Dependencies": ["DotNet", "Visual Studio", "Visual Studio Code", "Git", "NPM", "Docker", "Npm Login"],

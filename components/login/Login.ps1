@@ -1,6 +1,20 @@
-param(
-  [string]$type = "START"
-)
+function initialize-login {
+  if ($type -eq "START") {
+    if (-not (Test-Path $npmrcPath)) { return }
+    $npmrcContent = (Get-Content $npmrcPath)
+    $target = "//devops.codearchitects.com:444/Code%20Architects/_packaging/ca-npm/npm/registry/:"
+    for ($i = 0; $i -lt $npmrcContent.Count; $i++) {
+      if ($npmrcContent[$i].Contains($target)) {
+        $usernameTextBox.Text = $npmrcContent[$i].Split("=")[1]
+        $TokenTextBox.Text = ([Text.Encoding]::Utf8.GetString([Convert]::FromBase64String((($npmrcContent[$i + 1] -split "password=")[1] -replace '"', ''))))
+        loginButton_Click
+        return
+      }
+    }
+  }
+  
+  $loginForm.ShowDialog()
+}
 
 function loginButton_Click {
   <#
@@ -10,8 +24,8 @@ function loginButton_Click {
     Takes the input inserted by the user and will try to login to npm
     #>
   # Check if the fields are empty it won't login
-  if (!($usernameTextBox.Text -ne "") -or !($TokenTextBox.Text -ne "")) {
-    Write-Host "Username and Token can't be NULL! Please enter the Username and Password."
+  if (!($usernameTextBox.Text) -or !($TokenTextBox.Text)) {
+    invoke-modal  "Username and Token can't be NULL! Please enter the Username and Password."
     return
   }
     
@@ -63,7 +77,7 @@ function invoke-login {
   # Double check if the credentials inserted are correct or not, if they are then go to the next step of the installation, otherwise ask for the correct credentials.
   foreach ($item in $npmErrCheck) {
     if ( ($item -like '*ERR!*') -or ($item -like '*error*') ) {
-      invoke-WriteCheckLogs "Npm Login Error!`r`nThe Token or the Username are wrong. Check again your Username and Token.`r`nPS: Be sure that the token is setted as 'All Accessible Organization'."
+      invoke-WriteCheckLogs "Errore durante il login. Il token o l'username potrebbero essere sbagliato. Controlla che il token sia impostato con 'All Accessible Organization'"
       return $false
     }
   }
@@ -91,19 +105,5 @@ function Remove-WrongToken($correctToken) {
 }
 
 . .\components\login\Form.ps1
-if ($type -eq "START") {
-  if (-not (Test-Path $npmrcPath)) { return }
-  $npmrcContent = (Get-Content $npmrcPath)
-  $target = "//devops.codearchitects.com:444/Code%20Architects/_packaging/ca-npm/npm/registry/:"
-  for ($i = 0; $i -lt $npmrcContent.Count; $i++) {
-    if ($npmrcContent[$i].Contains($target)) {
-      $usernameTextBox.Text = $npmrcContent[$i].Split("=")[1]
-      $TokenTextBox.Text = ([Text.Encoding]::Utf8.GetString([Convert]::FromBase64String((($npmrcContent[$i + 1] -split "password=")[1] -replace '"', ''))))
-      loginButton_Click
-      return
-    }
-  }
-}
-
-$loginForm.ShowDialog()
+$type = "START"
 

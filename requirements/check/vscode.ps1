@@ -12,16 +12,12 @@ function checkApp {
   $minVersion = $requirements[$name]["MinVersion"].split(".")
   $minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
 
-  $maxVersion = $requirements[$name]["MaxVersion"].split(".")
-  $maxVersion = [Version]::new($maxVersion[0], $maxVersion[1], $maxVersion[2])
-
-
-  if (($codeVersion -lt $minVersion) -or ($codeVersion -gt $maxVersion)) {
-    invoke-WriteCheckLogs "La versione rilevata di Visual Studio Code $codeVersion non rispetta i requisiti.\r\nMin Version: $minVersion. Max Version: $maxVersion"
+  if ($codeVersion -lt $minVersion) {
+    invoke-WriteCheckLogs "La versione rilevata di Visual Studio Code $codeVersion non rispetta i requisiti.\r\nMin Version: $minVersion"
     return "VER"
   }
 
-  invoke-WriteCheckLogs "La versione rilevata di Visual Studio Code $codeVersion rispetta i requisiti.\r\nMin Version: $minVersion. Max Version: $maxVersion"
+  invoke-WriteCheckLogs "La versione rilevata di Visual Studio Code $codeVersion rispetta i requisiti.\r\nMin Version: $minVersion"
   return ''
 }
 
@@ -78,7 +74,7 @@ function checkExtentions {
   if ($missingExtentions.Count ) {
     $message = "Non sono state rilevate le seguenti estensioni: "
     foreach ($ext in $missingExtentions) {
-      $message += "`n$ext"
+      $message += "\r\n$ext"
     }
     invoke-WriteCheckLogs $message
     return 'EXTENTIONS' 

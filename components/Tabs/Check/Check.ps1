@@ -114,7 +114,7 @@ function invoke-checkDependencies {
 
   foreach ($dependency in $requirements[$name]["Dependencies"]) {
     if (($checkLogs[$dependency]["Result"] -ne "OK") -and ($checkLogs[$dependency]["Result"] -ne "VER")) {
-      $dependenciesFailed += "`n$dependency"
+      $dependenciesFailed += "\r\n$dependency"
     }
   }
   
