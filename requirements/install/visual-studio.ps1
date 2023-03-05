@@ -21,8 +21,8 @@ function invoke-installation($name, $requirement) {
 #per cui non è stato ancora deciso il comportamento
 if (-not ($checkLogs[$name]["Result"].Contains("KO"))) { return } 
 if (-not (invoke-download $name $requirement)) {return "KO"}
-invoke-installation $name, $requirement
-invoke-deleteDownload $name, $requirement
+invoke-installation $name $requirement
+invoke-deleteDownload $name $requirement
 return "OK"
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

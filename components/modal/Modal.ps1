@@ -9,12 +9,8 @@ function invoke-modal ($message){
     $modalForm.ShowDialog()
 }
 
-function ExitButton_Click() {
+function exitButton_Click() {
     $modalForm.Close()
-}
-
-function MessageLabel_SizeChanged(){
-    $messageLabel.Left = ($modalForm.Width - $messageLabel.Width) / 2;
 }
 
 . .\components\modal\Form.ps1

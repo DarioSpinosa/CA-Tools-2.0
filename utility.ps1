@@ -71,7 +71,7 @@ function invoke-checkProxy {
 }
 
 function invoke-checkVM {
-  return @('VMware Virtual Platform', 'Virtual Machine', 'Macchina Virtuale').Contains((Get-CimInstance win32_computersystem).model)
+  return ((Get-CimInstance win32_computersystem).model -in @('VMware Virtual Platform', 'Virtual Machine', 'Macchina Virtuale'))
 }
 
 function invoke-executeCommand($command) {

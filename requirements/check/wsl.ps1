@@ -4,88 +4,76 @@ if ($scarConfig.Contains('terranova')) { return 'OK' }
 #KO = Esecuzione del comando fallito
 #VERSION = La defualt version di wsl non è la 2
 #UBUNTU = Scaricare ubuntu
-#MAIN + UBUNTU = Ubuntu non è settato come distribuzione principale e nessuna delle versioni rilevate rispetta i requisiti min e max, si procede al download della max
-#VER MAIN + UBUNTU = Ubuntu è settato come distribuzione principale ma non rispetta i requisiti min e max, e non c'è alcun'altra versione installa che li rispetti. Si procede al download della ma
-#MAIN + VER AVAILABLE = Ubuntu non è settato come distribuzione principale e esiste una versione chPne rispetta i requisiti min e max, si procede al settaggio
-#VER MAIN + VER AVAILABLE = Ubuntu è settato come distribuzione principale ma non rispetta i requisiti min e max, e esiste una versione che rispetta i requisiti min e max, si procede al settaggio
-#OK La distribuzione principale è ubuntu e rispetta i requisiti min e max
-$wslStatus = invoke-executeCommand("wsl --status")
-if (!$wslStatus) { 
-  invoke-WriteCheckLogs "Errore nell'esecuzione del comando wsl --status"
-  return "KO" 
-}
-
-$wslStatus = ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes($wslStatus))).split(' '); 
   
- #can't check if wsl has just been downloaded
- invoke-WriteCheckLogs "Aggiornamento di wsl in corso..."
- $wslUpdate = invoke-executeCommand("wsl --update")
-if (!$wslUpdate) { 
-  invoke-WriteCheckLogs "Errore nell'esecuzione del comando wsl --update"
-  return "KO" 
-}
-invoke-WriteCheckLogs "Aggiornamento di wsl completato"
+#can't check if wsl has just been downloaded
+# invoke-WriteCheckLogs "Aggiornamento di wsl in corso..."
+# $wslUpdate = invoke-executeCommand("wsl --update")
+# if (!$wslUpdate) { 
+#   invoke-WriteCheckLogs "Errore nell'esecuzione del comando wsl --update"
+#   return "KO" 
+# }
+# invoke-WriteCheckLogs "Aggiornamento di wsl completato"
 
-if (-not $wslStatus.Contains("2")) {
-  invoke-WriteCheckLogs "La versione di default non e' la 2"
-  return "VERSION"
-}
+# $wslStatus = invoke-executeCommand("wsl --status")
+# if (!$wslStatus) { 
+#   invoke-WriteCheckLogs "Errore nell'esecuzione del comando wsl --status"
+#   return "KO" 
+# }
 
-$wslVersions = invoke-executeCommand("wsl -l -v")
-if (!$wslVersions) { 
-  invoke-WriteCheckLogs "Errore nell'esecuzione dle comando wsl -l -v"
-  return "KO" 
-}
+# $wslStatus = $wslStatus.split(' '); 
+# if (-not ("2" -in $wslStatus)) {
+#   invoke-WriteCheckLogs "La versione di default non e' la 2"
+#   return "VERSION"
+# }
 
-$wslVersions = ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes($wslVersions))).split(' '); 
-if (-not $wslVersions.split("-").Contains("Ubuntu")) {
-  invoke-WriteCheckLogs "Non risulta installata alcuna distribuzione di UBUNTU nella macchina"
-  return "UBUNTU"
-}
+# $wslVersions = invoke-executeCommand("wsl -l -v")
+# if (!$wslVersions) { 
+#   invoke-WriteCheckLogs "Errore nell'esecuzione dle comando wsl -l -v"
+#   return "KO" 
+# }
 
-$output = ""
-$wslStatus = $wslStatus.split("-")
+# $wslVersions = $wslVersions.split(' ');
+# $ubuntuVersions = @()
+# foreach ($string in $wslVersions){
+#   if ($string.Contains("U B U N T U")){
+#     $ubuntuVersions += $string.split("-")[1]
+#   }
+# }
 
+# #Se l'array di versions di ubuntu è vuoto vuol dire che 
+# #non è installato nemmeno una versione di ubuntu
+# if (-not $ubuntuVersions.Count) {
+#   invoke-WriteCheckLogs "Nessuna versione di ubuntu rilevata nella macchina"
+#   return "UBUNTU"
+# }
 
-$minVersion = $requirements[$name]["MinVersion"].split(".")
-$minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
+# $minVersion = $requirements[$name]["MinVersion"].split(".")
+# $minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
 
-$maxVersion = $requirements[$name]["MaxVersion"].split(".")
-$maxVersion = [Version]::new($maxVersion[0], $maxVersion[1], $maxVersion[2])
+# $maxVersion = $requirements[$name]["MaxVersion"].split(".")
+# $maxVersion = [Version]::new($maxVersion[0], $maxVersion[1], $maxVersion[2])
 
-if (-not $wslStatus.Contains("Ubuntu")) {
-  invoke-WriteCheckLogs "Ubuntu non e' impostato come distribuzione principale"
-  $output += "MAIN" 
-}
-else{
-  $mainDistroVersion = $wslStatus[($wslStatus.IndexOf("Ubuntu") + 1)]
-  if (($mainDistroVersion -ge $minVersion) -or ($mainDistroVersion -le $maxVersion)){ 
-    invoke-WriteCheckLogs "E' stata impostata come distribuzione principale una versione corretta di ubuntu: $mainDistroVersion, Tollerabilita compresa da $($requirements[$name]['MinVersion']) a $($requirements[$name]['MaxVersion'])"
-    return "OK"
-  } #Caso Positivo
-  invoke-WriteCheckLogs "E' stata impostata come distribuzione principale una versione errata di ubuntu: $mainDistroVersion, Tollerabilita compresa da $($requirements[$name]['MinVersion']) a $($requirements[$name]['MaxVersion'])"
-  $output += "VER MAIN"
-}
+# $rightVersion = [Version]::new(0, 0, 0)
 
-$versions = @()
-$wslVersions = $wslVersions.split("-")
-for ($i = 0; $i -lt $wslVersions.Count; $i++) {
-  if ($wslVersions[$i] -like "Ubuntu") { $versions += $wslVersions[++$i] }
-}
+# foreach ($version in $ubuntuVersions) {
+#   if (($version -ge $minVersion) -and ($version -le $maxVersion) -and ($version -gt $rightVersion)){
+#     $rightVersion = $version
+#   }
+# }
 
-foreach ($version in $versions) {
-  if (($version -le $minVersion) -or ($version -ge $maxVersion)) { 
-    invoke-WriteCheckLogs "E' stata rilevata una versione di ubuntu che soddisfa i requisiti"
-    return "VER AVAILABLE"
-  }
-}
+# #Nessuna versione di ubuntu installata rispetta i requisiti, va installata la major
+# if ($rightVersion -eq [Version]::new(0, 0, 0)){
+#   invoke-WriteCheckLogs "Non è installata alcuna versione di ubuntu che rispetti i requisiti. Min Version: $minVersion Max Version: $maxVersion"
+#   return "UBUNTU"
+# }
 
-$message = "Nessuna delle seguenti versioni di ubuntu presente nella macchina soddisfa i requisiti. Versioni rilevate: "
-foreach ($version in $versions) {
-  $message += "$version "
-}
-invoke-WriteCheckLogs  "$message. Requisiti da $($requirements[$name]['MinVersion']) a $($requirements[$name]['MaxVersion'])"
-return $output + "UBUNTU"
+# #Versione che soddisfa i requisiti trovata, controllare che sia la main distro
+# if (-not $wslStatus.Contains("Ubuntu-$rightVersion")) {
+#   invoke-WriteCheckLogs "E' stata rilevata una versione di ubuntu che soddisfa i requisiti ma non è impostata come distribuzione principale"
+#   return "SET$rightVersion"
+# }
+
+return "OK"
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

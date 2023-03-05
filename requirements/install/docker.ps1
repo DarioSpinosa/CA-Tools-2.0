@@ -1,19 +1,29 @@
 function invoke-installing($name, $requirement) {
   #Return temporaneo per impedire l'installazione in caso di errore di versione "VER"
-#per cui non è stato ancora deciso il comportamento
+  #per cui non è stato ancora deciso il comportamento
   if (-not $checkLogs[$name]["Result"].Contains("KO")) { return }
+
   $subMessage = "$($name) version: $($requirement["MaxVersion"])"
-  if (-not (invoke-download $name $requirement)) {return "KO"}
+  if (-not (invoke-download $name $requirement)) {
+    invoke-WriteInstallLogs "Errore durante il download di Docker"
+    return "KO"
+  }
+
   invoke-WriteInstallLogs "Installazione $subMessage in corso..."
   Start-Process $requirement["DownloadOutFile"] -ArgumentList @('install', '--quiet') -Wait
   invoke-WriteInstallLogs "Installazione di $subMessage completata."
   invoke-deleteDownload $name $requirement
+
+  return ""
 }
 
 function invoke-proxy($name, $requirement) {
   if (-not $checkLogs[$name]["Result"].Contains("PROXY")) { return }
   $dockerConfigPath = "~\.docker\config.json" #Dovrebbe crearlo docker (?)
-  if (-not (Test-Path $dockerConfigPath)) { return }
+  if (-not (Test-Path $dockerConfigPath)) { 
+    invoke-WriteInstallLogs "$dockerConfigPath Non Trovato"
+    return "KO"
+  }
     
   $dockerConfigJson = Get-Content $dockerConfigPath | ConvertFrom-Json | ConvertPSObjectToHashtable
         
@@ -30,12 +40,14 @@ function invoke-proxy($name, $requirement) {
     
   $dockerConfigJson.Add("proxies", $proxies)
   Set-Content -Path $dockerConfigPath $dockerConfigJson | ConvertTo-Json
-      
+  
+  return ""
 }
 
-invoke-installing $name $requirement
-invoke-proxy $name $requirement
-return "OK"
+$output = ""
+$output = invoke-installing $name $requirement
+$output = invoke-proxy $name $requirement
+return $(if ($output) {"KO"} else {"OK"})
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

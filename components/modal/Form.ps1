@@ -41,3 +41,6 @@ $exitButton.FlatAppearance.MouseOverBackColor = "#0463ca"
 
 $panel.controls.AddRange(@($messageLabel, $exitButton))
 $modalForm.controls.Add($panel)
+
+
+$exitButton.Add_Click({ exitButton_Click })

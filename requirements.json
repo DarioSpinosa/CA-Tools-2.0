@@ -24,8 +24,8 @@
     "MinVersion": "16",
     "MaxVersion": "22",
     "Check": "return ./requirements/check/visual-studio.ps1",
-    "DownloadLink": "https://visualstudio.microsoft.com/it/thank-you-downloading-visual-studio/?sku=Community&rel=16&src=myvs&utm_medium=microsoft&utm_source=my.visualstudio.com&utm_campaign=download&utm_content=vs+community+2019",
-    "DownloadOutfile": "C:\\dev\\scarface\\download\\VisualStudio-19.exe",
+    "DownloadLink": "https://c2rsetup.officeapps.live.com/c2r/downloadVS.aspx?sku=community&channel=Release&version=VS2022&source=VSLandingPage&includeRecommended=true&cid=2030:24c340a4bf2643a5bafacf38d855c919",
+    "DownloadOutfile": "C:\\dev\\scarface\\download\\VisualStudio-22.exe",
     "Install": "./requirements/install/visual-studio.ps1"
   },
   "Visual Studio Code": {

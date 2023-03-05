@@ -10,7 +10,7 @@ function invoke-installing($name, $requirement) {
 if (-not ($checkLogs[$name]["Result"].Contains("KO"))) { return } 
 if (-not (invoke-download $name $requirement)) {return "KO"}
 invoke-installing $name $requirement
-invoke-deleteDownload $name, $requirement
+invoke-deleteDownload $name $requirement
 return "OK"
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

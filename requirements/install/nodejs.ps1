@@ -10,8 +10,9 @@ function invoke-installation($name, $requirement) {
 		$argumentList += '/passive'
 	}
 	else {
-		invoke-WriteInstallLogs "Starting manual Node install..."
+		invoke-WriteInstallLogs "Installazione manuale di node in corso..."
 	}
+
 	Start-Process msiexec.exe -ArgumentList $argumentList -Wait
 	
 	invoke-WriteInstallLogs "Installazione di $subMessage completata."
@@ -19,7 +20,7 @@ function invoke-installation($name, $requirement) {
 
 if (-not (invoke-download $name $requirement)) {return "KO"}
 invoke-installation $name $requirement
-invoke-deleteDownload $name, $requirement
+invoke-deleteDownload $name $requirement
 return "OK"
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
