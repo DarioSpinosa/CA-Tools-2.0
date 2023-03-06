@@ -11,26 +11,17 @@ for ($i = 0; $i -lt $dotnetOutputCommand.Count; $i += 2) {
   $dotNetVersions += $dotnetOutputCommand[$i]
 }
 
-$minVersion = $requirements[$name]["MinVersion"].split(".")
-$minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
-
-$maxVersion = $requirements[$name]["MaxVersion"].split(".")
-$maxVersion = [Version]::new($maxVersion[0], $maxVersion[1], $maxVersion[2])
-
-foreach ($version in $dotNetVersions) {
-  $version = $version.split(".")
-  $version = [Version]::new($version[0], $version[1], $version[2])
-  if (($version -ge $minVersion) -and ($version -le $maxVersion)) {
-    invoke-WriteCheckLogs "La versione rilevata di DotNet $version rispetta i requisiti.\r\nMin Version: $minVersion. Max Version: $maxVersion"
-    return "OK"
+foreach ($version in $requirements[$name]["Versions"]) {
+  if (-not $dotNetVersions.Contains($version)) {
+    invoke-WriteCheckLogs "La versioneDotNet $version non risulta presense nella macchina"
+  }
+  else {
+    invoke-WriteCheckLogs "La versioneDotNet $version risulta presense nella macchina"
+    $requirements[$name]["Versions"].Remove($version)
   }
 }
 
-$message = "Nessuna tra le versioni rilevate di DotNet"
-foreach ($version in $dotNetVersions) {$message += " $version" }
-$message += " rispetta i requisiti. Min Version: $minVersion.\r\nMax Version: $maxVersion"
-invoke-WriteCheckLogs $message
-return "VER"
+return $(if ($requirements[$name]["Versions"].Count) {"KO"} else {"OK"})
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

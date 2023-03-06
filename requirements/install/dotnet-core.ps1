@@ -1,13 +1,17 @@
 function invoke-installing($name, $requirement) {
-    $subMessage = "$($name) version: $($requirement["MaxVersion"])"
+    $subMessage = "$($name) version: $($requirement['MaxVersion'])"
     invoke-WriteInstallLogs "Installazione $subMessage in corso..."
     Start-Process $requirement["DownloadOutFile"] -ArgumentList @('/q', '/norestart') -Wait
     invoke-WriteInstallLogs "Installazione di $subMessage completata."
 }
 
-if (-not (invoke-download $name $requirement)) {return "KO"}
-invoke-installing $name $requirement
-invoke-deleteDownload $name $requirement
+for ($i = 0; $i -lt $requirement["Versions"].Count; $i++) {
+    $requirement["MaxVersion"] = $requirement["Versions"][$i]
+    $requirement['DownloadLink'] =  $requirement["Downloads"][$i]
+    if (-not (invoke-download $name $requirement)) { return "KO" }
+    invoke-installing $name $requirement
+    invoke-deleteDownload $name $requirement
+}
 return "OK"
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

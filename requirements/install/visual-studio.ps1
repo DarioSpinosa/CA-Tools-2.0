@@ -7,8 +7,6 @@ function invoke-installation($name, $requirement) {
     '--add Microsoft.VisualStudio.Workload.CoreEditor',
     '--add Microsoft.VisualStudio.Workload.ManagedDesktop',
     '--add Microsoft.VisualStudio.Workload.Universal',
-    '--add Microsoft.NetCore.Component.Runtime.5.0',
-    '--add Microsoft.NetCore.Component.Runtime.3.1',
     '--passive',
     '--norestart'
   )

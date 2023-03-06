@@ -13,10 +13,17 @@
     "Install": "./requirements/install/nodejs.ps1"
   },
   "DotNet": {
-    "MinVersion": "5.0.0",
-    "MaxVersion": "6.0.101",
+    "Versions": [
+      "5.0.408",
+      "6.0.406"
+    ],
+    "MaxVersion": "5.0.408",
     "Check": "return ./requirements/check/dotnet-core.ps1",
-    "DownloadLink": "https://download.visualstudio.microsoft.com/download/pr/343dc654-80b0-4f2d-b172-8536ba8ef63b/93cc3ab526c198e567f75169d9184d57/dotnet-sdk-6.0.101-win-x64.exe",
+    "Downloads": [
+      "https://download.visualstudio.microsoft.com/download/pr/14ccbee3-e812-4068-af47-1631444310d1/3b8da657b99d28f1ae754294c9a8f426/dotnet-sdk-5.0.408-win-x64.exe",
+      "https://download.visualstudio.microsoft.com/download/pr/4a725ea4-cd2c-4383-9b63-263156d5f042/d973777b32563272b85617105a06d272/dotnet-sdk-6.0.406-win-x64.exe"
+    ],
+    "DownloadLink": "",
     "DownloadOutfile": "C:\\dev\\scarface\\download\\Dotnet-x64.exe",
     "Install": "./requirements/install/dotnet-core.ps1"
   },
@@ -58,7 +65,9 @@
     "Install": "./requirements/install/git.ps1"
   },
   "NPM": {
-    "Dependencies": ["Node"],
+    "Dependencies": [
+      "Node"
+    ],
     "MinVersion": "8.0.0",
     "MaxVersion": "8.1.2",
     "Check": "return ./requirements/check/npm.ps1",
@@ -66,7 +75,9 @@
     "Proxy": "KO"
   },
   "Docker": {
-    "Dependencies": ["WSL"],
+    "Dependencies": [
+      "WSL"
+    ],
     "MinVersion": "20.0.0",
     "MaxVersion": "20.10.8",
     "Check": "return ./requirements/check/docker.ps1",
@@ -76,14 +87,24 @@
     "Proxy": "KO"
   },
   "Npm Login": {
-    "Dependencies": ["NPM"],
+    "Dependencies": [
+      "NPM"
+    ],
     "Check": "return ./requirements/check/npm-login.ps1",
     "Install": "return ./requirements/install/npm-login.ps1"
   },
   "CAEP": {
-    "Dependencies": ["DotNet", "Visual Studio", "Visual Studio Code", "Git", "NPM", "Docker", "Npm Login"],
+    "Dependencies": [
+      "DotNet",
+      "Visual Studio",
+      "Visual Studio Code",
+      "Git",
+      "NPM",
+      "Docker",
+      "Npm Login"
+    ],
     "PluginVersion": "0.2.25",
     "Check": "return ./requirements/check/caep.ps1",
     "Install": "./requirements/install/caep.ps1"
   }
-} 
+}
