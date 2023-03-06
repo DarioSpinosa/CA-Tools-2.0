@@ -1,28 +1,30 @@
 $maxDate = 0
 $tokenList = Get-Content $tokenPath | ConvertFrom-Json
+$scarConfigObj = Get-Content $scarConfigPath | ConvertFrom-Json
 foreach ($t in $tokenList) {
-    $localDate = $t.date.Replace("-", "")
-    if ($maxDate -lt $localDate) { 
-        $maxDate = $localDate
-        $tokenObj = $t
-    }
+  $localDate = $t.date.Replace("-", "")
+  if ($maxDate -lt $localDate) { 
+    $maxDate = $localDate
+    $tokenObj = $t
+  }
 }
 $scarConfigObj.token = $tokenObj.token
 $scarConfigObj.user = $tokenObj.user
 if ($scarVersion) {
-    $scarConfigObj.version = $scarVersion
+  $scarConfigObj.version = $scarVersion
 }
 $scarConfigObj | ConvertTo-Json | Set-Content -Path $scarConfigPath
 
-# Execute ca scar
 # $killCheck = {
-#     while ( !(Get-Process -name Code) ) {
-#         Start-Sleep -Seconds 30
+#   while ($true) {
+#     Start-Sleep -Seconds 1
+#     if (Get-Process -name Code) {
+#       Stop-Process -name Code -Force
 #     }
-#     Stop-Process -name Code -Force
+#   }
 # }
 
-# Start-Job $killCheck -Name "killVScode"
+# $job = Start-Job $killCheck -Name "killVScode"
 
 Set-Location 'C:\dev\scarface'
 $env:NG_CLI_ANALYTICS = "ci"
@@ -34,6 +36,8 @@ Write-Host "Il comando ca scar:setup è stato completato"
 Write-Host "Avvio ca scarface"
 invoke-executeCommand "ca scar"
 Write-Host = 'Il comando ca scarface'
+# Stop-Job -Id $job.Id
+
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
