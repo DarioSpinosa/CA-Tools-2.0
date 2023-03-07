@@ -1,14 +1,15 @@
 function initialize-login {
   if ($type -eq "START") {
-    if (-not (Test-Path $npmrcPath)) { return }
-    $npmrcContent = (Get-Content $npmrcPath)
-    $target = "//devops.codearchitects.com:444/Code%20Architects/_packaging/ca-npm/npm/registry/:"
-    for ($i = 0; $i -lt $npmrcContent.Count; $i++) {
-      if ($npmrcContent[$i].Contains($target)) {
-        $usernameTextBox.Text = $npmrcContent[$i].Split("=")[1]
-        $TokenTextBox.Text = ([Text.Encoding]::Utf8.GetString([Convert]::FromBase64String((($npmrcContent[$i + 1] -split "password=")[1] -replace '"', ''))))
-        if (loginButton_Click) { return }
-        else { break }
+    if (Test-Path $npmrcPath) {
+      $npmrcContent = (Get-Content $npmrcPath)
+      $target = "//devops.codearchitects.com:444/Code%20Architects/_packaging/ca-npm/npm/registry/:"
+      for ($i = 0; $i -lt $npmrcContent.Count; $i++) {
+        if ($npmrcContent[$i].Contains($target)) {
+          $usernameTextBox.Text = $npmrcContent[$i].Split("=")[1]
+          $TokenTextBox.Text = ([Text.Encoding]::Utf8.GetString([Convert]::FromBase64String((($npmrcContent[$i + 1] -split "password=")[1] -replace '"', ''))))
+          if (loginButton_Click) { return }
+          else { break }
+        }
       }
     }
   }
