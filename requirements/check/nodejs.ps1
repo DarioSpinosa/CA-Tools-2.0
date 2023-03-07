@@ -1,8 +1,5 @@
-$nodeVersion = invoke-executeCommand("node --version")
-if (!$nodeVersion) { 
-    invoke-WriteCheckLogs "Si e' verificato un errore durante l'esecuzione del comando ('node --version').\r\nNode potrebbe non essere presente sulla macchina"
-    return 'KO'
-}
+$nodeVersion = invoke-executeCheckCommand "node --version" "Si e' verificato un errore durante l'esecuzione del comando ('node --version').\r\nNode potrebbe non essere presente sulla macchina"
+if (!$nodeVersion) { return 'KO' }
 
 $nodeVersion = $nodeVersion.split('v')[1]
 $maxVersion =  $requirements[$name]["MaxVersion"]

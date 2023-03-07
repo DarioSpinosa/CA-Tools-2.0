@@ -1,7 +1,7 @@
 
 function invoke-initialize {
   tabButton_Click($startTabButton)
-  $mainForm.ShowDialog()
+  $mainForm.ShowDialog() | Out-Null
 }
 
 function tabButton_Click($button) {

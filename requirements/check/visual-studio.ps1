@@ -1,8 +1,5 @@
-$vsVersion = invoke-executeCommand("&'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe' -property catalog_productDisplayVersion")
-if (!$vsVersion) { 
-    invoke-WriteCheckLogs "Si e' verificato un problema durante l'esecuzione del comando di controllo di versione di visual studio.\r\nVisual Studio potrebbe non essere presente sulla macchina"
-    return 'KO'     
-}
+$vsVersion = invoke-executeCheckCommand "&'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe' -property catalog_productDisplayVersion" "Si e' verificato un problema durante l'esecuzione del comando di controllo di versione di visual studio.\r\nVisual Studio potrebbe non essere presente sulla macchina"
+if (!$vsVersion) { return 'KO' }
 
 $vsVersion = $vsVersion.split(".")
 $vsVersion = [Version]::new($vsVersion[0], $vsVersion[1], $vsVersion[2])

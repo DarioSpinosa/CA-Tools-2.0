@@ -83,6 +83,24 @@ function invoke-executeCommand($command) {
   }
 }
 
+function invoke-executeCheckCommand($command, $errorMessage) {
+  $result = invoke-executeCommand $command
+  if (-not $result){ invoke-WriteCheckLogs $errorMessage}
+  return $result
+}
+
+function invoke-executeInstallCommand ($command) {
+  $result = invoke-executeCommand $command
+  if ($result) {
+    invoke-WriteInstallLogs "($command) eseguito correttamente: Output $result"
+  }
+  else {
+    invoke-WriteInstallLogs "Si è verificato il seguente errore durante l'esecuzione del comando ($command): $result"
+  }
+
+  return $result
+}
+
 function New-CommandString($string) {
   <#
   .SYNOPSIS
@@ -104,7 +122,7 @@ function New-CommandString($string) {
 function invoke-download($name, $requirement) {
   try {
     $subMessage = "$($name) version: $($requirement["MaxVersion"])"
-    invoke-WriteInstallLogs "Download $subMessage in corso..." 
+    invoke-WriteInstallLogs "Download $subMessage in corso..."
     Invoke-RestMethod (New-CommandString $requirement["DownloadLink"]) -OutFile $requirement["DownloadOutfile"]
     invoke-WriteInstallLogs "Download $subMessage completato."
     return $true
@@ -121,17 +139,6 @@ function invoke-deleteDownload($name, $requirement) {
   invoke-WriteInstallLogs "Cancellazione file $($requirement["DownloadOutfile"]) completata."
 }
 
-function invoke-executeInstallCommand ($command) {
-  $result = invoke-executeCommand $command
-  if ($result) {
-    invoke-WriteInstallLogs "($command) eseguito correttamente: Output $result"
-  }
-  else {
-    invoke-WriteInstallLogs "Si è verificato il seguente errore durante l'esecuzione del comando ($command): $result"
-  }
-
-  return $result
-}
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

@@ -1,9 +1,5 @@
-$dotnetOutputCommand = invoke-executeCommand ("dotnet --list-sdks")
-
-if (-not $dotnetOutputCommand) { 
-  invoke-WriteCheckLogs "Si e' verificato un problema durante l'esecuzione del comando (dotnet --list-sdks).\r\nDotNet potrebbe non essere presente sulla macchina"
-  return "KO" 
-}
+$dotnetOutputCommand = invoke-executeCheckCommand "dotnet --list-sdks" "Si e' verificato un problema durante l'esecuzione del comando (dotnet --list-sdks).\r\nDotNet potrebbe non essere presente sulla macchina"
+if (-not $dotnetOutputCommand) { return "KO" }
 
 $dotnetOutputCommand = $dotnetOutputCommand.replace(' ', '').split('[')
 $dotNetVersions = @()

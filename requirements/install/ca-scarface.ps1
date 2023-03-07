@@ -35,7 +35,7 @@ Write-Host "Il comando ca scar:setup è stato completato"
 
 Write-Host "Avvio ca scarface"
 invoke-executeCommand "ca scar"
-Write-Host = 'Il comando ca scarface'
+Write-Host 'Il comando ca scarface'
 # Stop-Job -Id $job.Id
 
 # SIG # Begin signature block

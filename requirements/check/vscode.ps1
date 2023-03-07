@@ -1,9 +1,6 @@
 function checkApp {
-  $codeVersion = invoke-executeCommand("code --version")
-  if (!$codeVersion) { 
-    invoke-WriteCheckLogs "Si e' verificato un errore durante l'esecuzione del comando ('code --version').\r\nCode potrebbe non essere presente sulla macchina"
-    return 'KO'
-  }
+  $codeVersion = invoke-executeCheckCommand "code --version" "Si e' verificato un errore durante l'esecuzione del comando ('code --version').\r\nCode potrebbe non essere presente sulla macchina"
+  if (!$codeVersion) { return 'KO' }
 
 
   $codeVersion = $codeVersion[0].split(".")
@@ -57,14 +54,10 @@ function checkSettings {
 }
 
 function checkExtentions {
-  $listExtensions = invoke-executeCommand("code --list-extensions")
-  if (!$listExtensions) { 
-    invoke-WriteCheckLogs "Nessuna estensione di visual studio code rilevata"
-    return 'EXTENTIONS'
-  }
+  $listExtensions = invoke-executeCheckCommand "code --list-extensions" "Nessuna estensione di visual studio code rilevata"
+  if (!$listExtensions) { return 'EXTENTIONS' }
 
   $missingExtentions = @()
-
   foreach ($extension in $requirements[$name]["Extentions"]) {
     if (-not $listExtensions.Contains($extension)) { $missingExtentions += $extension }
   }
@@ -73,12 +66,9 @@ function checkExtentions {
 
   if ($missingExtentions.Count ) {
     $message = "Non sono state rilevate le seguenti estensioni: "
-    foreach ($ext in $missingExtentions) {
-      $message += "\r\n$ext"
-    }
+    foreach ($ext in $missingExtentions) { $message += "\r\n-$ext"}
     invoke-WriteCheckLogs $message
     return 'EXTENTIONS' 
-   
   }
 
   invoke-WriteCheckLogs "Tutte le estensioni sono gia' installate"

@@ -1,10 +1,7 @@
 if ($scarConfig.Contains('terranova')) { return 'OK' }
 
-$dockerVersion = Invoke-executeCommand("docker --version")
-if (!$dockerVersion) { 
-  invoke-WriteCheckLogs "Si e' verificato un errore durante l'esecuzione del comando ('docker --version').\r\nDocker potrebbe non essere presente sulla macchina"
-  return 'KO'
-}
+$dockerVersion = invoke-executeCheckCommand "docker --version", "Si e' verificato un errore durante l'esecuzione del comando ('docker --version').\r\nDocker potrebbe non essere presente sulla macchina"
+if (!$dockerVersion) { return 'KO' }
 
 $dockerVersion = $dockerVersion.split(' ').split(',')[2].split(".")
 $dockerVersion = [Version]::new($dockerVersion[0], $dockerVersion[1], $dockerVersion[2])

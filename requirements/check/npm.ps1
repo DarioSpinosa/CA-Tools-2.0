@@ -1,9 +1,6 @@
 $output = ""
-$npmVersion = invoke-executeCommand("npm --version")
-if (-not $npmVersion) { 
-    invoke-WriteCheckLogs "Si è verificato un errore durante l'esecuzione del comando (npm --version).\r\nNpm potrebbe non essere presente nella macchina"
-    $output = 'KO' 
-}
+$npmVersion = invoke-executeCheckCommand "npm --version" "Si è verificato un errore durante l'esecuzione del comando (npm --version).\r\nNpm potrebbe non essere presente nella macchina"
+if (-not $npmVersion) { $output = 'KO' }
 
 $npmVersion = $npmVersion.split(".")
 $npmVersion = [Version]::new($npmVersion[0], $npmVersion[1], $npmVersion[2])

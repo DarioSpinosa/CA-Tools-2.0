@@ -1,8 +1,5 @@
-$gitVersion = invoke-executeCommand("git --version")
-if (!$gitVersion) { 
-    invoke-WriteCheckLogs "Si e' verificato un problema durante l'esecuzione del comando (git --version).\r\nGit potrebbe non essere presente sulla macchina"
-    return 'KO' 
-}
+$gitVersion = invoke-executeCheckCommand "git --version" "Si e' verificato un problema durante l'esecuzione del comando (git --version).\r\nGit potrebbe non essere presente sulla macchina"
+if (!$gitVersion) { return 'KO' }
 
 $gitVersion = $gitVersion.split(' ')[2].split(".")
 $gitVersion = [Version]::new($gitVersion[0], $gitVersion[1], $gitVersion[2])

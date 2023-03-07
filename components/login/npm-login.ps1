@@ -5,37 +5,14 @@ param(
   [string]$scope
 )
 
-# log
-$logPath = "~/.ca"
-$scriptName = $MyInvocation.MyCommand.Name
-$logfile = "$($scriptName.Substring(0,$scriptname.length-4))_$($(Get-Date -Format yyyymmdd-hhmm).ToString()).log"
-$logFilePath = Join-Path $logPath $logfile
-New-Item $logPath -ItemType Directory -Force | Out-Null
-
-function LogMessage {
-  param (
-    [string]$msg
-  )
+function LogMessage($mgs) {
   Add-Content -Path $logFilePath -Value "$($(Get-Date).ToString()) - $msg" -Force
 }
 
-# init token file
-$tokenFile = "~/.token.json"
-if (!(Test-Path $tokenFile)) {
-  LogMessage "$tokenFile doesn't exist... creating it..."
-  New-Item $tokenFile -ItemType File -Force | Out-Null
-}
-if ([String]::IsNullOrWhiteSpace((Get-content $tokenFile))) {
-  LogMessage "$tokenFile is empty... initializing it..."
-  Set-Content -Path $tokenFile -Value "[]"
-}
-
-# Get token File
 function getTokenFileParsed {
   LogMessage "Read $tokenFile content"
   return Get-Content -Raw $tokenFile | ConvertFrom-Json
 }
-[Array]$tokenSettingsObject = getTokenFileParsed
 
 # read .npmrc
 function readRegistryFromNpmrc() {
@@ -51,20 +28,6 @@ function readRegistryFromNpmrc() {
     Write-Error "No .npmrc in current directory.`n Use -registry flag to login on specific registry or run command into directory with .npmrc file"
     break;
   }
-}
-
-# regitry
-if (-not $registry) {
-  $registry = readRegistryFromNpmrc
-}
-LogMessage "Registry: $registry"
-$registrySettingLine = $registry -replace "https:", ""
-$registrySettingLineClean = $registrySettingLine -replace "/registry/", "/"
-if (-not $registry) {
-  $message = "Missing .npmrc in current directory"
-  LogMessage $message
-  Write-Host $message
-  return
 }
 
 # get token
@@ -112,6 +75,42 @@ function getToken() {
   }
 }
 
+
+# log
+$logPath = "~/.ca"
+$scriptName = $MyInvocation.MyCommand.Name
+$logfile = "$($scriptName.Substring(0,$scriptname.length-4))_$($(Get-Date -Format yyyymmdd-hhmm).ToString()).log"
+$logFilePath = Join-Path $logPath $logfile
+New-Item $logPath -ItemType Directory -Force | Out-Null
+
+# init token file
+$tokenFile = "~/.token.json"
+if (!(Test-Path $tokenFile)) {
+  LogMessage "$tokenFile doesn't exist... creating it..."
+  New-Item $tokenFile -ItemType File -Force | Out-Null
+}
+if ([String]::IsNullOrWhiteSpace((Get-content $tokenFile))) {
+  LogMessage "$tokenFile is empty... initializing it..."
+  Set-Content -Path $tokenFile -Value "[]"
+}
+
+# Get token File
+[Array]$tokenSettingsObject = getTokenFileParsed
+
+# regitry
+if (-not $registry) {
+  $registry = readRegistryFromNpmrc
+}
+LogMessage "Registry: $registry"
+$registrySettingLine = $registry -replace "https:", ""
+$registrySettingLineClean = $registrySettingLine -replace "/registry/", "/"
+if (-not $registry) {
+  $message = "Missing .npmrc in current directory"
+  LogMessage $message
+  Write-Host $message
+  return
+}
+
 if (-not $token) {
   LogMessage "no token provide as parameter"
   $retval = getToken
@@ -119,6 +118,7 @@ if (-not $token) {
   $alreadyLogged = $retval.alreadyLogged
   $tokenScope = $retval.scope
 }
+
 
 # save token
 if ($token -and (-not $alreadyLogged)) {
@@ -160,6 +160,7 @@ if (-not $user) {
   $user = $(whoami).replace("collaboration\", "").replace("collaboration/", "")
   Write-Host "User from whoami: $user"
 }
+
 LogMessage "User: $user"
 $mail = "$user@codearchitects.com"
 $npmrcPath = "~/.npmrc"

@@ -7,13 +7,13 @@ function initialize-login {
       if ($npmrcContent[$i].Contains($target)) {
         $usernameTextBox.Text = $npmrcContent[$i].Split("=")[1]
         $TokenTextBox.Text = ([Text.Encoding]::Utf8.GetString([Convert]::FromBase64String((($npmrcContent[$i + 1] -split "password=")[1] -replace '"', ''))))
-        loginButton_Click
-        return
+        if (loginButton_Click) { return }
+        else { break }
       }
     }
   }
   
-  $loginForm.ShowDialog()
+  $loginForm.ShowDialog() | Out-Null
 }
 
 function loginButton_Click {
@@ -25,8 +25,8 @@ function loginButton_Click {
     #>
   # Check if the fields are empty it won't login
   if (!($usernameTextBox.Text) -or !($TokenTextBox.Text)) {
-    invoke-modal  "Username and Token can't be NULL! Please enter the Username and Password."
-    return
+    invoke-modal  "L'username e la password non possono essere vuoti"
+    return $false
   }
     
   
@@ -35,6 +35,7 @@ function loginButton_Click {
   }
 
   $loginForm.Hide()
+  return $true
 }
   
 function invoke-login {
