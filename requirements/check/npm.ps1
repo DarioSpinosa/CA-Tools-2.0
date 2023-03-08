@@ -5,10 +5,10 @@ if (-not $npmVersion) { $output = 'KO' }
 $npmVersion = $npmVersion.split(".")
 $npmVersion = [Version]::new($npmVersion[0], $npmVersion[1], $npmVersion[2])
 
-$minVersion = $requirements[$name]["MinVersion"].split(".")
+$minVersion = $requirement["MinVersion"].split(".")
 $minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
 
-$maxVersion = $requirements[$name]["MaxVersion"].split(".")
+$maxVersion = $requirement["MaxVersion"].split(".")
 $maxVersion = [Version]::new($maxVersion[0], $maxVersion[1], $maxVersion[2])
 
 if (($npmVersion -lt $minVersion) -or ($npmVersion -gt $maxVersion)) {
@@ -16,7 +16,7 @@ if (($npmVersion -lt $minVersion) -or ($npmVersion -gt $maxVersion)) {
     $output = "VER"
 }
 
-if ($requirements[$name]["Proxy"] -ne "KO") {
+if ($requirement["Proxy"] -ne "KO") {
     $foundProxy = $false
     $contentNpmrc = Get-Content $npmrcPath
     foreach ($row in $contentNpmrc) {
@@ -26,7 +26,7 @@ if ($requirements[$name]["Proxy"] -ne "KO") {
         }
     }
     if (-not $foundProxy) { $output += "PROXY"}
-    if ($requirements[$name]["Proxy"] -eq "TCP") { $output += "TCP" }
+    if ($requirement["Proxy"] -eq "TCP") { $output += "TCP" }
 }
 
 if ($output) { return $output }

@@ -39,10 +39,12 @@ function invoke-CreateLogs($hashLogs) {
 
 function invoke-WriteCheckLogs($log) {
   invoke-WriteLogs $checkLogs $log
+  writeOutputRequirements($name)
 }
 
 function invoke-WriteInstallLogs($log) {
   invoke-WriteLogs $installLogs $log
+  writeOutputInstallation($name)
 }
 
 function invoke-WriteLogs($hashLogs, $log) {
@@ -83,9 +85,29 @@ function invoke-executeCommand($command) {
   }
 }
 
+function invoke-Dependencies($type, $requirement) {
+  $hash = $(if ($type -eq "CHECK") { $checkLogs } else { $installLogs })
+  $dependenciesFailed = ""
+  if (-not ($requirement.Contains("Dependencies"))) { return $true }
+
+  foreach ($dependency in $requirement["Dependencies"]) {
+    if (($hash[$dependency]["Result"] -ne "OK") -and ($hash[$dependency]["Result"] -ne "VER")) {
+      $dependenciesFailed += "\r\n-$dependency"
+    }
+  }
+  
+  if ($dependenciesFailed) {
+    $(if ($type -eq "CHECK") { invoke-WriteCheckLogs "KO a causa di: $dependenciesFailed" } else { invoke-WriteInstallLogs "KO a causa di: $dependenciesFailed" })
+    return $false
+  }
+
+  return $true
+
+}
+
 function invoke-executeCheckCommand($command, $errorMessage) {
   $result = invoke-executeCommand $command
-  if (-not $result){ invoke-WriteCheckLogs $errorMessage}
+  if (-not $result) { invoke-WriteCheckLogs $errorMessage }
   return $result
 }
 

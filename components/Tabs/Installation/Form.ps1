@@ -68,5 +68,5 @@ $closeButton.Enabled = $false
 $tabInstallation.Controls.AddRange(@($selectedInstallation, $outputInstallationLabel, $gridInstallation, $closeButton))
 
 $tabInstallation.Add_VisibleChanged({ gridInstallation_VisibleChanged })
-
+$gridInstallation.Add_Click({ gridInstallation_Click })
 $closeButton.Add_Click({ closeButton_Click })

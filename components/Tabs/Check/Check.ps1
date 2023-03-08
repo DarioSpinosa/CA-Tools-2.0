@@ -25,10 +25,6 @@ function Invoke-CheckRequirements {
   $override = invoke-DownloadScarConfigJson
   Invoke-OverrideRequirement $override
   Invoke-ExecuteChecks
-
-  $gridRequirements.Rows[0].Selected = $true
-  gridRequirements_Click
-  $gridRequirements.ClearSelection()
   $installButton.Enabled = $true
 }
 
@@ -61,7 +57,7 @@ Override custom json to Requirements
   if (!$override) { return $false }
 
   Write-Host "Download di $override in corso..."
-  $overrideJson =  ((Invoke-WebRequest -Uri $override -UseBasicParsing).Content | ConvertFrom-Json | ConvertPSObjectToHashtable)
+  $overrideJson = ((Invoke-WebRequest -Uri $override -UseBasicParsing).Content | ConvertFrom-Json | ConvertPSObjectToHashtable)
   if (!($overrideJson)) {
     Write-Host "Non è stato trovato alcun override"
     return
@@ -83,49 +79,25 @@ For each Requirement it will check if it's satisfied or not,
 if the Requirement isn't satisfied then add it to the list of Requirements that have to be satisfied through the installer
 #>
   invoke-CreateLogs $checkLogs
-  $red = [System.Drawing.Color]::FromArgb(255, 236, 84, 84)
-  $green = [System.Drawing.Color]::FromArgb(255, 13, 173, 141)
 
   foreach ($name in $sortedRequirements) {
-    if (invoke-checkDependencies) {
-      Write-Host $requirements[$name]["Check"]
-      $result = $requirements[$name]["Check"] | Invoke-Expression
-    }
-    else {
-      $result = "KO"
-    }
+    Invoke-CreateRow $gridRequirements $name
+    $selectedRequirement.Text = $name
+    writeOutputRequirements($name)
 
-    $checkLogs[$name]["Result"] = $result
-    if ($result -eq 'OK') { 
+    $requirement = $requirements[$name]
+    $checkLogs[$name]["Result"] = $(if (invoke-Dependencies "CHECK" $requirement) { $requirement["Check"] | Invoke-Expression } else { "KO" })
+
+    if ($checkLogs[$name]["Result"] -eq 'OK') { 
       $requirements.Remove($name)
-      Invoke-CreateRow $gridRequirements $name $green
+      invoke-setColor $gridRequirements $green
     }
     else { 
-      Invoke-CreateRow $gridRequirements $name $red
+      invoke-setColor $gridRequirements $red
     }
   }
   
   ($checkLogs  | ConvertTo-Json) > $checkRequirementsLogFile
-}
-
-function invoke-checkDependencies {
-  $dependenciesFailed = ""
-  if (-not ($requirements[$name].Contains("Dependencies"))) { return $true }
-
-  foreach ($dependency in $requirements[$name]["Dependencies"]) {
-    if (($checkLogs[$dependency]["Result"] -ne "OK") -and ($checkLogs[$dependency]["Result"] -ne "VER")) {
-      $dependenciesFailed += "\r\n-$dependency"
-    }
-  }
-  
-
-  if ($dependenciesFailed) {
-    $checkLogs[$name]["Logs"] = "KO a causa di: $dependenciesFailed"
-    return $false
-  }
-
-  return $true
-
 }
 
 function New-StartupCmd() {
@@ -157,11 +129,15 @@ function tabRequirements_VisibleChanged {
 
 function gridRequirements_Click {
   if (-not $gridRequirements.Rows.Count) { return }
-  $key = $gridRequirements.CurrentRow.Cells[0].Value
-  if ($key -eq $selectedRequirement.Text) { return }  #Se si seleziona il requirement attualmente visualizzato, il click non caricherà nulla
-  $selectedRequirement.Text = $key
+  $name = $gridRequirements.CurrentRow.Cells[0].Value
+  if ($name -eq $selectedRequirement.Text) { return }  #Se si seleziona il requirement attualmente visualizzato, il click non caricherà nulla
+  $selectedRequirement.Text = $name
+  writeOutputRequirements($name)
+}
+
+function writeOutputRequirements($name) {
   $outputRequirementsLabel.Text = ""
-  $log = $(if (-not $checkLogs[$key]["Logs"]) { "Nessun log disponibile" } else { ($checkLogs[$key]["Logs"]).replace(";", [System.Environment]::NewLine).replace('\r\n', [System.Environment]::NewLine) })
+  $log = $(if (-not $checkLogs[$name]["Logs"]) { "Nessun log disponibile" } else { ($checkLogs[$name]["Logs"]).replace(";", [System.Environment]::NewLine).replace('\r\n', [System.Environment]::NewLine) })
   $outputRequirementsLabel.AppendText($log)
 }
 

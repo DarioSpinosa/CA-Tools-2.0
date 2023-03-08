@@ -4,7 +4,7 @@ if (!$gitVersion) { return 'KO' }
 $gitVersion = $gitVersion.split(' ')[2].split(".")
 $gitVersion = [Version]::new($gitVersion[0], $gitVersion[1], $gitVersion[2])
 
-$minVersion = $requirements[$name]["MinVersion"].split(".")
+$minVersion = $requirement["MinVersion"].split(".")
 $minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
 
 if ($gitVersion -lt $minVersion){

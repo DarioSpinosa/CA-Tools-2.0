@@ -15,21 +15,24 @@ function installRequirements {
   if (-not $requirements.Count) { return $success }
 
   invoke-CreateLogs $installLogs
-  # It will execute a determinatedd function based on the type of the current requirement
   foreach ($name in $sortedRequirements) {
     #per mantenere un ordinamento  basato sulle dipendenze anche durante la fase di installazione
     if (-not $requirements.Contains($name)) { continue }
-    $requirement = $requirements[$name]
-    $result = $requirement["Install"] | Invoke-Expression
-    $installLogs[$name]["Result"] = $result
+    Invoke-CreateRow $gridInstallation $name
+    $selectedInstallation.Text = $name
+    writeOutputInstallation($name)
 
-    if ($result -eq 'OK') { 
-      Invoke-CreateRow $gridInstallation $name $green
+    $requirement = $requirements[$name]
+    $installLogs[$name]["Result"] = $(if (invoke-Dependencies "INSTALL" $requirement) { $requirement["Install"] | Invoke-Expression } else { "KO" })
+
+    if ($installLogs[$name]["Result"] -eq 'OK') { 
+      invoke-setColor $gridInstallation $green
     }
     else { 
-      Invoke-CreateRow $gridInstallation $name $red
+      invoke-setColor $gridInstallation $red
       $success = $false 
     }
+
     $env:PATH = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
   }
 
@@ -39,6 +42,20 @@ function installRequirements {
 
 function gridInstallation_VisibleChanged {
   $gridInstallation.ClearSelection()
+}
+
+function gridInstallation_Click {
+  if (-not $gridInstallation.Rows.Count) { return }
+  $name = $gridInstallation.CurrentRow.Cells[0].Value
+  if ($name -eq $selectedRequirement.Text) { return }  #Se si seleziona il requirement attualmente visualizzato, il click non caricherà nulla
+  $selectedRequirement.Text = $name
+  writeOutputInstallation($name)
+}
+
+function writeOutputInstallation($name) {
+  $outputInstallationLabel.Text = ""
+  $log = $(if (-not $installLogs[$name]["Logs"]) { "Nessun log disponibile" } else { ($installLogs[$name]["Logs"]).replace(";", [System.Environment]::NewLine).replace('\r\n', [System.Environment]::NewLine) })
+  $outputInstallationLabel.AppendText($log)
 }
 
 function closeButton_Click {

@@ -6,10 +6,10 @@ if (!$dockerVersion) { return 'KO' }
 $dockerVersion = $dockerVersion.split(' ').split(',')[2].split(".")
 $dockerVersion = [Version]::new($dockerVersion[0], $dockerVersion[1], $dockerVersion[2])
 
-$minVersion = $requirements[$name]["MinVersion"].split(".")
+$minVersion = $requirement["MinVersion"].split(".")
 $minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
 
-$maxVersion = $requirements[$name]["MaxVersion"].split(".")
+$maxVersion = $requirement["MaxVersion"].split(".")
 $maxVersion = [Version]::new($maxVersion[0], $maxVersion[1], $maxVersion[2])
 
 $output = ""
@@ -18,7 +18,7 @@ if (($dockerVersion -lt $minVersion) -or ($dockerVersion -gt $maxVersion)) {
   $output = "VER"
 }
 
-if ($requirements[$name]["Proxy"] -ne "KO") {
+if ($requirement["Proxy"] -ne "KO") {
   if (Test-Path $dockerConfigPath) {
     $dockerConfigJson = Get-Content $dockerConfigPath | ConvertFrom-Json | ConvertPSObjectToHashtabl
     if (-not $dockerConfigJson.Contains("proxies")) {
@@ -31,7 +31,7 @@ if ($requirements[$name]["Proxy"] -ne "KO") {
       }
     }
   }
-  if ($requirements[$name]["Proxy"] -eq "TCP") { $output += "TCP" }
+  if ($requirement["Proxy"] -eq "TCP") { $output += "TCP" }
 }
 
 if ($output) { return $output }

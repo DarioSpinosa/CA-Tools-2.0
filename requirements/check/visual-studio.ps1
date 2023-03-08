@@ -4,10 +4,10 @@ if (!$vsVersion) { return 'KO' }
 $vsVersion = $vsVersion.split(".")
 $vsVersion = [Version]::new($vsVersion[0], $vsVersion[1], $vsVersion[2])
 
-$minVersion = $requirements[$name]["MinVersion"].split(".")
+$minVersion = $requirement["MinVersion"].split(".")
 $minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
 
-$maxVersion = $requirements[$name]["MaxVersion"].split(".")
+$maxVersion = $requirement["MaxVersion"].split(".")
 $maxVersion = [Version]::new($maxVersion[0], $maxVersion[1], $maxVersion[2])
 
 

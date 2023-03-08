@@ -31,9 +31,12 @@ function Button_MouseLeave ($button) {
 function Invoke-CreateRow($grid, $name, $color) {
   $row = New-Object System.Windows.Forms.DataGridViewRow
   $row.CreateCells($grid, $name)
-  $row.DefaultCellStyle.BackColor = $color
   $grid.Rows.Add($row);
   $grid.ClearSelection()
+}
+
+function invoke-setColor($grid, $color){
+  $grid.Rows[$grid.Rows.Count - 1].DefaultCellStyle.BackColor = $color
 }
 #---------------------------------------------------------------------[LOGIC]-------------------------------------------------------
 

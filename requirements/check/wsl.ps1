@@ -38,10 +38,10 @@ if (-not $ubuntuVersions.Count) {
   return "UBUNTU"
 }
 
-$minVersion = $reqirements[$name]["MinVersion"].split(".")
+$minVersion = $requirement["MinVersion"].split(".")
 $minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
 
-$maxVersion = $requirements[$name]["MaxVersion"].split(".")
+$maxVersion = $requirement["MaxVersion"].split(".")
 $maxVersion = [Version]::new($maxVersion[0], $maxVersion[1], $maxVersion[2])
 
 $rightVersion = [Version]::new(0, 0, 0)

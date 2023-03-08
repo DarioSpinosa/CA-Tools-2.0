@@ -2,7 +2,7 @@ $nodeVersion = invoke-executeCheckCommand "node --version" "Si e' verificato un 
 if (!$nodeVersion) { return 'KO' }
 
 $nodeVersion = $nodeVersion.split('v')[1]
-$maxVersion =  $requirements[$name]["MaxVersion"]
+$maxVersion =  $requirement["MaxVersion"]
 if ($nodeVersion -ne $maxVersion){
     invoke-WriteCheckLogs "La Max Version rilevata di Node $nodeVersion non rispetta i requisiti.\r\nMax Version: $maxVersion."
     return 'VER'

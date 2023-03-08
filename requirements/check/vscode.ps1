@@ -6,7 +6,7 @@ function checkApp {
   $codeVersion = $codeVersion[0].split(".")
   $codeVersion = [Version]::new($codeVersion[0], $codeVersion[1], $codeVersion[2])
 
-  $minVersion = $requirements[$name]["MinVersion"].split(".")
+  $minVersion = $requirement["MinVersion"].split(".")
   $minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
 
   if ($codeVersion -lt $minVersion) {
@@ -58,11 +58,11 @@ function checkExtentions {
   if (!$listExtensions) { return 'EXTENTIONS' }
 
   $missingExtentions = @()
-  foreach ($extension in $requirements[$name]["Extentions"]) {
+  foreach ($extension in $requirement["Extentions"]) {
     if (-not $listExtensions.Contains($extension)) { $missingExtentions += $extension }
   }
 
-  $requirements[$name]["Extentions"] = $missingExtentions
+  $requirement["Extentions"] = $missingExtentions
 
   if ($missingExtentions.Count ) {
     $message = "Non sono state rilevate le seguenti estensioni: "

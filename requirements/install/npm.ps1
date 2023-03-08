@@ -1,7 +1,5 @@
 function invoke-installing($name, $requirement) {
-    #Return temporaneo per impedire l'installazione in caso di errore di versione "VER"
-    #per cui non è stato ancora deciso il comportamento
-    if (-not $checkLogs[$name]["Result"].Contains("KO")) { return }
+    if ($requirements.Contains("Node")) { return }
     $subMessage = "$($name) version: $($requirement["MaxVersion"])"
     invoke-WriteInstallLogs "Installazione $subMessage in corso..."
     Start-Process npm -ArgumentList @('i', '-g', "npm@$($requirement['MaxVersion'])") -NoNewWindow -Wait
