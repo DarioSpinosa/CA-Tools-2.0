@@ -31,7 +31,7 @@ $env:NG_CLI_ANALYTICS = "ci"
 
 Write-Host "Avvio ca scar:setup..."
 invoke-executeCommand 'ca scar:setup'
-Write-Host "Il comando ca scar:setup è stato completato"
+Write-Host "Il comando ca scar:setup e' stato completato"
 
 Write-Host "Avvio ca scarface"
 invoke-executeCommand "ca scar"

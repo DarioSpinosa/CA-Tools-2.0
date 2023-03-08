@@ -1,4 +1,4 @@
-function invoke-installation($name, $requirement) {
+function invoke-installing($name, $requirement) {
   $subMessage = "$($name) version: $($requirement["MaxVersion"])"
 	invoke-WriteInstallLogs "Installazione $subMessage in corso..."
 
@@ -19,7 +19,7 @@ function invoke-installation($name, $requirement) {
 #per cui non è stato ancora deciso il comportamento
 if (-not ($checkLogs[$name]["Result"].Contains("KO"))) { return } 
 if (-not (invoke-download $name $requirement)) {return "KO"}
-invoke-installation $name $requirement
+invoke-installing $name $requirement
 invoke-deleteDownload $name $requirement
 return "OK"
 # SIG # Begin signature block

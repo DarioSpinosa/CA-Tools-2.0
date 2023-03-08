@@ -57,7 +57,7 @@ function invoke-extentions ($name, $requirement) {
 #per cui non è stato ancora deciso il comportamento
 if ($checkLogs[$name]["Result"].Contains("KO")) {
   if (-not (invoke-download $name $requirement)) {return "KO"}
-  invoke-installation $requirement
+  invoke-installing $requirement
   invoke-deleteDownload $name $requirement
 }
 invoke-settings $name

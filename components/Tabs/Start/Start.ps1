@@ -44,28 +44,19 @@ function startButton_Click {
   }
   
   #Check presenza di variabili d'ambiente fondamentali. In caso manchino vengono aggiunte nell'immediato
-  $envVar = @{}
-  $envVar.Add("C:\Windows", "Gia' presente")
-  $envVar.Add("C:\Windows\System32", "Gia' presente")
-  $envVar.Add("C:\Windows\System32\Wbem", "Gia' presente")
-  $envVar.Add("C:\Windows\System32\WindowsPowerShell\v1.0\", "Gia' presente")
-  $envVar.Add("$env:PROGRAMFILES\Git\Users\bin\", "Gia' presente")
-  $envVar.Add("$env:PROGRAMFILES\Git\cmd", "Gia' presente")
-  $envVar.Add("$env:PROGRAMFILES\Nodejs\", "Gia' presente")
-  $envVar.Add("$env:PROGRAMFILES\Ca-Tools", "Gia' presente")
-
-  $envInPath = $env:PATH.ToLower().Split(';')
-  foreach ($var in @($envVar.Keys)) {
-    if (-not ($envInPath.Contains($var.ToLower()))) {
-      [System.Environment]::SetEnvironmentVariable("PATH", (("$Env:PATH;$var") -replace ";;", ";"), "Machine")
-      $envVar[$var] = "Aggiunta" 
-    }
-  }
-
   $gridEnvVar.DataSource = $null
   $gridEnvVar.Rows.Clear()
-  foreach ($env in $envVar.Keys) { 
-    Invoke-CreateRow $gridEnvVar @($env, $envVar[$env]) $white
+  $envVar = @("C:\Windows", "C:\Windows\System32", "C:\Windows\System32\Wbem", "C:\Windows\System32\WindowsPowerShell\v1.0\", "$env:PROGRAMFILES\Ca-Tools", "$env:PROGRAMFILES\Git\cmd", "$env:PROGRAMFILES\Git\Users\bin\", "$env:PROGRAMFILES\Nodejs\")
+  $envInPath = $env:PATH.ToLower().Split(';')
+
+  foreach ($var in $envVar) {
+    $result = "Presente"
+    if (-not ($envInPath.Contains($var.ToLower()))) {
+      [System.Environment]::SetEnvironmentVariable("PATH", (("$Env:PATH;$var") -replace ";;", ";"), "Machine")
+      $result = "Aggiunta"
+    }
+
+    Invoke-CreateRow $gridEnvVar @($var, $result) $white
   }
 
   #Check presenza di un proxy
@@ -105,6 +96,7 @@ function startButton_Click {
   tabButton_Click($requirementsTabButton)
   Invoke-CheckRequirements
 }
+
 
 function tabStart_VisibleChanged {
   $gridConnections.ClearSelection()

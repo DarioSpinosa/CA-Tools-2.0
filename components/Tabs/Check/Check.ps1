@@ -20,7 +20,6 @@ function Invoke-CheckRequirements {
 
   $backofficeProjectPath = "C:\dev\scarface\back-office"
   if (Test-Path $backofficeProjectPath) { Remove-Item -Path $backofficeProjectPath -Force -Recurse }
-  New-StartupCmd
   
   $override = invoke-DownloadScarConfigJson
   Invoke-OverrideRequirement $override
@@ -98,25 +97,6 @@ if the Requirement isn't satisfied then add it to the list of Requirements that 
   }
   
   ($checkLogs  | ConvertTo-Json) > $checkRequirementsLogFile
-}
-
-function New-StartupCmd() {
-  <#
-.SYNOPSIS
-Create a .cmd that will execute the CAEP installer at startup
-.DESCRIPTION
-Creates a .cmd that will execute the CAEP installer at startup until they won't complete it
-#>
-
-  $scriptArgs = "\`"$(Join-Path $(Get-Location) "caep-main.ps1")\`""
-
-  if ($scarConfig) { $scriptArgs += " -ScarConfig " + $scarConfig }
-  if ($scarVersion) { $scriptArgs += " -ScarVersion " + $scarVersion }
-
-  if (!(Test-Path $startupPath)) {
-    New-Item -Path $startupPath | Out-Null
-    Add-Content -Path $startupPath -Value "start powershell -Command `"Start-Process powershell -verb runas -ArgumentList '-NoExit -file " + $scriptArgs + "'`""
-  }
 }
 
 function selectedRequirement_SizeChanged() {
