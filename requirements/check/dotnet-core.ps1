@@ -9,10 +9,10 @@ for ($i = 0; $i -lt $dotnetOutputCommand.Count; $i += 2) {
 
 foreach ($version in $requirement["Versions"]) {
   if (-not $dotNetVersions.Contains($version)) {
-    invoke-WriteCheckLogs "La versioneDotNet $version non risulta presense nella macchina"
+    invoke-WriteCheckLogs "La versione $version non risulta presense nella macchina"
   }
   else {
-    invoke-WriteCheckLogs "La versioneDotNet $version risulta presense nella macchina"
+    invoke-WriteCheckLogs "La versione $version risulta presense nella macchina"
     $requirement["Versions"].Remove($version)
   }
 }

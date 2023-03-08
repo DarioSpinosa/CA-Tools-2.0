@@ -1,5 +1,4 @@
 function invoke-installing($name, $requirement) {
-    if ($requirements.Contains("Node")) { return }
     $subMessage = "$($name) version: $($requirement["MaxVersion"])"
     invoke-WriteInstallLogs "Installazione $subMessage in corso..."
     Start-Process npm -ArgumentList @('i', '-g', "npm@$($requirement['MaxVersion'])") -NoNewWindow -Wait

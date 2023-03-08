@@ -20,17 +20,20 @@ if ($scarConfig.Contains('terranova')) { return 'OK' }
 invoke-WriteCheckLogs "Aggiornamento di wsl in corso..."
 $wslUpdate = invoke-executeCheckCommand "wsl --update" "Errore nell'esecuzione del comando wsl --update"
 if (!$wslUpdate) { return "KO" }
+invoke-WriteCheckLogs (removeNullCharacters $wslUpdate)
 invoke-WriteCheckLogs "Aggiornamento di wsl completato"
 
 $wslStatus = invoke-executeCheckCommand "wsl --status" "Errore nell'esecuzione del comando wsl --status"
 if (!$wslStatus) { return "KO" }
 
-$wslStatus = (removeNullCharacters $wslStatus).split(' ');
+$defaultDistro = (removeNullCharacters $wslStatus[0]).split(' ');
+$defaultVersion = (removeNullCharacters $wslStatus[2]).split(' ');
 
-if (-not $wslStatus.Contains("2")) {
+if (-not $defaultVersion.Contains("2")) {
   invoke-WriteCheckLogs "La versione di default non e' la 2"
   return "VERSION"
 }
+invoke-WriteCheckLogs "Versione di default: 2"
 
 $wslVersions = invoke-executeCheckCommand "wsl -l -v" "Errore nell'esecuzione dle comando wsl -l -v"
 if (!$wslVersions) { return "KO" }
@@ -71,12 +74,12 @@ if ($rightVersion -eq [Version]::new(0, 0, 0)) {
 }
 
 #Versione che soddisfa i requisiti trovata, controllare che sia la main distro
-if (-not $wslStatus.Contains("Ubuntu-$($rightVersion)Default")) {
+if (-not $defaultDistro.Contains("Ubuntu-$($rightVersion)")) {
   invoke-WriteCheckLogs "E' stata rilevata una versione di ubuntu che soddisfa i requisiti ma non e' impostata come distribuzione principale"
   return "SET$rightVersion"
 }
 
-invoke-WriteCheckLogs "Distribuzione wsl default: Ubuntu-$rightVersion"
+invoke-WriteCheckLogs "Distribuzione default: Ubuntu-$rightVersion"
 return "OK"
 
 # SIG # Begin signature block
