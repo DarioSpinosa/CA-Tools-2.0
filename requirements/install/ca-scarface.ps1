@@ -15,16 +15,16 @@ if ($scarVersion) {
 }
 $scarConfigObj | ConvertTo-Json | Set-Content -Path $scarConfigPath
 
-# $killCheck = {
-#   while ($true) {
-#     Start-Sleep -Seconds 1
-#     if (Get-Process -name Code) {
-#       Stop-Process -name Code -Force
-#     }
-#   }
-# }
+$killCheck = {
+  while ($true) {
+    Start-Sleep -Seconds 1
+    if (Get-Process -name Code) {
+      Stop-Process -name Code -Force
+    }
+  }
+}
 
-# $job = Start-Job $killCheck -Name "killVScode"
+$job = Start-Job $killCheck -Name "killVScode"
 
 Set-Location 'C:\dev\scarface'
 $env:NG_CLI_ANALYTICS = "ci"
@@ -36,7 +36,7 @@ Write-Host "Il comando ca scar:setup e' stato completato"
 Write-Host "Avvio ca scarface"
 invoke-executeCommand "ca scar"
 Write-Host 'Il comando ca scarface'
-# Stop-Job -Id $job.Id
+Stop-Job -Id $job.Id
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

@@ -1,4 +1,7 @@
 function invoke-installing($name, $requirement) {
+    #Nel caso node fosse ko, ed è stato correttamente installato viene verificato che la versione di npm installata da node sia diversa da quella dei requirement
+    #se è la stessa non c'è bisogno di reinstallarla, è una perdita di tempo
+    if (($checkLogs["Node"]["Result"] -ne "OK") -and ($installLogs["Node"]["Result"] -eq "OK") -and ((npm --version) -eq $requirement['MaxVersion'])) {return } 
     $subMessage = "$($name) version: $($requirement["MaxVersion"])"
     invoke-WriteInstallLogs "Installazione $subMessage in corso..."
     Start-Process npm -ArgumentList @('i', '-g', "npm@$($requirement['MaxVersion'])") -NoNewWindow -Wait
@@ -34,7 +37,7 @@ return "OK"
 # +UBa7zUNo5fZNBRJb4IfRq17uKQ8oNz+2KcIB74hsXm1X2v8Igm6upua/Td8kZ0b
 # CuuogqPoUbEKXTNMd5D32JUAi7KpgKWE4CCbG7zk7ivGpAii6OUCAwEAAaOCAZAw
 # ggGMMB8GA1UdIwQYMBaAFA7hOqhTOjHVir7Bu61nGgOFrTQOMB0GA1UdDgQWBBTz
-# X2/Q/EHWaGVPiGGw0uJSmluXeDAOBgNVHQ8BAf8EBAMCB4AwDAYDVR0TAQH/BAIw
+# X2/Q/EHWaGVPiGGw0uJSmluXeDAOBgNVHQ8BAf8EBAMCB4Aw$DAYDVR0TAQH/BAIw
 # ADATBgNVHSUEDDAKBggrBgEFBQcDAzARBglghkgBhvhCAQEEBAMCBBAwSgYDVR0g
 # BEMwQTA1BgwrBgEEAbIxAQIBAwIwJTAjBggrBgEFBQcCARYXaHR0cHM6Ly9zZWN0
 # aWdvLmNvbS9DUFMwCAYGZ4EMAQQBMEMGA1UdHwQ8MDowOKA2oDSGMmh0dHA6Ly9j
