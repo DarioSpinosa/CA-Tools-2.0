@@ -23,11 +23,11 @@ function checkSettings {
   $vsCodeSettingsJsonPath = "~\AppData\Roaming\Code\User\settings.json"
 
   if (!(Test-Path $vsCodeSettingsPath)) { 
-    invoke-WriteCheckLogs "Path $vsCodeSettingsPath non trovato"
+    invoke-WriteCheckLogs "\r\nPath $vsCodeSettingsPath non trovato"
     return 'SETTINGS'
   }
 
-  invoke-WriteCheckLogs "Path $vsCodeSettingsPath trovato"
+  invoke-WriteCheckLogs "\r\nPath $vsCodeSettingsPath trovato"
 
   if (!(Test-Path $vsCodeSettingsJsonPath)) {
     New-Item -Path $vsCodeSettingsJsonPath -Value '{ }' -Force | Out-Null
@@ -65,13 +65,13 @@ function checkExtentions {
   $requirement["Extentions"] = $missingExtentions
 
   if ($missingExtentions.Count ) {
-    $message = "Non sono state rilevate le seguenti estensioni: "
+    $message = "\r\nNon sono state rilevate le seguenti estensioni: "
     foreach ($ext in $missingExtentions) { $message += "\r\n-$ext"}
     invoke-WriteCheckLogs $message
     return 'EXTENTIONS' 
   }
 
-  invoke-WriteCheckLogs "Tutte le estensioni sono gia' installate"
+  invoke-WriteCheckLogs "\r\nTutte le estensioni sono gia' installate"
   return ''
 }
 

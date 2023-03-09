@@ -7,7 +7,7 @@ function invoke-installing($name, $requirement) {
 
 #Return temporaneo per impedire l'installazione in caso di errore di versione "VER"
 #per cui non è stato ancora deciso il comportamento
-if (-not ($checkLogs[$name]["Result"].Contains("KO"))) { return } 
+if (-not ($checkLogs[$name]["Result"].Contains("KO"))) { return "OK" } 
 if (-not (invoke-download $name $requirement)) {return "KO"}
 invoke-installing $name $requirement
 invoke-deleteDownload $name $requirement

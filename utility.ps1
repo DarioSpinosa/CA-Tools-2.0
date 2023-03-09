@@ -44,7 +44,7 @@ function invoke-WriteCheckLogs($log) {
 
 function invoke-WriteInstallLogs($log) {
   invoke-WriteLogs $installLogs $log
-  writeOutputInstallation($name)
+  writeOutputInstall($name)
 }
 
 function invoke-WriteLogs($hashLogs, $log) {
@@ -75,23 +75,13 @@ function invoke-checkProxy {
 function invoke-checkVM {
   return ((Get-CimInstance win32_computersystem).model -in @('VMware Virtual Platform', 'Virtual Machine', 'Macchina Virtuale'))
 }
-
-function invoke-executeCommand($command) {
-  try {
-    return (Invoke-Expression $command) 
-  }
-  catch {
-    return $false
-  }
-}
-
 function invoke-Dependencies($type, $requirement) {
   $hash = $(if ($type -eq "CHECK") { $checkLogs } else { $installLogs })
   $dependenciesFailed = ""
   if (-not ($requirement.Contains("Dependencies"))) { return $true }
 
   foreach ($dependency in $requirement["Dependencies"]) {
-    if (($hash[$dependency]["Result"] -ne "OK") -and ($hash[$dependency]["Result"] -ne "VER")) {
+    if (($hash.ContainsKey($dependency)) -and ($hash[$dependency]["Result"] -ne "OK") -and ($hash[$dependency]["Result"] -ne "VER")) {
       $dependenciesFailed += "\r\n-$dependency"
     }
   }
@@ -102,9 +92,16 @@ function invoke-Dependencies($type, $requirement) {
   }
 
   return $true
-
 }
 
+function invoke-executeCommand($command) {
+  try {
+    return (Invoke-Expression $command) 
+  }
+  catch {
+    return $false
+  }
+}
 function invoke-executeCheckCommand($command, $errorMessage) {
   $result = invoke-executeCommand $command
   if (-not $result) { invoke-WriteCheckLogs $errorMessage }

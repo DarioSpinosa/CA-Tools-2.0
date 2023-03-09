@@ -1,9 +1,13 @@
 if ($checkLogs[$name]["Result"].Contains("FOLDER")) {
+  invoke-WriteInstallLogs "Creazione directory $("$env:PROGRAMFILES/Ca-Tools") in corso..."
   New-Item -Path "$env:PROGRAMFILES/Ca-Tools" -ItemType Directory
+  invoke-WriteInstallLogs "Creazione directory $("$env:PROGRAMFILES/Ca-Tools") terminata"
 }
 
 if ($checkLogs[$name]["Result"].Contains("FILE")) {
-  Copy-Item "./../../login/npm-login.ps1" -Destination "$env:PROGRAMFILES/Ca-Tools/npm-login.ps1"
+  invoke-WriteInstallLogs "Download npm login tool $("$env:PROGRAMFILES/Ca-Tools") in corso..."
+  Copy-Item "./components/login/npm-login.ps1" -Destination "$env:PROGRAMFILES/Ca-Tools/npm-login.ps1"
+  invoke-WriteInstallLogs "Download npm login tool $("$env:PROGRAMFILES/Ca-Tools") terminato"
 }
 
 if ($checkLogs[$name]["Result"].Contains("CLI")) {

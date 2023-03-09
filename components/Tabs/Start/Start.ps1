@@ -3,7 +3,7 @@
 function startButton_Click {
   $startButton.Enabled = $false
   
-  # Check if the user opened PowerShell as Admin, if not then stop the installation, otherwise check the requirements
+  # Check if the user opened PowerShell as Admin, if not then stop the Install, otherwise check the requirements
   if (-not ((invoke-executeCommand "Get-LocalGroupMember -Group Administrators") -like "*$(whoami)*")) {
     invoke-modal  "L'utente attuale non risulta essere l'amministratore della macchina"
     $mainForm.Close()

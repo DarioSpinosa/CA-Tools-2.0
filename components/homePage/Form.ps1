@@ -45,18 +45,18 @@ $requirementsTabButton.ForeColor = "#ffffff"
 $requirementsTabButton.FlatStyle = "Flat"
 $requirementsTabButton.FlatAppearance.BorderSize = 0 
 
-$installationTabButton = New-Object System.Windows.Forms.Button
-$installationTabButton.BackColor = "#00ffffff"
-$installationTabButton.Text = "Installazione`nrequisiti mancanti"
-$installationTabButton.Size = "150, 75"
-$installationTabButton.Location = "0, 250"
-$installationTabButton.Font = 'Roboto,10'
-$installationTabButton.ForeColor = "#ffffff"
-$installationTabButton.FlatStyle = "Flat"
-$installationTabButton.FlatAppearance.BorderSize = 0 
+$InstallTabButton = New-Object System.Windows.Forms.Button
+$InstallTabButton.BackColor = "#00ffffff"
+$InstallTabButton.Text = "Installazione`nrequisiti mancanti"
+$InstallTabButton.Size = "150, 75"
+$InstallTabButton.Location = "0, 250"
+$InstallTabButton.Font = 'Roboto,10'
+$InstallTabButton.ForeColor = "#ffffff"
+$InstallTabButton.FlatStyle = "Flat"
+$InstallTabButton.FlatAppearance.BorderSize = 0 
 
-$sidebar.Controls.AddRange(@($logo, $startTabButton, $requirementsTabButton, $installationTabButton))
-$mainForm.Controls.AddRange(@($sidebar, $tabStart, $tabRequirements, $tabInstallation))
+$sidebar.Controls.AddRange(@($logo, $startTabButton, $requirementsTabButton, $InstallTabButton))
+$mainForm.Controls.AddRange(@($sidebar, $tabStart, $tabRequirements, $tabInstall))
 
 #---------------------------------------------------------------------------[EVENTS]---------------------------------------------------------------------------
 $requirementsTabButton.Add_Click({ tabButton_Click $requirementsTabButton })
@@ -67,6 +67,6 @@ $startTabButton.Add_Click({ tabButton_Click $startTabButton })
 $startTabButton.Add_MouseEnter({ Button_MouseEnter $startTabButton })
 $startTabButton.Add_MouseLeave({ Button_MouseLeave $startTabButton })
 
-$installationTabButton.Add_Click({ tabButton_Click $installationTabButton })
-$installationTabButton.Add_MouseEnter({ Button_MouseEnter $installationTabButton })
-$installationTabButton.Add_MouseLeave({ Button_MouseLeave $installationTabButton })
+$InstallTabButton.Add_Click({ tabButton_Click $InstallTabButton })
+$InstallTabButton.Add_MouseEnter({ Button_MouseEnter $InstallTabButton })
+$InstallTabButton.Add_MouseLeave({ Button_MouseLeave $InstallTabButton })

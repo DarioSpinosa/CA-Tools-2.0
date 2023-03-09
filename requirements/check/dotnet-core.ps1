@@ -7,17 +7,20 @@ for ($i = 0; $i -lt $dotnetOutputCommand.Count; $i += 2) {
   $dotNetVersions += $dotnetOutputCommand[$i]
 }
 
+$missingVersions = @()
+
 foreach ($version in $requirement["Versions"]) {
-  if (-not $dotNetVersions.Contains($version)) {
-    invoke-WriteCheckLogs "La versione $version non risulta presense nella macchina"
+  if ($dotNetVersions.Contains($version)) {
+    invoke-WriteCheckLogs "La versione $version risulta presenste nella macchina"
   }
   else {
-    invoke-WriteCheckLogs "La versione $version risulta presense nella macchina"
-    $requirement["Versions"].Remove($version)
+    invoke-WriteCheckLogs "La versione $version non risulta presense nella macchina"
+    $missingVersions += $version
   }
 }
 
-return $(if ($requirement["Versions"].Count) {"KO"} else {"OK"})
+$requirement["Versions"] = $missingVersions
+return $(if (-$requirement["Versions"].Count) {"KO"} else {"OK"})
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

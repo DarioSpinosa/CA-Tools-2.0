@@ -76,7 +76,7 @@ function invoke-login {
     invoke-WriteCheckLogs "$element"
   }
 
-  # Double check if the credentials inserted are correct or not, if they are then go to the next step of the installation, otherwise ask for the correct credentials.
+  # Double check if the credentials inserted are correct or not, if they are then go to the next step of the Install, otherwise ask for the correct credentials.
   foreach ($item in $npmErrCheck) {
     if ( ($item -like '*ERR!*') -or ($item -like '*error*') ) {
       invoke-WriteCheckLogs "Errore durante il login. Il token o l'username potrebbero essere sbagliato. Controlla che il token sia impostato con 'All Accessible Organization'"

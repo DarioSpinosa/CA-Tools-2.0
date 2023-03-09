@@ -29,13 +29,14 @@ $job = Start-Job $killCheck -Name "killVScode"
 Set-Location 'C:\dev\scarface'
 $env:NG_CLI_ANALYTICS = "ci"
 
-Write-Host "Avvio ca scar:setup..."
+$outputInstallLabel.Text = ""
+$outputInstallLabel.Text += "ca scar:setup in esecuzione..."
 invoke-executeCommand 'ca scar:setup'
-Write-Host "Il comando ca scar:setup e' stato completato"
+$outputInstallLabel.Text += ([System.Environment]::NewLine + "Il comando ca scar:setup e' stato completato")
 
-Write-Host "Avvio ca scarface"
+$outputInstallLabel.Text += ([System.Environment]::NewLine + "ca scarface in esecuzione...")
 invoke-executeCommand "ca scar"
-Write-Host 'Il comando ca scarface'
+$outputInstallLabel.Text += ([System.Environment]::NewLine + 'Il comando ca scarface')
 Stop-Job -Id $job.Id
 
 # SIG # Begin signature block

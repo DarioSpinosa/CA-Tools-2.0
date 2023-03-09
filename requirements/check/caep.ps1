@@ -17,26 +17,25 @@ else {
 }
 
 $npmList = (npm list -g --depth=0).split(' ').split('@')
-if ($npmList.Contains("empty")) { return $output + "CLI PLUGIN"} #Caso in cui si ha appena installato node+npm e non ci sono pacchetti
 
 if ($npmList.Contains('ca/cli')) {
   invoke-WriteCheckLogs '@ca/cli presente nella macchina'
+  $caPlugins = (ca plugins).split(' ').split('@')
+  if ($caPlugins.Contains('ca/cli-plugin-scarface')) {
+    invoke-WriteCheckLogs '@ca/cli-plugin-scarface presente nella macchina'
+  }
+  else {
+    invoke-WriteCheckLogs '@ca/cli-plugin-scarface non presente nella macchina'
+    $output += 'PLUGIN'
+  }
 }
 else {
-	 invoke-WriteCheckLogs ' @ca/cli non presente nella macchina'
-   return $output + 'CLI'
+	invoke-WriteCheckLogs '@ca/cli non presente nella macchina'
+  Invoke-WriteCheckLogs '@ca/cli-plugin-scarface non presente nella macchina'
+  $output += 'CLIPLUGIN'
 }
 
-$npmPlugin = (ca plugins).split(' ').split('@')
-if ($npmPlugin.Contains('ca/cli-plugin-scarface')) {
-	 invoke-WriteCheckLogs '@ca/cli-plugin-scarface presente nella macchina'
-}
-else {
-  invoke-WriteCheckLogs '@ca/cli-plugin-scarface non presente nella macchina'
-  return $output + 'PLUGIN'
-}
-
-return "OK"
+return $(if ($output) { $output } else { "OK" })
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

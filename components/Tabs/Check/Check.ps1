@@ -7,7 +7,7 @@ function Invoke-CheckRequirements {
   $InformationPreference = 'Continue'
   Start-Transcript $logFilePath
 
-  # Unlocks all the scripts needed for the installation
+  # Unlocks all the scripts needed for the Install
   foreach ($ps1File in Get-ChildItem *.ps1 -Recurse) {
     Unblock-File -Path $ps1File
   }
@@ -124,7 +124,7 @@ function writeOutputRequirements($name) {
 }
 
 function installButton_Click {
-  tabButton_Click($installationTabButton)
+  tabButton_Click($InstallTabButton)
   Invoke-installRequirements
 }
 
