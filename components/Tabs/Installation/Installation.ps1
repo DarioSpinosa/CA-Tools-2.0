@@ -54,8 +54,10 @@ function gridInstallation_Click {
 
 function writeOutputInstallation($name) {
   $outputInstallationLabel.Text = ""
+  $mainForm.Refresh()
   $log = $(if (-not $installLogs[$name]["Logs"]) { "Nessun log disponibile" } else { ($installLogs[$name]["Logs"]).replace(";", [System.Environment]::NewLine).replace('\r\n', [System.Environment]::NewLine) })
   $outputInstallationLabel.AppendText($log)
+  $mainForm.Refresh()
 }
 
 function closeButton_Click {

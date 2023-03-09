@@ -117,8 +117,10 @@ function gridRequirements_Click {
 
 function writeOutputRequirements($name) {
   $outputRequirementsLabel.Text = ""
+  $mainForm.Refresh()
   $log = $(if (-not $checkLogs[$name]["Logs"]) { "Nessun log disponibile" } else { ($checkLogs[$name]["Logs"]).replace(";", [System.Environment]::NewLine).replace('\r\n', [System.Environment]::NewLine) })
   $outputRequirementsLabel.AppendText($log)
+  $mainForm.Refresh()
 }
 
 function installButton_Click {

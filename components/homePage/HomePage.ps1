@@ -13,8 +13,7 @@ function tabButton_Click($button) {
 
   Button_MouseEnter $button
   $buttonTabs[$button].visible = $true
-  $gridInstallation.ClearSelection()
-  $gridRequirements.ClearSelection()
+  $mainForm.Refresh()
 }
 
 function Button_MouseEnter($button) {
@@ -33,10 +32,12 @@ function Invoke-CreateRow($grid, $name, $color) {
   $row.CreateCells($grid, $name)
   $grid.Rows.Add($row);
   $grid.ClearSelection()
+  $mainForm.Refresh()
 }
 
 function invoke-setColor($grid, $color){
   $grid.Rows[$grid.Rows.Count - 1].DefaultCellStyle.BackColor = $color
+  $mainForm.Refresh()
 }
 #---------------------------------------------------------------------[LOGIC]-------------------------------------------------------
 

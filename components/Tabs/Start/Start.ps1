@@ -61,10 +61,12 @@ function startButton_Click {
 
   #Check presenza di un proxy
   $proxyCheck.Image = $(if (invoke-checkProxy) { [System.Drawing.Image]::Fromfile(".\assets\V.png") } else { [System.Drawing.Image]::Fromfile(".\assets\X.png") })
+  $mainForm.Refresh()
   
   #Check se l'ambiente di running è una Virtual machine
   $vmCheck.Image = $(if (invoke-checkVM) { [System.Drawing.Image]::Fromfile(".\assets\V.png") } else { [System.Drawing.Image]::Fromfile(".\assets\X.png") })
-
+  $mainForm.Refresh()
+  
   # Check Abilitazione Windows Features
   if (-not ($scarConfig.Contains('terranova'))) {
     $message = ""
