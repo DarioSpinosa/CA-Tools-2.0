@@ -79,7 +79,6 @@
       "WSL"
     ],
     "MinVersion": "20.0.0",
-    "MaxVersion": "20.10.23",
     "Check": "return ./requirements/check/docker.ps1",
     "DownloadLink": "https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe",
     "DownloadOutfile": "C:\\dev\\scarface\\download\\Docker-x64.exe",

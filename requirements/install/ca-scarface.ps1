@@ -31,11 +31,11 @@ $env:NG_CLI_ANALYTICS = "ci"
 
 $outputInstallLabel.Text = ""
 $outputInstallLabel.Text += "ca scar:setup in esecuzione..."
-invoke-executeCommand 'ca scar:setup'
+invoke-executeCommand 'Start-Process powershell { ca scar:setup } -Wait'
 $outputInstallLabel.Text += ([System.Environment]::NewLine + "Il comando ca scar:setup e' stato completato")
 
 $outputInstallLabel.Text += ([System.Environment]::NewLine + "ca scarface in esecuzione...")
-invoke-executeCommand "ca scar"
+invoke-executeCommand "Start-Process powershell { ca scar } -Wait"
 $outputInstallLabel.Text += ([System.Environment]::NewLine + 'Il comando ca scarface')
 Stop-Job -Id $job.Id
 

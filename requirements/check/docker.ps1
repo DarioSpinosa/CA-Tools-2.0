@@ -9,15 +9,9 @@ $dockerVersion = [Version]::new($dockerVersion[0], $dockerVersion[1], $dockerVer
 $minVersion = $requirement["MinVersion"].split(".")
 $minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
 
-$maxVersion = $requirement["MaxVersion"].split(".")
-$maxVersion = [Version]::new($maxVersion[0], $maxVersion[1], $maxVersion[2])
+invoke-WriteCheckLogs "La versione rilevata di docker $dockerVersion $(if ($dockerVersion -lt $minVersion) { "non " } else {" "})rispetta i requisiti.\r\nMin Version: $minVersion."
 
 $output = ""
-if (($dockerVersion -lt $minVersion) -or ($dockerVersion -gt $maxVersion)) {
-  invoke-WriteCheckLogs "La versione rilevata di docker $dockerVersion non rispetta i requisiti.\r\nMin Version: $minVersion. Max Version: $maxVersion"
-  $output = "VER"
-}
-
 if ($requirement["Proxy"] -ne "KO") {
   if (Test-Path $dockerConfigPath) {
     $dockerConfigJson = Get-Content $dockerConfigPath | ConvertFrom-Json | ConvertPSObjectToHashtabl
@@ -34,11 +28,7 @@ if ($requirement["Proxy"] -ne "KO") {
   if ($requirement["Proxy"] -eq "TCP") { $output += "TCP" }
 }
 
-if ($output) { return $output }
-invoke-WriteCheckLogs "La versione rilevata di docker $dockerVersion rispetta i requisiti.\r\nMin Version: $minVersion. Max Version: $maxVersion"
-return "OK"
-
-
+return $(if ($output) { $output } else { "OK" })
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

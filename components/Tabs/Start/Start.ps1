@@ -74,15 +74,25 @@ function startButton_Click {
     if (($state -eq 'Disabled') -or ($state -eq 'Disattivata')) {
       $message = "Microsoft Windows Feature"
       invoke-executeCommand "& dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart"
+      $WSLCheck.Image = [System.Drawing.Image]::Fromfile(".\assets\X.png") 
     }
-  
+    else {
+      $WSLCheck.Image = [System.Drawing.Image]::Fromfile(".\assets\V.png") 
+    }
+    $mainForm.Refresh()
+
     $state = (Get-WindowsOptionalFeature -Online -FeatureName *VirtualMachinePlatform*).State
     if (($state -eq 'Disabled') -or ($state -eq 'Disattivata')) {
       if ($message) { $message += " e " }
       $message += "Virtual Machine Platform "
       invoke-executeCommand "& dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart"
+      $VMPlatformCheck.Image = [System.Drawing.Image]::Fromfile(".\assets\X.png") 
     }
-  
+    else {
+      $VMPlatformCheck.Image = [System.Drawing.Image]::Fromfile(".\assets\V.png") 
+    }
+    $mainForm.Refresh()
+
     if ($message) {
       $message += "non risulta/risultano abilitata/e. Il sistema procedera all'attivazione e il sistema verra riavviato. Premere OK per procedere"
       invoke-modal  $message
@@ -111,6 +121,14 @@ function infoVmButton_Click {
 
 function infoProxyButton_Click {
   invoke-modal  "Notifica se e' stato rilevato un proxy o meno"
+}
+
+function infoVMPLatformButton_Click {
+  invoke-modal  "Notifica se la windows feature 'Virtual Machine Platform' e' abilitata"
+}
+
+function infoWSLButton_Click {
+  invoke-modal  "Notifica se la windows feature 'Windows Subsystem for Linux' e' abilitata"
 }
 
 . .\components\Tabs\Start\Form.ps1

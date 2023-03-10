@@ -6,7 +6,7 @@ if ($result.Contains("VERSION") -or $result.Contains("UBUNTU")) {
     if (-not (invoke-executeInstallCommand "wsl --set-default-version 2")) { return "KO" }
   }
   
-  if (-not (invoke-executeInstallCommand "Start-Process powershell {wsl --install -d Ubuntu-$($requirement['MaxVersion'])} -Wait")) { return "KO" }
+  if (-not (invoke-executeInstallCommand "Start-Process powershell { wsl --install -d Ubuntu-$($requirement['MaxVersion']) } -Wait")) { return "KO" }
 }
 
 $versionToSet = if ($result.Contains("SET")) { ($result -split ("SET"))[1] } else { $requirement['MaxVersion'] }

@@ -66,7 +66,7 @@ function closeButton_Click {
   Actions to clean the computer before closing the installer
   .DESCRIPTION
   Actions needed to be run before cloging the installer, such as:
-  kill the client's side process, removing the startup command, update the scarface.config.json and send the Install's results
+  kill the client's side process, update the scarface.config.json and send the Install's results
   #>
   try {
     $netStat4200 = (netstat -ano | findstr :4200).split(" ") | Select-Object -Unique
@@ -79,7 +79,7 @@ function closeButton_Click {
 
   Update-ScarfaceConfigJson
   Send-Logs
-  if (($checkLogs["Docker"]["Result"] -eq "KO") -and ($installLogs["Docker"]["Result"] -eq "OK")) { logoff.exe } #per docker
+  if (($checkLogs["Docker"]["Result"] -eq "KO") -and ($installLogs["Docker"]["Result"] -eq "OK")) { logoff.exe } 
   $mainForm.Close()
 }
 
@@ -92,12 +92,11 @@ function Update-ScarfaceConfigJson {
   application, domain, scenario, author and prefix
   So that the next time the user execute the command "ca scar" those fields will be asked to them
   #>
-  $scarfaceConfigJsonPath = "C:\dev\scarface\scarface.config.json"
-  $scarfaceConfigJson = Get-Content -Path $scarfaceConfigJsonPath -Raw | ConvertFrom-Json
+  $scarfaceConfigJson = Get-Content -Path $scarConfigPath -Raw | ConvertFrom-Json
   foreach ($element in @("application", "domain", "scenario", "author", "prefix")) {
     $scarfaceConfigJson.PSObject.Properties.Remove($element)
   }
-  $scarfaceConfigJson | ConvertTo-Json -Depth 5 | Out-File -Encoding "ASCII" $scarfaceConfigJsonPath -Force
+  $scarfaceConfigJson | ConvertTo-Json -Depth 5 | Out-File -Encoding "ASCII" $scarConfigPath -Force
 }
 
 function Send-Logs {
@@ -141,7 +140,7 @@ function Send-Logs {
   
   Compress-Archive @Compress -Force
   $connectPath = new-Path $startLocation "connect.sh"
-  # &"C:\Program Files\Git\usr\bin\bash.exe" $connectPath $caZipPath
+  &"C:\Program Files\Git\usr\bin\bash.exe" $connectPath $caZipPath
 }
 
 function new-Path($path, $child) {
