@@ -20,7 +20,6 @@ function Invoke-CheckRequirements {
 
   $backofficeProjectPath = "C:\dev\scarface\back-office"
   if (Test-Path $backofficeProjectPath) { Remove-Item -Path $backofficeProjectPath -Force -Recurse }
-  New-Item -Path $backofficeProjectPath -ItemType Directory
   
   $override = invoke-DownloadScarConfigJson
   Invoke-OverrideRequirement $override
