@@ -34,7 +34,7 @@ invoke-executeCommand 'Start-Process powershell { ca scar:setup } -Wait'
 $outputInstallLabel.Text += ([System.Environment]::NewLine + "Il comando ca scar:setup e' stato completato")
 
 $outputInstallLabel.Text += ([System.Environment]::NewLine + "ca scarface in esecuzione...")
-invoke-executeCommand 'Start-Process powershell { Set-Location 'C:\dev\scarface'; ca scar } -Wait'
+invoke-executeCommand 'Start-Process powershell { Set-Location "C:\dev\scarface"; ca scar } -Wait'
 $outputInstallLabel.Text += ([System.Environment]::NewLine + "Il comando ca scarface e' stato completato")
 Stop-Job -Id $job.Id
 
