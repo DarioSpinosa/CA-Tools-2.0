@@ -4,14 +4,14 @@ $tabRequirements.Size = "850, 600"
 $tabRequirements.BackColor = "#00ffffff"
 $tabRequirements.BackgroundImage = [System.Drawing.Image]::Fromfile(".\assets\background.jpg")
 
-$selectedRequirement = New-Object System.Windows.Forms.Label
-$selectedRequirement.Text = ""
-$selectedRequirement.AutoSize = $true
-$selectedRequirement.Location = "407, 15"
-$selectedRequirement.Font = 'Location, 20'
-$selectedRequirement.BackColor = "Transparent"
-$selectedRequirement.ForeColor = "#000000"
-$selectedRequirement.Bold
+$selectedCheck = New-Object System.Windows.Forms.Label
+$selectedCheck.Text = ""
+$selectedCheck.AutoSize = $true
+$selectedCheck.Location = "407, 15"
+$selectedCheck.Font = 'Location, 20'
+$selectedCheck.BackColor = "Transparent"
+$selectedCheck.ForeColor = "#000000"
+$selectedCheck.Bold
 
 $outputRequirementsLabel = New-Object System.Windows.Forms.TextBox
 $outputRequirementsLabel.Text = ""
@@ -65,9 +65,9 @@ $installButton.FlatAppearance.BorderSize = 0;
 $installButton.FlatAppearance.MouseOverBackColor = "#0463ca"
 $installButton.Enabled = $false
 
-$tabRequirements.Controls.AddRange(@($selectedRequirement, $outputRequirementsLabel, $gridRequirements, $installButton))
+$tabRequirements.Controls.AddRange(@($selectedCheck, $outputRequirementsLabel, $gridRequirements, $installButton))
 
 $tabRequirements.Add_VisibleChanged({ tabRequirements_VisibleChanged })
 $gridRequirements.Add_Click({ gridRequirements_Click })
 $installButton.Add_Click({ installButton_Click })
-$selectedRequirement.Add_SizeChanged({ selectedRequirement_SizeChanged })
+$selectedCheck.Add_SizeChanged({ selectedRequirement_SizeChanged })

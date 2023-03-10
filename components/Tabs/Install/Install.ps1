@@ -47,8 +47,8 @@ function gridInstall_VisibleChanged {
 function gridInstall_Click {
   if (-not $gridInstall.Rows.Count) { return }
   $name = $gridInstall.CurrentRow.Cells[0].Value
-  if ($name -eq $selectedRequirement.Text) { return }  #Se si seleziona il requirement attualmente visualizzato, il click non caricherà nulla
-  $selectedRequirement.Text = $name
+  if ($name -eq $selectedInstall.Text) { return }  #Se si seleziona il requirement attualmente visualizzato, il click non caricherà nulla
+  $selectedInstall.Text = $name
   writeOutputInstall($name)
 }
 

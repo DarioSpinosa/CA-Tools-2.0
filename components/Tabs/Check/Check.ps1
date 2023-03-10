@@ -20,6 +20,7 @@ function Invoke-CheckRequirements {
 
   $backofficeProjectPath = "C:\dev\scarface\back-office"
   if (Test-Path $backofficeProjectPath) { Remove-Item -Path $backofficeProjectPath -Force -Recurse }
+  New-Item -Path $backofficeProjectPath -ItemType Directory
   
   $override = invoke-DownloadScarConfigJson
   Invoke-OverrideRequirement $override
@@ -81,7 +82,7 @@ if the Requirement isn't satisfied then add it to the list of Requirements that 
 
   foreach ($name in $sortedRequirements) {
     Invoke-CreateRow $gridRequirements $name
-    $selectedRequirement.Text = $name
+    $selectedCheck.Text = $name
     writeOutputRequirements($name)
 
     $requirement = $requirements[$name]
@@ -100,7 +101,7 @@ if the Requirement isn't satisfied then add it to the list of Requirements that 
 }
 
 function selectedRequirement_SizeChanged() {
-  $selectedRequirement.Left = 552 - ($selectedRequirement.Width / 2)
+  $selectedCheck.Left = 552 - ($selectedCheck.Width / 2)
 }
 
 function tabRequirements_VisibleChanged {
@@ -110,8 +111,8 @@ function tabRequirements_VisibleChanged {
 function gridRequirements_Click {
   if (-not $gridRequirements.Rows.Count) { return }
   $name = $gridRequirements.CurrentRow.Cells[0].Value
-  if ($name -eq $selectedRequirement.Text) { return }  #Se si seleziona il requirement attualmente visualizzato, il click non caricherà nulla
-  $selectedRequirement.Text = $name
+  if ($name -eq $selectedCheck.Text) { return }  #Se si seleziona il requirement attualmente visualizzato, il click non caricherà nulla
+  $selectedCheck.Text = $name
   writeOutputRequirements($name)
 }
 

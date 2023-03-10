@@ -27,7 +27,7 @@ function Button_MouseLeave ($button) {
   $button.ForeColor = "#ffffff"
 }
 
-function Invoke-CreateRow($grid, $name, $color) {
+function Invoke-CreateRow($grid, $name) {
   $row = New-Object System.Windows.Forms.DataGridViewRow
   $row.CreateCells($grid, $name)
   $grid.Rows.Add($row);

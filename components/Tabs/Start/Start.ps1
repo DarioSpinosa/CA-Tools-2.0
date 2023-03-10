@@ -33,7 +33,7 @@ function startButton_Click {
   $results.Add('Log Repo(Opzionale)', $(if ((Test-NetConnection casftp.blob.core.windows.net -port 22).TcpTestSucceeded) { $true } else { $false }))
    
   foreach ($row in $results.Keys) { 
-    Invoke-CreateRow $gridConnections @($row, $(if($results[$row]) { [System.Drawing.Image]::Fromfile('./assets/IconV.png')} else {[System.Drawing.Image]::Fromfile('./assets/IconX.png')})) $white
+    Invoke-CreateRow $gridConnections @($row, $(if($results[$row]) { [System.Drawing.Image]::Fromfile('./assets/IconV.png')} else {[System.Drawing.Image]::Fromfile('./assets/IconX.png')}))
     $gridConnections.ClearSelection()
   }
 
@@ -56,7 +56,7 @@ function startButton_Click {
       $result = "Aggiunta"
     }
 
-    Invoke-CreateRow $gridEnvVar @($var, $result) $white
+    Invoke-CreateRow $gridEnvVar @($var, $result)
   }
 
   #Check presenza di un proxy
