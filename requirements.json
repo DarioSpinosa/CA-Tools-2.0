@@ -94,12 +94,6 @@
   },
   "CAEP": {
     "Dependencies": [
-      "DotNet",
-      "Visual Studio",
-      "Visual Studio Code",
-      "Git",
-      "NPM",
-      "Docker",
       "Npm Login"
     ],
     "PluginVersion": "0.2.25",

@@ -195,7 +195,7 @@ $VMPlatformLabel.BackColor = "Transparent"
 
 $VMPlatformCheck = New-Object System.Windows.Forms.PictureBox
 $VMPlatformCheck.Size = "30, 24"
-$VMPlatformCheck.Location = "657, 210"
+$VMPlatformCheck.Location = "640, 210"
 $VMPlatformCheck.SizeMode = "Zoom"
 $VMPlatformCheck.BackColor = "Transparent"
 
