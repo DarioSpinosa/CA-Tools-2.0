@@ -16,7 +16,7 @@ $capturedPath = "~\.ca\$currentDate\npmErrCheck.txt"
 $requirements = Get-Content ".\requirements.json" | ConvertFrom-Json | ConvertPSObjectToHashtable
 $checkRequirementsLogFile = "~\.ca\$currentDate\checkLogs.json" 
 $installRequirementsLogfile = "~\.ca\$currentDate\installLogs.json"
-$sortedRequirements = @('WSL', 'Node', 'DotNet', 'Visual Studio', 'Visual Studio Code', 'Git', 'NPM', 'Npm Login', 'CAEP')
+$sortedRequirements = @('WSL', 'Node', 'DotNet', 'Visual Studio', 'Visual Studio Code', 'Git', 'NPM', 'Docker', 'Npm Login', 'CAEP')
 #don't indent inline. It'll break 
 # $LIBRARY = @"
 # [System.Runtime.InteropServices.DllImport("gdi32.dll")] public static extern IntPtr CreateRoundRectRgn(int nLeftRect, int nTopRect, int nRightRect, int nBottomRect, int nWidthEllipse, int nHeightEllipse);
