@@ -41,10 +41,10 @@ function invoke-extentions ($name, $requirement) {
     $resultInstall = invoke-executeCommand "Start-Process code -ArgumentList '--install-extension $item --force' -NoNewWindow -Wait"
       
     if ($resultInstall) {
-      invoke-WriteInstallLogs "Installazione di $item fallita!"
+      invoke-WriteInstallLogs "$item  installata correttamente."
     } 
     else {
-      invoke-WriteInstallLogs "$item  installata correttamente."
+      invoke-WriteInstallLogs "Installazione di $item fallita!"
     }
   }  
 
