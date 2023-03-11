@@ -1,4 +1,4 @@
-$vsVersion = invoke-executeCheckCommand "&'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe' -property catalog_productDisplayVersion" "Si e' verificato un problema durante l'esecuzione del comando di controllo di versione di visual studio.\r\nVisual Studio potrebbe non essere presente sulla macchina"
+$vsVersion = invoke-executeCheckCommand "&'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe' -property catalog_productDisplayVersion" "Si e' verificato un problema durante l'esecuzione del comando di controllo di versione di visual studio. .\src\r\nVisual Studio potrebbe non essere presente sulla macchina"
 if (!$vsVersion) { return 'KO' }
 
 $vsVersion = $vsVersion.split(".")
@@ -16,7 +16,7 @@ if (($vsVersion -lt $minVersion) -or ($vsVersion -gt $maxVersion)){
     return "VER"
 }
 
-invoke-WriteCheckLogs "La versione rilevata di Visual Studio $vsVersion rispetta i requisiti.\r\nMin Version: $minVersion. Max Version: $maxVersion"
+invoke-WriteCheckLogs "La versione rilevata di Visual Studio $vsVersion rispetta i requisiti. .\src\r\nMin Version: $minVersion. Max Version: $maxVersion"
 return "OK"
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

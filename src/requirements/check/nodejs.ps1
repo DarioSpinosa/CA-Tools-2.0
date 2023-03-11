@@ -1,14 +1,14 @@
-$nodeVersion = invoke-executeCheckCommand "node --version" "Si e' verificato un errore durante l'esecuzione del comando ('node --version').\r\nNode potrebbe non essere presente sulla macchina"
+$nodeVersion = invoke-executeCheckCommand "node --version" "Si e' verificato un errore durante l'esecuzione del comando ('node --version'). .\src\r\nNode potrebbe non essere presente sulla macchina"
 if (!$nodeVersion) { return 'KO' }
 
 $nodeVersion = $nodeVersion.split('v')[1]
 $maxVersion =  $requirement["MaxVersion"]
 if ($nodeVersion -ne $maxVersion){
-    invoke-WriteCheckLogs "La Max Version rilevata di Node $nodeVersion non rispetta i requisiti.\r\nMax Version: $maxVersion."
+    invoke-WriteCheckLogs "La Max Version rilevata di Node $nodeVersion non rispetta i requisiti. .\src\r\nMax Version: $maxVersion."
     return 'VER'
 }
 
-invoke-WriteCheckLogs "La Max Version rilevata di Node $nodeVersion rispetta i requisiti.\r\nMax Version: $maxVersion."
+invoke-WriteCheckLogs "La Max Version rilevata di Node $nodeVersion rispetta i requisiti. .\src\r\nMax Version: $maxVersion."
 return 'OK'
 
 # SIG # Begin signature block

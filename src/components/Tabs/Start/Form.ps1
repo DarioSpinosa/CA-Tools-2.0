@@ -171,7 +171,7 @@ $WSLLabel.BackColor = "Transparent"
 
 $WSLCheck = New-Object System.Windows.Forms.PictureBox
 $WSLCheck.Size = "30, 24"
-$WSLCheck.Location = "700, 170"
+$WSLCheck.Location = "687, 170"
 $WSLCheck.SizeMode = "Zoom"
 $WSLCheck.BackColor = "Transparent"
 
