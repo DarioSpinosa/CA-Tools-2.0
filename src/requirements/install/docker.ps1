@@ -25,7 +25,7 @@ function invoke-proxy($name, $requirement) {
     return "KO"
   }
     
-  $dockerConfigJson = Get-Content $dockerConfigPath | ConvertFrom-Json | ConvertPSObjectToHashtable
+  $dockerConfigJson = ConvertPSObjectToHashtable (Get-Content $dockerConfigPath | ConvertFrom-Json)
         
   $internetSettings = invoke-executeInstallCommand 'Get-ItemProperty -Path "Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings"'
   if( -not $internetSettings) { return "KO" }

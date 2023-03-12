@@ -24,39 +24,6 @@ function ConvertPSObjectToHashtable($inputObject) {
   }
 }
 
-function invoke-executeCommand($command) {
-  try {
-    return (Invoke-Expression $command) 
-  }
-  catch {
-    return $false
-  }
-}
-
-function invoke-executeCheckCommand ($command) {
-  $result = invoke-executeCommand $command
-  if ($result) {
-    invoke-WriteCheckLogs "($command) eseguito correttamente: Output $result"
-  }
-  else {
-    invoke-WriteCheckLogs "Si è verificato il seguente errore durante l'esecuzione del comando ($command): $result"
-  }
-
-  return $result
-}
-
-function invoke-executeInstallCommand ($command) {
-  $result = invoke-executeCommand $command
-  if ($result) {
-    invoke-WriteInstallLogs "($command) eseguito correttamente: Output $result"
-  }
-  else {
-    invoke-WriteInstallLogs "Si è verificato il seguente errore durante l'esecuzione del comando ($command): $result"
-  }
-
-  return $result
-}
-
 function invoke-CreateLogs($hashLogs) {
   foreach ($name in $requirements.Keys) {
     $hashLogs.Add($name, @{})
@@ -73,6 +40,27 @@ function invoke-WriteCheckLogs($log) {
 function invoke-WriteInstallLogs($log) {
   invoke-WriteLogs $installLogs $log
   writeOutputInstall($name)
+}
+
+function invoke-executeCommand($command) {
+  try {
+    return (Invoke-Expression $command) 
+  }
+  catch {
+    return $false
+  }
+}
+
+function invoke-executeCheckCommand ($command, $errorMessage) {
+  $result = invoke-executeCommand $command
+  if (-not $result) { invoke-WriteCheckLogs "Si e' verificato un errore durante l'esecuzione del comando ($command)" }
+  return $result
+}
+
+function invoke-executeInstallCommand ($command, $errorMessage) {
+  $result = invoke-executeCommand $command
+  if (-not $result) { invoke-WriteInstallLogs "Si e' verificato un errore durante l'esecuzione del comando ($command)"}
+  return $result
 }
 
 function invoke-WriteLogs($hashLogs, $log) {

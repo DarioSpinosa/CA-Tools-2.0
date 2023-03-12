@@ -16,7 +16,7 @@ if (($vsVersion -lt $minVersion) -or ($vsVersion -gt $maxVersion)){
     return "VER"
 }
 
-invoke-WriteCheckLogs "La versione rilevata di Visual Studio $vsVersion rispetta i requisiti. .\src\r\nMin Version: $minVersion. Max Version: $maxVersion"
+invoke-WriteCheckLogs "La versione rilevata di Visual Studio $vsVersion rispetta i requisiti\r\nMin Version: $minVersion. Max Version: $maxVersion"
 return "OK"
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

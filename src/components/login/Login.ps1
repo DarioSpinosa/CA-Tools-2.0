@@ -63,46 +63,31 @@ function invoke-login {
   }
   
   Remove-Item $npmrcPath
-  ./components/login/npm-login.ps1 -user $($usernameTextBox.Text) -token $($TokenTextBox.Text) -registry $npmRegistry -scope @ca
-  
+  . ./src/components/login/npm-login.ps1 -user $($usernameTextBox.Text) -token $($TokenTextBox.Text) -registry $npmRegistry -scope @ca
+  npm config set '@ca:registry' $npmRegistry
+  npm config set '@ca-codegen:registry' $npmRegistry
+
   if ($type -eq "START") {
-    if (-not (invoke-executeCheckCommand "npm config set '@ca:registry' $npmRegistry")) { return $false }
-    if (-not (invoke-executeCheckCommand "npm config set '@ca-codegen:registry' $npmRegistry")) { return $false }
     $result = invoke-executeCheckCommand "npm view @ca/cli 2>&1"
     if (!$result) { return $false }
     $result += invoke-executeCheckCommand "npm view @ca-codegen/core 2>&1"
     if (!$result) { return $false }
 
-    # Double check if the credentials inserted are correct or not, if they are then go to the next step of the Install, otherwise ask for the correct credentials.
-    foreach ($item in $result) {
-      if (($item -like '*ERR!*') -or ($item -like '*error*')) {
-        invoke-WriteCheckLogs "Errore durante il login. Il token o l'username potrebbero essere sbagliato. Controlla che il token sia impostato con 'All Accessible Organization'"
-        return $false
-      }
-    }
+    foreach ($item in $result) { invoke-WriteCheckLogs $item }
+    if ($checkLogs["Npm Login"]["Result"].Contains("ERR")) { return $false}
   }
   else {
-    $result = invoke-executeInstallCommand "npm config set '@ca:registry' $npmRegistry"
-    if (!$result) { return $false }
-    $result = invoke-executeInstallCommand "npm config set '@ca-codegen:registry' $npmRegistry"
-    if (!$result) { return $false }
     $result = invoke-executeInstallCommand "npm view @ca/cli 2>&1"
     if (!$result) { return $false }
     $result += invoke-executeInstallCommand "npm view @ca-codegen/core 2>&1"
     if (!$result) { return $false }
 
-    # Double check if the credentials inserted are correct or not, if they are then go to the next step of the Install, otherwise ask for the correct credentials.
-    foreach ($item in $result) {
-      if (($item -like '*ERR!*') -or ($item -like '*error*')) {
-        invoke-WriteInstallLogs "Errore durante il login. Il token o l'username potrebbero essere sbagliato. Controlla che il token sia impostato con 'All Accessible Organization'"
-        return $false
-      }
-    }
+    foreach ($item in $result) { invoke-WriteCheckLogs $item }
+    if ($installLogs["Npm Login"]["Result"].Contains("ERR")) { return $false}
   }
 
   Remove-WrongToken($TokenTextBox.Text)
   return $true
-
 }
 
 function Remove-WrongToken($correctToken) {

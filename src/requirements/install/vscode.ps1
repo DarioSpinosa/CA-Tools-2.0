@@ -39,10 +39,10 @@ function invoke-extentions ($name, $requirement) {
   foreach ($item in $requirement["Extentions"]) {
 
     invoke-WriteInstallLogs "Installando $item..."
-    $resultInstall = invoke-executeCommand "Start-Process code -ArgumentList '--install-extension $item --force' -NoNewWindow -Wait"
+    $resultInstall = invoke-executeInstallCommand "Start-Process code -ArgumentList '--install-extension $item --force' -NoNewWindow -Wait"
       
     if ($resultInstall) {
-      invoke-WriteInstallLogs "$item  installata correttamente."
+      invoke-WriteInstallLogs "$item installata correttamente."
     } 
     else {
       invoke-WriteInstallLogs "Installazione di $item fallita!"

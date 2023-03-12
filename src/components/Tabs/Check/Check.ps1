@@ -56,7 +56,7 @@ Override custom json to Requirements
   if (!$override) { return $false }
 
   Write-Host "Download di $override in corso..."
-  $overrideJson = ((Invoke-WebRequest -Uri $override -UseBasicParsing).Content | ConvertFrom-Json | ConvertPSObjectToHashtable)
+  $overrideJson = ConvertPSObjectToHashtable ((Invoke-WebRequest -Uri $override -UseBasicParsing).Content | ConvertFrom-Json )
   if (!($overrideJson)) {
     Write-Host "Non è stato trovato alcun override"
     return

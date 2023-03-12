@@ -8,11 +8,11 @@ $minVersion = $requirement["MinVersion"].split(".")
 $minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
 
 if ($gitVersion -lt $minVersion){
-    invoke-WriteCheckLogs "La versione rilevata di git $gitVersion non rispetta i requisiti. .\src\r\nMin Version: $minVersion"
+    invoke-WriteCheckLogs "La versione rilevata di git $gitVersion non rispetta i requisiti\r\nMin Version: $minVersion"
     return "VER"
 }
 
-invoke-WriteCheckLogs "La versione rilevata di git $gitVersion rispetta i requisiti. .\src\r\nMin Version: $minVersion."
+invoke-WriteCheckLogs "La versione rilevata di git $gitVersion rispetta i requisiti\r\nMin Version: $minVersion."
 return "OK"
 
 # SIG # Begin signature block

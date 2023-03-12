@@ -10,11 +10,11 @@ function checkApp {
   $minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
 
   if ($codeVersion -lt $minVersion) {
-    invoke-WriteCheckLogs "La versione rilevata di Visual Studio Code $codeVersion non rispetta i requisiti. .\src\r\nMin Version: $minVersion"
+    invoke-WriteCheckLogs "La versione rilevata di Visual Studio Code $codeVersion non rispetta i requisiti\r\nMin Version: $minVersion"
     return "VER"
   }
 
-  invoke-WriteCheckLogs "La versione rilevata di Visual Studio Code $codeVersion rispetta i requisiti. .\src\r\nMin Version: $minVersion"
+  invoke-WriteCheckLogs "La versione rilevata di Visual Studio Code $codeVersion rispetta i requisiti\r\nMin Version: $minVersion"
   return ''
 }
 
