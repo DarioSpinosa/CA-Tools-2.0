@@ -32,7 +32,7 @@ function invoke-settings ($name) {
 }
 
 function invoke-extentions ($name, $requirement) {
-  if (-not $checkLogs[$name]["Result"].Contains("EXTENTIONS")) { return }
+  if (-not $checkLogs[$name]["Result"].Contains("EXTENTIONS")) { return $true}
   invoke-WriteInstallLogs "Installazione estensioni in corso"
 
   foreach ($item in $requirement["Extentions"]) {
