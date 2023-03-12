@@ -1,7 +1,7 @@
 function invoke-installing($name, $requirement) {
     $subMessage = "$($name) version: $($requirement['MaxVersion'])"
     invoke-WriteInstallLogs "Installazione $subMessage in corso..."
-    if (-not (invoke-executeInstallCommand "Start-Process $($requirement["DownloadOutFile"]) -ArgumentList @('/q', '/norestart') -Wait")) { return $false }
+    if (-not (invoke-executeInstallCommand "Start-Process $($requirement["DownloadOutFile"]) -ArgumentList @('/q', '/norestart') -Wait" "Errore durante l'installazione di $subMessage")) { return $false }
     invoke-WriteInstallLogs "Installazione di $subMessage completata."
     return $true
 }

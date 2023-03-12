@@ -13,7 +13,7 @@ function invoke-installing($name, $requirement) {
 		invoke-WriteInstallLogs "Installazione manuale di node in corso..."
 	}
 
-	if (-not (invoke-executeInstallCommand "Start-Process msiexec.exe -ArgumentList $argumentList -Wait" )) { return $false }
+	if (-not (invoke-executeInstallCommand "Start-Process msiexec.exe -ArgumentList $argumentList -Wait" "Errore durante l'installazione di $subMessage")) { return $false }
 	
 	invoke-WriteInstallLogs "Installazione di $subMessage completata."
 }

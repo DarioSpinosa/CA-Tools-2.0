@@ -90,6 +90,10 @@ if the Requirement isn't satisfied then add it to the list of Requirements that 
     if ($checkLogs[$name]["Result"] -eq 'OK') { 
       $requirements.Remove($name)
       invoke-setColor $gridRequirements $green
+    } 
+    elseif ($checkLogs[$name]["Result"] -eq 'VER'){
+      $requirements.Remove($name)
+      invoke-setColor $gridRequirements $yellow
     }
     else { 
       invoke-setColor $gridRequirements $red

@@ -1,4 +1,4 @@
-$dotnetOutputCommand = invoke-executeCheckCommand "dotnet --list-sdks"
+$dotnetOutputCommand = invoke-executeCheckCommand "dotnet --list-sdks" "Nessuna versione .Net presente nella macchina"
 if (-not $dotnetOutputCommand) { return "KO" }
 
 $dotnetOutputCommand = $dotnetOutputCommand.replace(' ', '').split('[')

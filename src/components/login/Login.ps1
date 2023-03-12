@@ -68,18 +68,18 @@ function invoke-login {
   npm config set '@ca-codegen:registry' $npmRegistry
 
   if ($type -eq "START") {
-    $result = invoke-executeCheckCommand "npm view @ca/cli 2>&1"
+    $result = invoke-executeCheckCommand "npm view @ca/cli 2>&1" "Errore dell'esecuzione di npm view @ca/cli 2>&1"
     if (!$result) { return $false }
-    $result += invoke-executeCheckCommand "npm view @ca-codegen/core 2>&1"
+    $result += invoke-executeCheckCommand "npm view @ca-codegen/core 2>&1" "Errore dell'esecuzione di npm view @ca-codegen/core 2>&1"
     if (!$result) { return $false }
 
     foreach ($item in $result) { invoke-WriteCheckLogs $item }
     if ($checkLogs["Npm Login"]["Result"].Contains("ERR")) { return $false}
   }
   else {
-    $result = invoke-executeInstallCommand "npm view @ca/cli 2>&1"
+    $result = invoke-executeInstallCommand "npm view @ca/cli 2>&1" "Errore dell'esecuzione di npm view @ca/cli 2>&1"
     if (!$result) { return $false }
-    $result += invoke-executeInstallCommand "npm view @ca-codegen/core 2>&1"
+    $result += invoke-executeInstallCommand "npm view @ca-codegen/core 2>&1" "Errore dell'esecuzione di npm view @ca-codegen/core 2>&1"
     if (!$result) { return $false }
 
     foreach ($item in $result) { invoke-WriteCheckLogs $item }

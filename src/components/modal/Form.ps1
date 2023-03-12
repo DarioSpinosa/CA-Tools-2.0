@@ -21,12 +21,14 @@ $panel.Size = "340, 170"
 $panel.BackColor = "#00254d"
 $panel.BackgroundImage = [System.Drawing.Image]::Fromfile(".\assets\background.jpg")
 
-$messageLabel = New-Object System.Windows.Forms.Label
+$messageLabel = New-Object System.Windows.Forms.TextBox
 $messageLabel.Text = ""
-$messageLabel.AutoSize = $true
+$messageLabel.Size = "320, 120"
+$messageLabel.Location = "10, 10"
 $messageLabel.Font = 'Century Gothic, 11'
-$messageLabel.BackColor = "Transparent"
 $messageLabel.ForeColor = "#000000"
+$messageLabel.Multiline = $true
+$messageLabel.Enabled = $false
 
 $exitButton = New-Object System.Windows.Forms.Button
 $exitButton.BackColor = "#19c5ff"

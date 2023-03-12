@@ -1,11 +1,5 @@
 function invoke-modal($message) {
-  $newString = ""
-  for ($i = 0; $i -lt $message.length; $i++) {
-    $newString += $message[$i]
-    if ((($i + 1) % 40 -eq 0)) { $newString += "`n" }
-  }
-  $messageLabel.Text = $newString
-  $messageLabel.Location = "10, 10"
+  $messageLabel.Text = $message
   $modalForm.ShowDialog() | Out-Null
 }
 

@@ -1,4 +1,4 @@
-$gitVersion = invoke-executeCheckCommand "git --version"
+$gitVersion = invoke-executeCheckCommand "git --version" "Git non presente nella macchina"
 if (!$gitVersion) { return 'KO' }
 
 $gitVersion = $gitVersion.split(' ')[2].split(".")
@@ -8,7 +8,7 @@ $minVersion = $requirement["MinVersion"].split(".")
 $minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
 
 if ($gitVersion -lt $minVersion){
-    invoke-WriteCheckLogs "La versione rilevata di git $gitVersion non rispetta i requisiti\r\nMin Version: $minVersion"
+    invoke-WriteCheckLogs "La versione rilevata di git e' la $gitVersion\r\nE'consigliato avere una versione superiore alla $minVersion"
     return "VER"
 }
 

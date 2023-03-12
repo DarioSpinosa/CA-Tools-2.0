@@ -1,26 +1,23 @@
 function invoke-installing($name, $requirement) {
     #Nel caso node fosse ko, ed è stato correttamente installato viene verificato che la versione di npm installata da node sia diversa da quella dei requirement
     #se è la stessa non c'è bisogno di reinstallarla, è una perdita di tempo
-    if (($checkLogs["Node"]["Result"] -ne "OK") -and ($installLogs["Node"]["Result"] -eq "OK") -and ((npm --version) -eq $requirement['MaxVersion'])) {return ''} 
+    if (($checkLogs["Node"]["Result"] -ne "OK") -and ($installLogs["Node"]["Result"] -eq "OK") -and ((npm --version) -eq $requirement['MaxVersion'])) {return $true} 
     $subMessage = "$($name) version: $($requirement["MaxVersion"])"
     invoke-WriteInstallLogs "Installazione $subMessage in corso..."
-    if (-not (invoke-executeInstallCommand "Start-Process npm -ArgumentList @('i', '-g', "npm@$($requirement['MaxVersion'])") -NoNewWindow -Wait")) {return "KO"} 
+    if (-not (invoke-executeInstallCommand "Start-Process npm -ArgumentList @('i', '-g', "npm@$($requirement['MaxVersion'])") -NoNewWindow -Wait" "Errore durante l'installazione di $subMessage")) {return $false} 
     invoke-WriteInstallLogs "Installazione di $subMessage completata."
-    return ''
+    return $true
 }
 
 function invoke-proxy ($name, $requirement) {
-    if (-not $checkLogs[$name]["Result"].Contains("PROXY")) { return ''}
+    if (-not $checkLogs[$name]["Result"].Contains("PROXY")) { return $true}
     $proxyServer = ($((Get-ItemProperty -Path 'Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings')).ProxyServer)
-    if (-not (invoke-executeInstallCommand "Start-Process powershell.exe -ArgumentList 'npm config set proxy $proxyServer' -NoNewWindow -Wait")) {return "KO"} 
-    if (-not (invoke-executeInstallCommand "Start-Process powershell.exe -ArgumentList 'npm config set https-proxy $proxyServer' -NoNewWindow -Wait")) {return "KO"} 
-    return ''
+    if (-not (invoke-executeInstallCommand "Start-Process powershell.exe -ArgumentList 'npm config set proxy $proxyServer' -NoNewWindow -Wait"  "Errore durante l'attivazione del proxy npm")) {return $false} 
+    if (-not (invoke-executeInstallCommand "Start-Process powershell.exe -ArgumentList 'npm config set https-proxy $proxyServer' -NoNewWindow -Wait"  "Errore durante l'attivazione del https-proxy npm")) {return $false} 
+    return $true
 }
 
-$output = ""
-$output = invoke-installing $name $requirement
-$output = invoke-proxy $name $requirement
-return $(if ($output) { "KO" } else { "OK" })
+return $(if (invoke-installing $name $requirement -and invoke-proxy $name $requirement) { "OK" } else { "KO" })
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

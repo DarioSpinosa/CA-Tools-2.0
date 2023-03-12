@@ -1,5 +1,5 @@
 $output = ""
-$npmVersion = invoke-executeCheckCommand "npm --version"
+$npmVersion = invoke-executeCheckCommand "npm --version" "Npm non presente nella macchina"
 if (-not $npmVersion) { $output = 'KO' }
 
 $npmVersion = $npmVersion.split(".")
@@ -12,8 +12,8 @@ $maxVersion = $requirement["MaxVersion"].split(".")
 $maxVersion = [Version]::new($maxVersion[0], $maxVersion[1], $maxVersion[2])
 
 if (($npmVersion -lt $minVersion) -or ($npmVersion -gt $maxVersion)) {
-    invoke-WriteCheckLogs "La versione rilevata di Npm $npmVersion non rispetta i requisiti\r\nMin Version: $minVersion. Max Version: $maxVersion"
-    $output = "VER"
+    invoke-WriteCheckLogs "La versione rilevata di Npm e' la $npmVersion non rispetta i requisiti\r\nMin Version: $minVersion. Max Version: $maxVersion"
+    $output = "KO"
 }
 
 if ($requirement["Proxy"] -ne "KO") {

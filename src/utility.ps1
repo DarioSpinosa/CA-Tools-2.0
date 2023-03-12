@@ -53,13 +53,13 @@ function invoke-executeCommand($command) {
 
 function invoke-executeCheckCommand ($command, $errorMessage) {
   $result = invoke-executeCommand $command
-  if (-not $result) { invoke-WriteCheckLogs "Si e' verificato un errore durante l'esecuzione del comando ($command)" }
+  if (-not $result) { invoke-WriteCheckLogs $errorMessage }
   return $result
 }
 
 function invoke-executeInstallCommand ($command, $errorMessage) {
   $result = invoke-executeCommand $command
-  if (-not $result) { invoke-WriteInstallLogs "Si e' verificato un errore durante l'esecuzione del comando ($command)"}
+  if (-not $result) { invoke-WriteInstallLogs $errorMessage}
   return $result
 }
 

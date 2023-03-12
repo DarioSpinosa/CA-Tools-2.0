@@ -1,6 +1,6 @@
 if ($scarConfig.Contains('terranova')) { return 'OK' }
 
-$dockerVersion = invoke-executeCheckCommand "docker --version"
+$dockerVersion = invoke-executeCheckCommand "docker --version" "Docker non presente nella macchina"
 if (!$dockerVersion) { return 'KO' }
 
 $dockerVersion = $dockerVersion.split(' ').split(',')[2].split(".")
@@ -9,9 +9,15 @@ $dockerVersion = [Version]::new($dockerVersion[0], $dockerVersion[1], $dockerVer
 $minVersion = $requirement["MinVersion"].split(".")
 $minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
 
-invoke-WriteCheckLogs "La versione rilevata di docker $dockerVersion $(if ($dockerVersion -lt $minVersion) { "non " } else {" "})rispetta i requisiti\r\nMin Version: $minVersion."
-
 $output = ""
+if ($dockerVersion -lt $minVersion) {
+  invoke-WriteCheckLogs "La versione rilevata di docker $dockerVersion ispetta i requisiti\r\nMin Version: $minVersion."
+}
+else {
+  invoke-WriteCheckLogs "La versione rilevata di docker e' la $dockerVersion\r\nE' consigliato installare una versione superiore alla $minVersion."
+  $output = "VER"
+}
+
 if ($requirement["Proxy"] -ne "KO") {
   if (Test-Path $dockerConfigPath) {
     $dockerConfigJson = Get-Content $dockerConfigPath | ConvertFrom-Json | ConvertPSObjectToHashtabl

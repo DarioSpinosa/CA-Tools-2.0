@@ -18,12 +18,12 @@ if ($scarConfig.Contains('terranova')) { return 'OK' }
   
 #can't check if wsl has just been downloaded
 invoke-WriteCheckLogs "Aggiornamento di wsl in corso..."
-$wslUpdate = invoke-executeCheckCommand "wsl --update"
+$wslUpdate = invoke-executeCheckCommand "wsl --update" "Errore durante l'aggiornamento di wsl"
 if (!$wslUpdate) { return "KO" }
 invoke-WriteCheckLogs (removeNullCharacters $wslUpdate)
 invoke-WriteCheckLogs "Aggiornamento di wsl completato"
 
-$wslStatus = invoke-executeCheckCommand "wsl --status"
+$wslStatus = invoke-executeCheckCommand "wsl --status" "Errore durante il controllo dello status di wsl"
 if (!$wslStatus) { return "KO" }
 
 $defaultDistro = (removeNullCharacters $wslStatus[0]).split(' ');
@@ -35,7 +35,7 @@ if (-not $defaultVersion.Contains("2")) {
 }
 invoke-WriteCheckLogs "Versione di default: 2"
 
-$wslVersions = invoke-executeCheckCommand "wsl -l -v"
+$wslVersions = invoke-executeCheckCommand "wsl -l -v" "Errore durante il controllo delle distribuzioni di wsl"
 if (!$wslVersions) { return "KO" }
 
 $wslVersions = (removeNullCharacters $wslVersions).split(' ');

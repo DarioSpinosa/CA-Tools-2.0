@@ -1,5 +1,5 @@
 function checkApp {
-  $codeVersion = invoke-executeCheckCommand "code --version"
+  $codeVersion = invoke-executeCheckCommand "code --version" "Visual studio Code non presente nella macchina"
   if (!$codeVersion) { return 'KO' }
 
 
@@ -10,7 +10,7 @@ function checkApp {
   $minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
 
   if ($codeVersion -lt $minVersion) {
-    invoke-WriteCheckLogs "La versione rilevata di Visual Studio Code $codeVersion non rispetta i requisiti\r\nMin Version: $minVersion"
+    invoke-WriteCheckLogs "La versione rilevata di Visual Studio Code e' la $codeVersion\r\nE' csonsigliato avere una versione superiore alla $minVersion"
     return "VER"
   }
 
@@ -54,7 +54,7 @@ function checkSettings {
 }
 
 function checkExtentions {
-  $listExtensions = invoke-executeCheckCommand "code --list-extensions"
+  $listExtensions = invoke-executeCheckCommand "code --list-extensions" "Errore durante il controllo delle estensioni di visual studio code"
   if (!$listExtensions) { return 'EXTENTIONS' }
 
   $missingExtentions = @()

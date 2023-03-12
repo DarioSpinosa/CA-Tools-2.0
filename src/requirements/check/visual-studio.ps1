@@ -1,4 +1,4 @@
-$vsVersion = invoke-executeCheckCommand "&'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe' -property catalog_productDisplayVersion"
+$vsVersion = invoke-executeCheckCommand "&'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe' -property catalog_productDisplayVersion" "Nessuna versione di visual studio presente nella macchina"
 if (!$vsVersion) { return 'KO' }
 
 $vsVersion = $vsVersion.split(".")
@@ -12,7 +12,7 @@ $maxVersion = [Version]::new($maxVersion[0], $maxVersion[1], $maxVersion[2])
 
 
 if (($vsVersion -lt $minVersion) -or ($vsVersion -gt $maxVersion)){
-    invoke-WriteCheckLogs "La versione rilevata di Visual Studio $vsVersion non rispetta i requisiti\r\nMin Version: $minVersion. Max Version: $maxVersion"
+    invoke-WriteCheckLogs "La versione rilevata di Visual Studio e' la $vsVersion \r\nE' consigliato avere una versioen compresa tra $minVersion e $maxVersion"
     return "VER"
 }
 

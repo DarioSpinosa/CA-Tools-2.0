@@ -1,34 +1,34 @@
 function invoke-installing($name, $requirement) {
   #Return temporaneo per impedire l'installazione in caso di errore di versione "VER"
   #per cui non è stato ancora deciso il comportamento
-  if (-not $checkLogs[$name]["Result"].Contains("KO")) { return }
+  if (-not $checkLogs[$name]["Result"].Contains("KO")) { return $true}
 
   $subMessage = "$($name) version: $($requirement["MaxVersion"])"
   if (-not (invoke-download $name $requirement)) {
     invoke-WriteInstallLogs "Errore durante il download di Docker"
-    return "KO"
+    return $false
   }
 
   invoke-WriteInstallLogs "Installazione $subMessage in corso..."
-  if (-not (invoke-executeInstallCommand "Start-Process $($requirement["DownloadOutFile"]) -ArgumentList @('install', '--quiet') -Wait")) { return "KO" }
+  if (-not (invoke-executeInstallCommand "Start-Process $($requirement["DownloadOutFile"]) -ArgumentList @('install', '--quiet') -Wait", "Errore durante l'installazione di docker")) { return $false }
   invoke-WriteInstallLogs "Installazione di $subMessage completata."
   invoke-deleteDownload $name $requirement
 
-  return ""
+  return $true
 }
 
 function invoke-proxy($name, $requirement) {
-  if (-not $checkLogs[$name]["Result"].Contains("PROXY")) { return }
+  if (-not $checkLogs[$name]["Result"].Contains("PROXY")) { return $true}
   $dockerConfigPath = "~\.docker\config.json" #Dovrebbe crearlo docker (?)
   if (-not (Test-Path $dockerConfigPath)) { 
     invoke-WriteInstallLogs "$dockerConfigPath Non Trovato"
-    return "KO"
+    return $false
   }
     
   $dockerConfigJson = ConvertPSObjectToHashtable (Get-Content $dockerConfigPath | ConvertFrom-Json)
         
-  $internetSettings = invoke-executeInstallCommand 'Get-ItemProperty -Path "Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings"'
-  if( -not $internetSettings) { return "KO" }
+  $internetSettings = invoke-executeInstallCommand 'Get-ItemProperty -Path "Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings"' "Errore durante l'attivazione del proxy docker"
+  if( -not $internetSettings) { return $false }
   $proxies = @{ 'default' = @{
       'httpProxy'  = $internetSettings.ProxyServer
       'httpsProxy' = $internetSettings.ProxyServer
@@ -42,13 +42,10 @@ function invoke-proxy($name, $requirement) {
   $dockerConfigJson.Add("proxies", $proxies)
   Set-Content -Path $dockerConfigPath $dockerConfigJson | ConvertTo-Json
   
-  return ""
+  return $true
 }
 
-$output = ""
-$output = invoke-installing $name $requirement
-$output = invoke-proxy $name $requirement
-return $(if ($output) { "KO" } else { "OK" })
+return $(if (invoke-installing $name $requirement -and invoke-proxy $name $requirement) { "OK" } else { "KO" })
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

@@ -1,7 +1,7 @@
 function invoke-installing ($requirement) {
   $subMessage = "$($name) version: $($requirement["MaxVersion"])"
   invoke-WriteInstallLogs "Installazione $subMessage... in corso"
-  if (-not ("Start-Process $($requirement["DownloadOutFile"]) -ArgumentList @( '/VERYSILENT', '/NORESTART', '/mergetasks=!runcode' ) -Wait")) { return "KO" }
+  if (-not (invoke-executeInstallCommand "Start-Process $($requirement["DownloadOutFile"]) -ArgumentList @( '/VERYSILENT', '/NORESTART', '/mergetasks=!runcode' ) -Wait" "Errore durante l'installazione di $subMessage")) { return $false }
 
   $env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path', 'User')
   code
@@ -11,6 +11,7 @@ function invoke-installing ($requirement) {
   }
 
   invoke-WriteInstallLogs "Installazione di $subMessage completata."
+  return $true
 }
 
 function invoke-settings ($name) {
@@ -39,7 +40,7 @@ function invoke-extentions ($name, $requirement) {
   foreach ($item in $requirement["Extentions"]) {
 
     invoke-WriteInstallLogs "Installando $item..."
-    $resultInstall = invoke-executeInstallCommand "Start-Process code -ArgumentList '--install-extension $item --force' -NoNewWindow -Wait"
+    $resultInstall = invoke-executeInstallCommand "Start-Process code -ArgumentList '--install-extension $item --force' -NoNewWindow -Wait" "Errore durante l'installazione dell'estensione $item"
       
     if ($resultInstall) {
       invoke-WriteInstallLogs "$item installata correttamente."
@@ -61,6 +62,7 @@ if ($checkLogs[$name]["Result"].Contains("KO")) {
   if (-not (invoke-installing $requirement)) { return "KO" }
   invoke-deleteDownload $name $requirement
 }
+
 if (-not (invoke-settings $name )) { return "KO" }
 if (-not (invoke-extentions $name $requirement)) { return "KO" }
 return "OK"
