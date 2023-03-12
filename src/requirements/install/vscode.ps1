@@ -14,7 +14,7 @@ function invoke-installing ($requirement) {
 }
 
 function invoke-settings ($name) {
-  if (-not $checkLogs[$name]["Result"].Contains("SETTINGS")) { return }
+  if (-not $checkLogs[$name]["Result"].Contains("SETTINGS")) { return $true }
   invoke-WriteInstallLogs "Aggiornamento impostazioni in corso:"
   $vsCodeSettingsJsonPath = "~\AppData\Roaming\Code\User\settings.json"
 
@@ -29,6 +29,7 @@ function invoke-settings ($name) {
   $vsCodeSettingObj.PsObject.Properties.Remove('*')
   Set-Content -Path $vsCodeSettingsJsonPath -Value ($vsCodeSettingObj | ConvertTo-Json -Depth 5)
   invoke-WriteInstallLogs "Aggiornamento impostazioni completato"
+  return $true
 }
 
 function invoke-extentions ($name, $requirement) {
@@ -60,7 +61,7 @@ if ($checkLogs[$name]["Result"].Contains("KO")) {
   if (-not (invoke-installing $requirement)) { return "KO" }
   invoke-deleteDownload $name $requirement
 }
-invoke-settings $name
+if (-not (invoke-settings $name )) { return "KO" }
 if (-not (invoke-extentions $name $requirement)) { return "KO" }
 return "OK"
 # SIG # Begin signature block
