@@ -1,11 +1,6 @@
-function ConvertPSObjectToHashtable { 
-  param (
-    [Parameter(ValueFromPipeline)]
-    $inputObject
-  )
-
+function ConvertPSObjectToHashtable($inputObject) { 
   process {
-    if ($null -eq $inputObject) { return $null }
+    if (-not $inputObject) { return $inputObject }
 
     if ($inputObject -is [System.Collections.IEnumerable] -and $inputObject -isnot [string]) {
       $collection = @(
@@ -27,6 +22,39 @@ function ConvertPSObjectToHashtable {
       $inputObject
     }
   }
+}
+
+function invoke-executeCommand($command) {
+  try {
+    return (Invoke-Expression $command) 
+  }
+  catch {
+    return $false
+  }
+}
+
+function invoke-executeCheckCommand ($command) {
+  $result = invoke-executeCommand $command
+  if ($result) {
+    invoke-WriteCheckLogs "($command) eseguito correttamente: Output $result"
+  }
+  else {
+    invoke-WriteCheckLogs "Si è verificato il seguente errore durante l'esecuzione del comando ($command): $result"
+  }
+
+  return $result
+}
+
+function invoke-executeInstallCommand ($command) {
+  $result = invoke-executeCommand $command
+  if ($result) {
+    invoke-WriteInstallLogs "($command) eseguito correttamente: Output $result"
+  }
+  else {
+    invoke-WriteInstallLogs "Si è verificato il seguente errore durante l'esecuzione del comando ($command): $result"
+  }
+
+  return $result
 }
 
 function invoke-CreateLogs($hashLogs) {
@@ -92,32 +120,6 @@ function invoke-Dependencies($type, $requirement) {
   }
 
   return $true
-}
-
-function invoke-executeCommand($command) {
-  try {
-    return (Invoke-Expression $command) 
-  }
-  catch {
-    return $false
-  }
-}
-function invoke-executeCheckCommand($command, $errorMessage) {
-  $result = invoke-executeCommand $command
-  if (-not $result) { invoke-WriteCheckLogs $errorMessage }
-  return $result
-}
-
-function invoke-executeInstallCommand ($command) {
-  $result = invoke-executeCommand $command
-  if ($result) {
-    invoke-WriteInstallLogs "($command) eseguito correttamente: Output $result"
-  }
-  else {
-    invoke-WriteInstallLogs "Si è verificato il seguente errore durante l'esecuzione del comando ($command): $result"
-  }
-
-  return $result
 }
 
 function New-CommandString($string) {

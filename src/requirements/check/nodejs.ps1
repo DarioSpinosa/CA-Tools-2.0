@@ -1,4 +1,4 @@
-$nodeVersion = invoke-executeCheckCommand "node --version" "Si e' verificato un errore durante l'esecuzione del comando ('node --version'). .\src\r\nNode potrebbe non essere presente sulla macchina"
+$nodeVersion = invoke-executeCheckCommand "node --version"
 if (!$nodeVersion) { return 'KO' }
 
 $nodeVersion = $nodeVersion.split('v')[1]

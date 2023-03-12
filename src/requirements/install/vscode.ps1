@@ -1,7 +1,7 @@
 function invoke-installing ($requirement) {
   $subMessage = "$($name) version: $($requirement["MaxVersion"])"
   invoke-WriteInstallLogs "Installazione $subMessage... in corso"
-  Start-Process $requirement["DownloadOutFile"] -ArgumentList @( '/VERYSILENT', '/NORESTART', '/mergetasks=!runcode' ) -Wait
+  if (-not ("Start-Process $($requirement["DownloadOutFile"]) -ArgumentList @( '/VERYSILENT', '/NORESTART', '/mergetasks=!runcode' ) -Wait")) { return "KO" }
 
   $env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path', 'User')
   code
@@ -45,22 +45,23 @@ function invoke-extentions ($name, $requirement) {
     } 
     else {
       invoke-WriteInstallLogs "Installazione di $item fallita!"
+      return $false
     }
   }  
 
   invoke-WriteInstallLogs "Installazione estensioni completata"
-  
+  return $true
 }
 
 #Return temporaneo per impedire l'installazione in caso di errore di versione "VER"
 #per cui non è stato ancora deciso il comportamento
 if ($checkLogs[$name]["Result"].Contains("KO")) {
-  if (-not (invoke-download $name $requirement)) {return "KO"}
-  invoke-installing $requirement
+  if (-not (invoke-download $name $requirement)) { return "KO" }
+  if (-not (invoke-installing $requirement)) { return "KO" }
   invoke-deleteDownload $name $requirement
 }
 invoke-settings $name
-invoke-extentions $name $requirement
+if (-not (invoke-extentions $name $requirement)) { return "KO" }
 return "OK"
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

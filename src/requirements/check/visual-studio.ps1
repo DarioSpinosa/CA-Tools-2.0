@@ -1,4 +1,4 @@
-$vsVersion = invoke-executeCheckCommand "&'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe' -property catalog_productDisplayVersion" "Si e' verificato un problema durante l'esecuzione del comando di controllo di versione di visual studio. .\src\r\nVisual Studio potrebbe non essere presente sulla macchina"
+$vsVersion = invoke-executeCheckCommand "&'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe' -property catalog_productDisplayVersion"
 if (!$vsVersion) { return 'KO' }
 
 $vsVersion = $vsVersion.split(".")

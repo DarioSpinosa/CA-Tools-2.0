@@ -10,7 +10,7 @@ function invoke-installing($name, $requirement) {
   }
 
   invoke-WriteInstallLogs "Installazione $subMessage in corso..."
-  Start-Process $requirement["DownloadOutFile"] -ArgumentList @('install', '--quiet') -Wait
+  if (-not (invoke-executeInstallCommand "Start-Process $($requirement["DownloadOutFile"]) -ArgumentList @('install', '--quiet') -Wait")) { return "KO" }
   invoke-WriteInstallLogs "Installazione di $subMessage completata."
   invoke-deleteDownload $name $requirement
 
@@ -27,7 +27,8 @@ function invoke-proxy($name, $requirement) {
     
   $dockerConfigJson = Get-Content $dockerConfigPath | ConvertFrom-Json | ConvertPSObjectToHashtable
         
-  $internetSettings = (Get-ItemProperty -Path "Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings")
+  $internetSettings = invoke-executeInstallCommand 'Get-ItemProperty -Path "Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings"'
+  if( -not $internetSettings) { return "KO" }
   $proxies = @{ 'default' = @{
       'httpProxy'  = $internetSettings.ProxyServer
       'httpsProxy' = $internetSettings.ProxyServer
@@ -47,7 +48,7 @@ function invoke-proxy($name, $requirement) {
 $output = ""
 $output = invoke-installing $name $requirement
 $output = invoke-proxy $name $requirement
-return $(if ($output) {"KO"} else {"OK"})
+return $(if ($output) { "KO" } else { "OK" })
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

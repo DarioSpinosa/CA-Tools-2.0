@@ -27,7 +27,7 @@ $killCheck = {
 $job = Start-Job $killCheck -Name "killVScode"
 $env:NG_CLI_ANALYTICS = "ci"
 
-$selectedInstall.Text = "Generator Scarface"
+$selectedInstall.Text = "Plugin Scarface"
 $outputInstallLabel.Text = ""
 $outputInstallLabel.Text += "ca scar:setup in esecuzione..."
 invoke-executeCommand 'Start-Process powershell { ca scar:setup } -Wait'
@@ -48,7 +48,7 @@ Stop-Job -Id $job.Id
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
 # MDBaFw0yNDAxMjUyMzU5NTlaMIGgMQswCQYDVQQGEwJJVDEOMAwGA1UEEQwFNzAw
 # MjkxDTALBgNVBAgMBEJhcmkxGzAZBgNVBAcMElNhbnRlcmFtbyBpbiBDb2xsZTEZ
-# MBcGA1UECQwQVmlhIENhbXBhbmlhLDEvMzEcMBoGA1UECgwTQ29kZSBBcmNoaXRl
+# MBcGA1UECQwQVmlhIENhbXBhbmlhLDEvMzEcMBkaitoGA1UECgwTQ29kZSBBcmNoaXRl
 # Y3RzIFNybDEcMBoGA1UEAwwTQ29kZSBBcmNoaXRlY3RzIFNybDCCASIwDQYJKoZI
 # hvcNAQEBBQADggEPADCCAQoCggEBALaj4vlKflM4B+dR8Cz8Z7RA4CUe2iR2WGp9
 # /qTN2Eg+7RG74V7gBsOqyllqNdmUecwqwbiRbPB4+s83rYxwRZf1s/cEmtcKWUpu

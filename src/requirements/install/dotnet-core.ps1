@@ -1,15 +1,16 @@
 function invoke-installing($name, $requirement) {
     $subMessage = "$($name) version: $($requirement['MaxVersion'])"
     invoke-WriteInstallLogs "Installazione $subMessage in corso..."
-    Start-Process $requirement["DownloadOutFile"] -ArgumentList @('/q', '/norestart') -Wait
+    if (-not (invoke-executeInstallCommand "Start-Process $($requirement["DownloadOutFile"]) -ArgumentList @('/q', '/norestart') -Wait")) { return $false }
     invoke-WriteInstallLogs "Installazione di $subMessage completata."
+    return $true
 }
 
 for ($i = 0; $i -lt $requirement["Versions"].Count; $i++) {
     $requirement["MaxVersion"] = $requirement["Versions"][$i]
     $requirement['DownloadLink'] =  $requirement["Downloads"][$i]
     if (-not (invoke-download $name $requirement)) { return "KO" }
-    invoke-installing $name $requirement
+    if (-not (invoke-installing $name $requirement)) { return "KO" }
     invoke-deleteDownload $name $requirement
 }
 return "OK"

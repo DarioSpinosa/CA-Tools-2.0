@@ -1,5 +1,5 @@
 $output = ""
-$npmVersion = invoke-executeCheckCommand "npm --version" "Si è verificato un errore durante l'esecuzione del comando (npm --version). .\src\r\nNpm potrebbe non essere presente nella macchina"
+$npmVersion = invoke-executeCheckCommand "npm --version"
 if (-not $npmVersion) { $output = 'KO' }
 
 $npmVersion = $npmVersion.split(".")

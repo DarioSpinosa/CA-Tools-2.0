@@ -1,6 +1,6 @@
 if ($scarConfig.Contains('terranova')) { return 'OK' }
 
-$dockerVersion = invoke-executeCheckCommand "docker --version" "Si e' verificato un errore durante l'esecuzione del comando ('docker --version'). .\src\r\nDocker potrebbe non essere presente sulla macchina"
+$dockerVersion = invoke-executeCheckCommand "docker --version"
 if (!$dockerVersion) { return 'KO' }
 
 $dockerVersion = $dockerVersion.split(' ').split(',')[2].split(".")

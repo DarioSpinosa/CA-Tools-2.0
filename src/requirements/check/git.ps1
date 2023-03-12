@@ -1,4 +1,4 @@
-$gitVersion = invoke-executeCheckCommand "git --version" "Si e' verificato un problema durante l'esecuzione del comando (git --version). .\src\r\nGit potrebbe non essere presente sulla macchina"
+$gitVersion = invoke-executeCheckCommand "git --version"
 if (!$gitVersion) { return 'KO' }
 
 $gitVersion = $gitVersion.split(' ')[2].split(".")

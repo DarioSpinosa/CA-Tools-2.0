@@ -1,23 +1,26 @@
 function invoke-installing($name, $requirement) {
     #Nel caso node fosse ko, ed è stato correttamente installato viene verificato che la versione di npm installata da node sia diversa da quella dei requirement
     #se è la stessa non c'è bisogno di reinstallarla, è una perdita di tempo
-    if (($checkLogs["Node"]["Result"] -ne "OK") -and ($installLogs["Node"]["Result"] -eq "OK") -and ((npm --version) -eq $requirement['MaxVersion'])) {return } 
+    if (($checkLogs["Node"]["Result"] -ne "OK") -and ($installLogs["Node"]["Result"] -eq "OK") -and ((npm --version) -eq $requirement['MaxVersion'])) {return ''} 
     $subMessage = "$($name) version: $($requirement["MaxVersion"])"
     invoke-WriteInstallLogs "Installazione $subMessage in corso..."
-    Start-Process npm -ArgumentList @('i', '-g', "npm@$($requirement['MaxVersion'])") -NoNewWindow -Wait
+    if (-not (invoke-executeInstallCommand "Start-Process npm -ArgumentList @('i', '-g', "npm@$($requirement['MaxVersion'])") -NoNewWindow -Wait")) {return "KO"} 
     invoke-WriteInstallLogs "Installazione di $subMessage completata."
+    return ''
 }
 
 function invoke-proxy ($name, $requirement) {
-    if (-not $checkLogs[$name]["Result"].Contains("PROXY")) { return }
+    if (-not $checkLogs[$name]["Result"].Contains("PROXY")) { return ''}
     $proxyServer = ($((Get-ItemProperty -Path 'Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings')).ProxyServer)
-    Start-Process powershell.exe -ArgumentList "npm config set proxy $proxyServer" -NoNewWindow -Wait
-    Start-Process powershell.exe -ArgumentList "npm config set https-proxy $proxyServer" -NoNewWindow -Wait
+    if (-not (invoke-executeInstallCommand "Start-Process powershell.exe -ArgumentList 'npm config set proxy $proxyServer' -NoNewWindow -Wait")) {return "KO"} 
+    if (-not (invoke-executeInstallCommand "Start-Process powershell.exe -ArgumentList 'npm config set https-proxy $proxyServer' -NoNewWindow -Wait")) {return "KO"} 
+    return ''
 }
 
-invoke-installing $name $requirement
-invoke-proxy $name $requirement
-return "OK"
+$output = ""
+$output = invoke-installing $name $requirement
+$output = invoke-proxy $name $requirement
+return $(if ($output) { "KO" } else { "OK" })
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

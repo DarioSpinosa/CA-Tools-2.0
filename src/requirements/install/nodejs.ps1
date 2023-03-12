@@ -13,13 +13,13 @@ function invoke-installing($name, $requirement) {
 		invoke-WriteInstallLogs "Installazione manuale di node in corso..."
 	}
 
-	Start-Process msiexec.exe -ArgumentList $argumentList -Wait
+	if (-not (invoke-executeInstallCommand "Start-Process msiexec.exe -ArgumentList $argumentList -Wait" )) { return $false }
 	
 	invoke-WriteInstallLogs "Installazione di $subMessage completata."
 }
 
 if (-not (invoke-download $name $requirement)) {return "KO"}
-invoke-installing $name $requirement
+if (-not (invoke-installing $name $requirement)) {return "KO"}
 invoke-deleteDownload $name $requirement
 return "OK"
 # SIG # Begin signature block

@@ -1,5 +1,5 @@
 function checkApp {
-  $codeVersion = invoke-executeCheckCommand "code --version" "Si e' verificato un errore durante l'esecuzione del comando ('code --version'). .\src\r\nCode potrebbe non essere presente sulla macchina"
+  $codeVersion = invoke-executeCheckCommand "code --version"
   if (!$codeVersion) { return 'KO' }
 
 
@@ -54,7 +54,7 @@ function checkSettings {
 }
 
 function checkExtentions {
-  $listExtensions = invoke-executeCheckCommand "code --list-extensions" "Nessuna estensione di visual studio code rilevata"
+  $listExtensions = invoke-executeCheckCommand "code --list-extensions"
   if (!$listExtensions) { return 'EXTENTIONS' }
 
   $missingExtentions = @()
