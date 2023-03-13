@@ -20,6 +20,7 @@ function installRequirements {
     if (-not $requirements.Contains($name)) { continue }
     Invoke-CreateRow $gridInstall $name
     $selectedInstall.Text = $name
+    $selectedInstall.Refresh()
     writeOutputInstall($name)
 
     $requirement = $requirements[$name]
@@ -49,15 +50,16 @@ function gridInstall_Click {
   $name = $gridInstall.CurrentRow.Cells[0].Value
   if ($name -eq $selectedInstall.Text) { return }  #Se si seleziona il requirement attualmente visualizzato, il click non caricherà nulla
   $selectedInstall.Text = $name
+  $selectedInstall.Refresh()
   writeOutputInstall($name)
 }
 
 function writeOutputInstall($name) {
   $outputInstallLabel.Text = ""
-  $mainForm.Refresh()
+  $outputInstallLabel.Refresh()
   $log = $(if (-not $installLogs[$name]["Logs"]) { "Nessun log disponibile" } else { ($installLogs[$name]["Logs"]).replace(";", [System.Environment]::NewLine).replace('\r\n', [System.Environment]::NewLine) })
   $outputInstallLabel.AppendText($log)
-  $mainForm.Refresh()
+  $outputInstallLabel.Refresh()
 }
 
 function closeButton_Click {

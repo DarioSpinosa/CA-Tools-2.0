@@ -2,7 +2,6 @@ $tabRequirements = New-Object System.Windows.Forms.Panel
 $tabRequirements.Location = "150, 0"
 $tabRequirements.Size = "850, 600"
 $tabRequirements.BackColor = "#00ffffff"
-$tabRequirements.BackgroundImage = [System.Drawing.Image]::Fromfile(".\assets\background.jpg")
 
 $selectedCheck = New-Object System.Windows.Forms.Label
 $selectedCheck.Text = ""

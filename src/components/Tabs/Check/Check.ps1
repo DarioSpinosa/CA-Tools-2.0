@@ -82,6 +82,7 @@ if the Requirement isn't satisfied then add it to the list of Requirements that 
   foreach ($name in $sortedRequirements) {
     Invoke-CreateRow $gridRequirements $name
     $selectedCheck.Text = $name
+    $selectedCheck.Refresh()
     writeOutputRequirements($name)
 
     $requirement = $requirements[$name]
@@ -116,15 +117,16 @@ function gridRequirements_Click {
   $name = $gridRequirements.CurrentRow.Cells[0].Value
   if ($name -eq $selectedCheck.Text) { return }  #Se si seleziona il requirement attualmente visualizzato, il click non caricherà nulla
   $selectedCheck.Text = $name
+  $selectedCheck.Refresh()
   writeOutputRequirements($name)
 }
 
 function writeOutputRequirements($name) {
   $outputRequirementsLabel.Text = ""
-  $mainForm.Refresh()
+  $outputRequirementsLabel.Refresh()
   $log = $(if (-not $checkLogs[$name]["Logs"]) { "Nessun log disponibile" } else { ($checkLogs[$name]["Logs"]).replace(";", [System.Environment]::NewLine).replace('\r\n', [System.Environment]::NewLine) })
   $outputRequirementsLabel.AppendText($log)
-  $mainForm.Refresh()
+  $outputRequirementsLabel.Refresh()
 }
 
 function installButton_Click {

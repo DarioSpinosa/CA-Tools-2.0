@@ -38,7 +38,7 @@ function startButton_Click {
   }
 
   if (-not ($results['CA Azure Devops'] -and $results['Npm Registry'] -and $results['Nuget Registry'])) { 
-    invoke-modal  "Una o piu connessioni ai server sono fallite"
+    invoke-modal "Una o piu connessioni ai server sono fallite, riprovare"
     $startButton.Enabled = $true
     return 
   }
@@ -61,11 +61,11 @@ function startButton_Click {
 
   #Check presenza di un proxy
   $proxyCheck.Image = $(if (invoke-checkProxy) { [System.Drawing.Image]::Fromfile(".\assets\V.png") } else { [System.Drawing.Image]::Fromfile(".\assets\X.png") })
-  $mainForm.Refresh()
+  $proxyCheck.Refresh()
   
   #Check se l'ambiente di running è una Virtual machine
   $vmCheck.Image = $(if (invoke-checkVM) { [System.Drawing.Image]::Fromfile(".\assets\V.png") } else { [System.Drawing.Image]::Fromfile(".\assets\X.png") })
-  $mainForm.Refresh()
+  $vmCheck.Refresh()
   
   # Check Abilitazione Windows Features
   if (-not ($scarConfig.Contains('terranova'))) {
@@ -79,7 +79,7 @@ function startButton_Click {
     else {
       $WSLCheck.Image = [System.Drawing.Image]::Fromfile(".\assets\V.png") 
     }
-    $mainForm.Refresh()
+    $WSLCheck.Refresh()
 
     $state = (Get-WindowsOptionalFeature -Online -FeatureName *VirtualMachinePlatform*).State
     if (($state -eq 'Disabled') -or ($state -eq 'Disattivata')) {
@@ -91,7 +91,7 @@ function startButton_Click {
     else {
       $VMPlatformCheck.Image = [System.Drawing.Image]::Fromfile(".\assets\V.png") 
     }
-    $mainForm.Refresh()
+    $VMPlatformCheck.Refresh()
 
     if ($message) {
       $message += "non risulta/risultano abilitata/e. Il sistema procedera all'attivazione e il sistema verra riavviato. Premere OK per procedere"
@@ -115,20 +115,38 @@ function tabStart_VisibleChanged {
   $gridEnvVar.ClearSelection()
 }
 
+function infoEnvVarutton_Click {
+  invoke-modal "Cliccando su una variabile d'ambiente essa verra' copiata negli appunti"
+}
 function infoVmButton_Click {
-  invoke-modal  "In caso affermativo accertarsi che sia abilitata la nested virtualization prima di proseguire"
+  invoke-modal "In caso affermativo accertarsi che sia abilitata la nested virtualization prima di proseguire"
 }
 
 function infoProxyButton_Click {
-  invoke-modal  "Notifica se e' stato rilevato un proxy o meno"
+  invoke-modal "Notifica se e' stato rilevato un proxy o meno"
 }
 
 function infoVMPLatformButton_Click {
-  invoke-modal  "Notifica se la windows feature 'Virtual Machine Platform' e' abilitata"
+  invoke-modal "Notifica se la windows feature 'Virtual Machine Platform' e' abilitata"
 }
 
 function infoWSLButton_Click {
-  invoke-modal  "Notifica se la windows feature 'Windows Subsystem for Linux' e' abilitata"
+  invoke-modal "Notifica se la windows feature 'Windows Subsystem for Linux' e' abilitata"
+}
+
+function gridConnections_CellContentClick {
+  $cellClicked = $gridConnections.CurrentRow.Cells[0].Value.ToString()
+  if ($cellClicked -eq "Log Repo(Opzionale)") { return }
+  Start-Process $connections[$gridConnections.CurrentRow.Cells[0].Value.ToString()]
+}
+
+function gridEnvVar_Click {
+  Set-Clipboard -Value ($gridEnvVar.CurrentRow.Cells[0].Value)
 }
 
 . .\src\components\Tabs\Start\Form.ps1
+$connections = @{}
+$connections.Add('CA Azure Devops', "https:\\devops.codearchitects.com:444")
+$connections.Add('Npm Registry', "https://registry.npmjs.org")
+$connections.Add('Nuget Registry', "https://api.nuget.org/v3/index.json")
+$connections.Add('Log Repo(Opzionale)', "https:\\casftp.blob.core.windows.net:22")

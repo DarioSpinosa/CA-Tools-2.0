@@ -2,7 +2,6 @@ $tabInstall = New-Object System.Windows.Forms.Panel
 $tabInstall.Location = "150, 0"
 $tabInstall.Size = "850, 600"
 $tabInstall.BackColor = "#00ffffff"
-$tabInstall.BackgroundImage = [System.Drawing.Image]::Fromfile(".\assets\background.jpg")
 
 $selectedInstall = New-Object System.Windows.Forms.Label
 $selectedInstall.Text = ""

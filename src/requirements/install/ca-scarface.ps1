@@ -28,6 +28,7 @@ $job = Start-Job $killCheck -Name "killVScode"
 $env:NG_CLI_ANALYTICS = "ci"
 
 $selectedInstall.Text = "Plugin Scarface"
+$selectedInstall.Refresh()
 $outputInstallLabel.Text = ""
 $outputInstallLabel.Text += "ca scar:setup in esecuzione..."
 invoke-executeCommand 'Start-Process powershell { ca scar:setup } -Wait'

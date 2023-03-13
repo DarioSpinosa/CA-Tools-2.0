@@ -41,7 +41,6 @@ $gridConnections.BorderStyle = 0
 $gridConnections.RowHeadersVisible = $false
 $gridConnections.EnableHeadersVisualStyles = $false
 $gridConnections.BackgroundColor = "#ededed"
-$gridConnections.DefaultCellStyle.Font = "Century Gothic, 13"
 $gridConnections.DefaultCellStyle.BackColor = "#ffffff"
 $gridConnections.DefaultCellStyle.SelectionBackColor = "Transparent"
 $gridConnections.DefaultCellStyle.SelectionForeColor = "Transparent"
@@ -49,22 +48,27 @@ $gridConnections.DefaultCellStyle.Alignment = "MiddleCenter"
 $gridConnections.AdvancedCellBorderStyle.All = "None"
 $gridConnections.AllowUserToResizeRows = $false
 $gridConnections.AutoSizeRowsMode = "AllCells";
-$gridConnections.ColumnCount = 1
-$gridConnections.Columns[0].Name = "Connessione a";
-$gridConnections.Columns[0].Width = "200";
-$gridConnections.Columns[0].SortMode = "NotSortable";
-$gridConnections.AllowUserToResizeColumns = $false;
+$linkColumn = New-Object System.Windows.Forms.DataGridViewLinkColumn
+$linkColumn.Width = "200";
+$linkColumn.HeaderText = "Connessione a"
+$linkColumn.SortMode = "NotSortable";
+$linkColumn.ActiveLinkColor = "Blue";
+$linkColumn.VisitedLinkColor  = "Blue";
+$linkColumn.DefaultCellStyle.Font = "Century Gothic, 13"
+$gridConnections.Columns.Insert(0, $linkColumn)
 $imageColumn = New-Object System.Windows.Forms.DataGridViewImageColumn
 $imageColumn.Width = "100";
 $imageColumn.HeaderText = "Status"
+$imageColumn.SortMode = "NotSortable";
 $gridConnections.Columns.Insert(1, $imageColumn)
+$gridConnections.AllowUserToResizeColumns = $false;
 $gridConnections.ColumnHeadersBorderStyle = 4
 $gridConnections.ColumnHeadersDefaultCellStyle.Font = "Century Gothic, 15"
 $gridConnections.ColumnHeadersDefaultCellStyle.ForeColor = "#ffffff"
 $gridConnections.ColumnHeadersDefaultCellStyle.BackColor = "#555555"
 $gridConnections.ColumnHeadersDefaultCellStyle.Alignment = "MiddleCenter"
 $gridConnections.ColumnHeadersHeightSizeMode = "DisableResizing"
-$gridConnections.Size = "300, 125"
+$gridConnections.Size = "300, 115"
 $gridConnections.Location = "25, 120"
 $gridConnections.MultiSelect = $false
 $gridConnections.AllowUserToAddRows = $false
@@ -102,6 +106,17 @@ $gridEnvVar.Location = "25, 255"
 $gridEnvVar.MultiSelect = $false
 $gridEnvVar.AllowUserToAddRows = $false
 $gridEnvVar.ReadOnly = $true
+
+$infoEnvVarutton = New-Object System.Windows.Forms.Button
+$infoEnvVarutton.BackColor = "#19c5ff"
+$infoEnvVarutton.Text = "?"
+$infoEnvVarutton.Size = "25, 25"
+$infoEnvVarutton.Location = "625, 280"
+$infoEnvVarutton.Font = 'Century Gothic, 11'
+$infoEnvVarutton.ForeColor = "#ffffff"
+$infoEnvVarutton.FlatStyle = "Flat"
+$infoEnvVarutton.FlatAppearance.BorderSize = 0;
+$infoEnvVarutton.FlatAppearance.MouseOverBackColor = "#0463ca"
 
 $infoProxyButton = New-Object System.Windows.Forms.Button
 $infoProxyButton.BackColor = "#19c5ff"
@@ -171,7 +186,7 @@ $WSLLabel.BackColor = "Transparent"
 
 $WSLCheck = New-Object System.Windows.Forms.PictureBox
 $WSLCheck.Size = "30, 24"
-$WSLCheck.Location = "687, 170"
+$WSLCheck.Location = "700, 170"
 $WSLCheck.SizeMode = "Zoom"
 $WSLCheck.BackColor = "Transparent"
 
@@ -195,18 +210,21 @@ $VMPlatformLabel.BackColor = "Transparent"
 
 $VMPlatformCheck = New-Object System.Windows.Forms.PictureBox
 $VMPlatformCheck.Size = "30, 24"
-$VMPlatformCheck.Location = "640, 210"
+$VMPlatformCheck.Location = "660, 210"
 $VMPlatformCheck.SizeMode = "Zoom"
 $VMPlatformCheck.BackColor = "Transparent"
 
-$tabStart.controls.AddRange(@($welcomeLabel, $startButton, $horizontalLine, $gridConnections, $gridEnvVar, $infoProxyButton, $proxyLabel, $proxyCheck, $infoVmButton, $vmLabel, $vmCheck, $infoWSLButton, $WSLLabel, $WSLCheck, $infoVMPlatformButton, $VMPlatformLabel, $VMPlatformCheck))
+$tabStart.controls.AddRange(@($welcomeLabel, $startButton, $horizontalLine, $gridConnections, $gridEnvVar, $infoEnvVarutton, $infoProxyButton, $proxyLabel, $proxyCheck, $infoVmButton, $vmLabel, $vmCheck, $infoWSLButton, $WSLLabel, $WSLCheck, $infoVMPlatformButton, $VMPlatformLabel, $VMPlatformCheck))
 # $welcomeForm.controls.AddRange(@($logo, $panel, $horizontalLine))
 
 #---------------------------------------------------------[Events]--------------------------------------------------------
 
 $tabStart.Add_VisibleChanged({ tabStart_VisibleChanged })
 $startButton.Add_Click({ startButton_Click })
+$infoEnvVarutton.Add_Click({ infoEnvVarutton_Click })
 $infoVmButton.Add_Click({ infoVmButton_Click })
 $infoProxyButton.Add_Click({ infoProxyButton_Click })
 $infoVMPLatformButton.Add_Click({ infoVMPLatformButton_Click })
 $infoWSLButton.Add_Click({ infoWSLButton_Click })
+$gridConnections.Add_CellContentClick({ gridConnections_CellContentClick })
+$gridEnvVar.Add_Click({ gridEnvVar_Click })

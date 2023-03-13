@@ -10,8 +10,8 @@ $minVersion = $requirement["MinVersion"].split(".")
 $minVersion = [Version]::new($minVersion[0], $minVersion[1], $minVersion[2])
 
 $output = ""
-if ($dockerVersion -lt $minVersion) {
-  invoke-WriteCheckLogs "La versione rilevata di docker $dockerVersion ispetta i requisiti\r\nMin Version: $minVersion."
+if ($dockerVersion -ge $minVersion) {
+  invoke-WriteCheckLogs "La versione rilevata di docker $dockerVersion rispetta i requisiti\r\nMin Version: $minVersion."
 }
 else {
   invoke-WriteCheckLogs "La versione rilevata di docker e' la $dockerVersion\r\nE' consigliato installare una versione superiore alla $minVersion."

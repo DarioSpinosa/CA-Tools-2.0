@@ -32,12 +32,12 @@ function Invoke-CreateRow($grid, $name) {
   $row.CreateCells($grid, $name)
   $grid.Rows.Add($row);
   $grid.ClearSelection()
-  $mainForm.Refresh()
+  $grid.Refresh()
 }
 
 function invoke-setColor($grid, $color){
   $grid.Rows[$grid.Rows.Count - 1].DefaultCellStyle.BackColor = $color
-  $mainForm.Refresh()
+  $grid.Refresh()
 }
 #---------------------------------------------------------------------[LOGIC]-------------------------------------------------------
 
